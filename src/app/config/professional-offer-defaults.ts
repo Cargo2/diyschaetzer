@@ -1,0 +1,30 @@
+export const PROFESSIONAL_OFFER_DEFAULTS = {
+  currency: 'EUR',
+  vatPercent: 19,
+  siteSetupFlatRate: 235,
+  floorTilingStandardPricePerM2: 79.82,
+  floorTilingLargeFormatPricePerM2: 113.62,
+  wallTilingPricePerM2: 79.12,
+  substrateMinorRepairPricePerM2: 18,
+  levelingCompoundPricePerM2: 28,
+  waterproofingPricePerM2: 39.79,
+  sealTapePricePerLfm: 9.78,
+  sealingCornerPricePerPiece: 7.12,
+  sealingSleevePricePerPiece: 7.12,
+  drillHolePricePerPiece: 8.71,
+  profilePricePerPiece: 23.25,
+  profileLengthM: 2.5,
+  siliconeJointPricePerLfm: 8.28,
+  baseboardPricePerLfm: 14.28,
+  defaultSealTapeLfm: 10,
+  defaultSealingCornerCount: 4,
+  defaultSealingSleeveCount: 2,
+  defaultDrillHoleCount: 6,
+  defaultProfileCount: 0,
+  defaultSiliconeJointLfm: 10,
+  defaultBaseboardLfm: 0,
+  /** Zuschlag auf die Silikonfugen-Laufmeter, wenn Dusche oder Badewanne vorhanden ist. */
+  wetAreaSiliconeExtraLfm: 5,
+  /** Obergrenze für die geschätzte Abdichtungsfläche, wenn keine Angabe vorliegt. */
+  maxEstimatedWaterproofingAreaM2: 20
+} as const;

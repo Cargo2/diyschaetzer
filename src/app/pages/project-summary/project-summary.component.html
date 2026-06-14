@@ -1,0 +1,189 @@
+<section class="project-summary">
+  <header class="project-header">
+    <div>
+      <h1>Projekt-Dashboard</h1>
+      <p>{{ rooms().length }} gespeicherte Räume</p>
+    </div>
+    <div class="actions">
+      <app-premium-export-button
+        label="Projekt als PDF exportieren"
+        hintId="project-pdf-hint"
+      />
+      <button type="button" (click)="startNewRoom()">Neuen Raum anlegen</button>
+    </div>
+  </header>
+
+  @if (rooms().length === 0) {
+    <section class="empty-state dashboard-section">
+      <h2>Noch keine Räume gespeichert.</h2>
+      <p>Lege deinen ersten Raum an, damit Projektkosten und Materialien berechnet werden können.</p>
+      <button type="button" (click)="startNewRoom()">Raum anlegen</button>
+    </section>
+  } @else {
+    @let totals = result();
+    @let projectMaterials = totals.projectMaterialList;
+
+    <section class="totals-grid" aria-label="Projektkosten">
+      <article><span>Gesamtfläche</span><strong>{{ formatNumber(totals.totalTileAreaM2) }} m²</strong></article>
+      <article><span>DIY-Kosten</span><strong>{{ formatCurrency(totals.totalDiyCost) }}</strong></article>
+      <article><span>Fliesenleger-Kosten</span><strong>{{ formatCurrency(totals.totalProfessionalCost) }}</strong></article>
+      <article><span>Mögliche Ersparnis</span><strong>{{ formatCurrency(totals.totalSavings) }}</strong></article>
+      <article class="secondary-total"><span>Materialkosten</span><strong>{{ formatCurrency(totals.totalMaterialCost) }}</strong></article>
+      <article class="secondary-total"><span>Werkzeugkosten einmalig</span><strong>{{ formatCurrency(totals.totalToolCostDeduplicated) }}</strong></article>
+      @if (totals.deduplicationSavings > 0) {
+        <article class="secondary-total">
+          <span>Summe Einzelräume</span>
+          <strong>{{ formatCurrency(totals.roomDiyCostSum) }}</strong>
+          <small>davon −{{ formatCurrency(totals.deduplicationSavings) }} gespart, weil Werkzeuge projektweit nur einmal gerechnet werden.</small>
+        </article>
+      }
+      <article class="secondary-total"><span>Fliesen inkl. Verschnitt</span><strong>{{ formatNumber(totals.totalTileAreaWithWasteM2) }} m²</strong></article>
+      <article class="secondary-total"><span>Anzahl Räume</span><strong>{{ totals.roomCount }}</strong></article>
+    </section>
+
+    <section class="dashboard-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Gespeicherte Räume</p>
+          <h2>Einzelne Kalkulationen</h2>
+        </div>
+        <span class="count-badge">{{ totals.roomCount }}</span>
+      </div>
+
+      <div class="room-list">
+        @for (room of totals.roomSummaries; track room.roomId) {
+          <article class="room-card">
+            <div class="room-heading">
+              <div>
+                <p>{{ roomTypeLabel(room.roomType) }} · {{ room.isOutdoor ? 'Außenbereich' : 'Innenbereich' }}</p>
+                <h3>{{ room.roomName }}</h3>
+              </div>
+              @if (room.warnings.length > 0) {
+                <div class="warning-tooltip-wrap">
+                  <button
+                    type="button"
+                    class="warning-badge"
+                    [attr.aria-expanded]="openWarningRoomId() === room.roomId"
+                    [attr.aria-controls]="'room-warnings-' + room.roomId"
+                    [attr.aria-label]="'Hinweise für ' + room.roomName + ' anzeigen'"
+                    (click)="toggleRoomWarnings(room.roomId)"
+                  >
+                    {{ room.warnings.length }} Hinweise
+                  </button>
+                  <div
+                    class="warning-tooltip"
+                    [class.open]="openWarningRoomId() === room.roomId"
+                    [id]="'room-warnings-' + room.roomId"
+                    role="tooltip"
+                  >
+                    <strong>{{ room.roomName }}</strong>
+                    <ul>
+                      @for (warning of room.warnings; track warning) {
+                        <li>{{ warning }}</li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              }
+            </div>
+            <dl>
+              <div><dt>Fläche</dt><dd>{{ formatNumber(room.tileAreaM2) }} m²</dd></div>
+              <div><dt>Inkl. Verschnitt</dt><dd>{{ formatNumber(room.tileAreaWithWasteM2) }} m²</dd></div>
+              <div><dt>DIY-Kosten</dt><dd>{{ formatCurrency(room.diyCost) }}</dd></div>
+              <div><dt>Fliesenleger</dt><dd>{{ formatCurrency(room.professionalCost) }}</dd></div>
+            </dl>
+            <div class="actions">
+              <button type="button" (click)="editRoom(room.roomId)">Bearbeiten</button>
+              <button type="button" class="secondary" (click)="openMaterialList(room.roomId)">Materialliste</button>
+              <button type="button" class="secondary" (click)="duplicateRoom(room.roomId)">Duplizieren</button>
+              <button type="button" class="danger" (click)="deleteRoom(room.roomId)">Löschen</button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="dashboard-section material-overview">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Projektweite Materialübersicht</p>
+          <h2>Materialbedarf aller Räume</h2>
+        </div>
+        <button type="button" (click)="toggleProjectMaterialList()">
+          {{ projectMaterialListOpen() ? 'Materialliste schließen' : 'Projekt-Materialliste anzeigen' }}
+        </button>
+      </div>
+
+      <div class="material-metrics">
+        <article><span>Materialkosten gesamt</span><strong>{{ formatCurrency(projectMaterials.totalDisplayCost) }}</strong></article>
+        <article><span>Werkzeug einmalig</span><strong>{{ formatCurrency(projectMaterials.totalDeduplicatedToolCost) }}</strong></article>
+        <article><span>Verbrauchsmaterialien</span><strong>{{ formatCurrency(projectMaterials.totalConsumableCost) }}</strong></article>
+        <article><span>Hauptmaterialien</span><strong>{{ formatCurrency(projectMaterials.totalMainMaterialCost) }}</strong></article>
+        <article><span>Aktive Positionen</span><strong>{{ projectMaterials.activeItemCount }}</strong></article>
+      </div>
+
+      @if (projectMaterialListOpen()) {
+        <div class="project-material-list">
+          @for (section of projectMaterials.sections; track section.id) {
+            <details open>
+              <summary>
+                <span>{{ section.title }}</span>
+                <strong>{{ formatCurrency(section.totalDisplayCost) }}</strong>
+              </summary>
+              <p>{{ section.description }}</p>
+              <div class="material-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Position</th>
+                      <th>Menge</th>
+                      <th>Pakete</th>
+                      <th>Räume</th>
+                      <th>Kosten</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of section.items; track item.materialId + item.roomIds.join('-')) {
+                      <tr>
+                        <td>
+                          <strong>{{ item.name }}</strong>
+                          @if (item.isOutdoorRelevant) {
+                            <span class="outdoor-badge">Außenbereich</span>
+                          }
+                          @for (note of item.notes; track note) {
+                            <small>{{ note }}</small>
+                          }
+                        </td>
+                        <td>{{ formatOptionalNumber(item.quantity) }} {{ item.unit ?? '' }}</td>
+                        <td>{{ formatOptionalNumber(item.packageCount) }} {{ item.packageUnit ?? '' }}</td>
+                        <td>{{ item.roomNames.join(', ') }}</td>
+                        <td>{{ formatCurrency(item.displayCost ?? 0) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="dashboard-section next-steps">
+      <div>
+        <p class="eyebrow">Nächste Schritte</p>
+        <h2>Projekt weiterführen</h2>
+        <p>Ergänze Räume oder prüfe die projektweiten Materialien und eine Einzelraum-Zusammenfassung.</p>
+      </div>
+      <div class="actions">
+        <button type="button" (click)="startNewRoom()">Weiteren Raum hinzufügen</button>
+        <button type="button" class="secondary" (click)="toggleProjectMaterialList()">Projekt-Materialliste prüfen</button>
+        <button type="button" class="secondary" (click)="openCurrentRoomSummary(totals.roomSummaries[0].roomId)">Zusammenfassung prüfen</button>
+        <app-premium-export-button
+          label="Projekt als PDF exportieren"
+          hintId="project-footer-pdf-hint"
+        />
+      </div>
+    </section>
+  }
+</section>

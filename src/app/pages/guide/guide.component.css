@@ -1,0 +1,229 @@
+:host {
+  display: block;
+}
+
+.guide-page {
+  display: grid;
+  gap: 1.4rem;
+  padding-bottom: 1rem;
+}
+
+.guide-hero,
+.guide-card {
+  background: var(--card);
+  border: 1px solid rgba(19, 23, 17, 0.07);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.guide-hero {
+  background:
+    radial-gradient(44rem 26rem at 110% -30%, rgba(194, 112, 61, 0.26), transparent 55%),
+    linear-gradient(150deg, #0a352f, #07241f);
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: var(--shadow-float);
+  color: #e9f2ec;
+  padding: clamp(2rem, 5vw, 3.4rem);
+}
+
+.guide-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(143, 196, 173, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 196, 173, 0.09) 1px, transparent 1px);
+  background-size: 3.2rem 3.2rem;
+  mask-image: radial-gradient(50rem 30rem at 20% 0%, black, transparent 75%);
+  -webkit-mask-image: radial-gradient(50rem 30rem at 20% 0%, black, transparent 75%);
+}
+
+.guide-hero > * {
+  position: relative;
+}
+
+.eyebrow {
+  color: var(--copper);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  margin: 0 0 0.7rem;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 1.8rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.guide-hero .eyebrow {
+  color: var(--copper-soft);
+}
+
+.guide-hero h1,
+.guide-card h2 {
+  margin: 0 0 0.7rem;
+}
+
+.guide-hero h1 {
+  color: #f7faf6;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 560;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.guide-card h2 {
+  color: var(--ink);
+  font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+}
+
+.guide-hero p {
+  color: #b7cdc2;
+  line-height: 1.8;
+  max-width: 60ch;
+}
+
+.guide-card p,
+.guide-card li {
+  color: var(--ink-soft);
+  line-height: 1.8;
+}
+
+.guide-grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.guide-card {
+  background: linear-gradient(180deg, #fffefb, #faf7ef);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.guide-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--copper), var(--gold));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.guide-card:hover {
+  border-color: rgba(17, 87, 74, 0.3);
+  box-shadow: 0 22px 44px -14px rgba(10, 53, 47, 0.22);
+  transform: translateY(-4px);
+}
+
+.guide-card:hover::before {
+  transform: scaleX(1);
+}
+
+.guide-card ul {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.guide-card li {
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.guide-card li::before {
+  content: '';
+  position: absolute;
+  left: 0.1rem;
+  top: 0.6em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 0.12rem;
+  background: var(--verde);
+  transform: rotate(45deg);
+  opacity: 0.75;
+}
+
+.guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+.primary-action,
+.secondary-action {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-weight: 800;
+  font-size: 0.95rem;
+  justify-content: center;
+  min-height: 3.2rem;
+  padding: 0.95rem 1.75rem;
+  text-decoration: none;
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+
+.primary-action {
+  background: linear-gradient(120deg, var(--copper), #a9582c);
+  color: #fff5ec;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 14px 30px -10px rgba(194, 112, 61, 0.65);
+}
+
+.primary-action:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.secondary-action {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #e9f2ec;
+}
+
+.secondary-action:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+}
+
+/* Outside the dark hero, secondary buttons flip to ink-on-paper */
+.guide-card .secondary-action {
+  background: transparent;
+  border: 1.5px solid var(--verde);
+  color: var(--verde-deep);
+}
+
+.guide-card .secondary-action:hover {
+  background: var(--verde-deep);
+  color: #eef5f0;
+}
+
+@media (max-width: 640px) {
+  .guide-actions {
+    flex-direction: column;
+  }
+}

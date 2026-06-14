@@ -1,0 +1,565 @@
+@let data = payload();
+@let assumptionsState = assumptions();
+
+<div class="summary-layout">
+  @if (showOptions()) {
+    <section class="summary-section">
+    <div class="section-header">
+      <p>Gewählte Optionen</p>
+    </div>
+
+    <div class="option-grid">
+      @for (item of summaryItems(); track item.label) {
+        <article class="info-card" [class.muted]="item.muted">
+          <p>{{ item.label }}</p>
+          <strong>{{ item.value }}</strong>
+        </article>
+      }
+    </div>
+    </section>
+
+    <section class="summary-section">
+    <div class="section-header">
+      <p>Vorarbeiten & Untergrund</p>
+    </div>
+
+    <div class="option-grid">
+      @for (item of preparationItems(); track item.label) {
+        <article class="info-card" [class.muted]="item.muted">
+          <p>{{ item.label }}</p>
+          <strong>{{ item.value }}</strong>
+        </article>
+      }
+    </div>
+    </section>
+
+    <section class="summary-section">
+    <div class="section-header">
+      <p>Leistungsumfang</p>
+    </div>
+
+    <div class="option-grid">
+      @for (item of scopeItems(); track item.label) {
+        <article class="info-card" [class.muted]="item.muted">
+          <p>{{ item.label }}</p>
+          <strong>{{ item.value }}</strong>
+        </article>
+      }
+    </div>
+    </section>
+
+    @if (data.openIssues.length > 0) {
+      <section class="summary-section">
+      <div class="section-header">
+        <p>Noch zu klären</p>
+      </div>
+      <ul class="issue-list">
+        @for (issue of data.openIssues; track issue) {
+          <li>{{ issue }}</li>
+        }
+      </ul>
+      </section>
+    }
+
+    @if (data.recommendations.length > 0) {
+      <section class="summary-section">
+      <div class="section-header">
+        <p>Hinweise</p>
+      </div>
+      <ul class="issue-list">
+        @for (recommendation of data.recommendations; track recommendation) {
+          <li>{{ recommendation }}</li>
+        }
+      </ul>
+      </section>
+    }
+  }
+
+  @if (showAssumptions()) {
+    <section class="summary-section">
+    <div class="section-header">
+      <p>Flächenübersicht</p>
+      <span>Live aus Badgroesse, Waenden und Aussparungen berechnet</span>
+    </div>
+
+    <div class="option-grid">
+      <article class="info-card">
+        <p>Bodenflaeche</p>
+        <strong>{{ formatArea(data.areaSummary.floorAreaM2) }} m²</strong>
+      </article>
+      <article class="info-card">
+        <p>Erfasste Waende</p>
+        <strong>{{ data.walls.length }}</strong>
+      </article>
+      <article class="info-card">
+        <p>Wandflaechen</p>
+        <strong>{{ formatArea(data.areaSummary.totalWallTileAreaM2) }} m²</strong>
+      </article>
+      <article class="info-card">
+        <p>Gesamt zu fliesende Flaeche</p>
+        <strong>{{ formatArea(data.areaSummary.totalTileAreaM2) }} m²</strong>
+      </article>
+    </div>
+    <br>
+
+    @if (data.walls.length > 0) {
+      <div class="assumptions-grid">
+        @for (wall of data.walls; track wall.id) {
+          <article class="assumption-card">
+            <div class="assumption-head">
+              <div>
+                <h3>{{ wall.name }}</h3>
+                <p>{{ formatArea(wall.widthM) }} m x {{ formatArea(wall.tileHeightM) }} m gefliest</p>
+              </div>
+              <small>{{ wall.openings.length }} Aussparungen</small>
+            </div>
+
+            <div class="option-grid">
+              <article class="info-card">
+                <p>Bruttoflaeche</p>
+                <strong>{{ formatArea(wall.grossAreaM2) }} m²</strong>
+              </article>
+              <article class="info-card">
+                <p>Aussparungen</p>
+                <strong>{{ formatArea(wall.openingsAreaM2) }} m²</strong>
+              </article>
+              <article class="info-card">
+                <p>Netto-Fliesenflaeche</p>
+                <strong>{{ formatArea(wall.tileAreaM2) }} m²</strong>
+              </article>
+            </div>
+          </article>
+        }
+      </div>
+    }
+    </section>
+
+    <section class="summary-section editable-calculation-assumptions">
+      <div class="section-header">
+        <div>
+          <p>Bearbeitbare Annahmen</p>
+          <span>Diese Werte beeinflussen Materialmengen und Kosten. Du kannst sie bei Bedarf anpassen.</span>
+        </div>
+        <button type="button" class="reset-all-button" (click)="resetAllCalculationAssumptions()">
+          Alle Annahmen zurücksetzen
+        </button>
+      </div>
+
+      @for (group of editableAssumptionGroups(); track group.label) {
+        <section class="calculation-group">
+          <h3>{{ group.label }}</h3>
+          @if (group.label === 'Profi-Einheitspreise') {
+            <p class="professional-note">Die Profi-Einheitspreise sind Annahmen für eine unverbindliche Kostenschätzung und ersetzen kein geprüftes Angebot.</p>
+          }
+          <div class="calculation-grid">
+            @for (item of group.items; track item.path) {
+              <label class="calculation-field">
+                <span class="calculation-field-head">
+                  <span>
+                    <strong>{{ item.assumption.label }}</strong>
+                    @if (item.assumption.description) {
+                      <small>{{ item.assumption.description }}</small>
+                    }
+                  </span>
+                  <span
+                    class="status-badge"
+                    [class.user-override]="item.assumption.source === 'user_override'"
+                    [class.wizard-source]="item.assumption.source === 'wizard'"
+                  >{{ assumptionStatus(item.assumption) }}</span>
+                </span>
+                <span class="input-row">
+                  <input
+                    type="number"
+                    min="0"
+                    [max]="item.max"
+                    step="0.1"
+                    [ngModel]="item.assumption.value"
+                    (ngModelChange)="updateCalculationAssumption(item.path, $event)"
+                  />
+                  <em>{{ item.assumption.unit }}</em>
+                  @if (item.assumption.source === 'user_override') {
+                    <button type="button" class="reset-button" (click)="resetCalculationAssumption(item.path)">
+                      Zurücksetzen
+                    </button>
+                  }
+                </span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+    </section>
+
+    <details class="summary-section calculation-assumptions">
+      <summary>
+        <strong>Profi Einheitspreise</strong>
+        <span>Preisannahmen für die unverbindliche Profi-Kostenschätzung</span>
+      </summary>
+
+      <div class="calculation-intro">
+        <p>Diese Einheitspreise sind bearbeitbare Annahmen und ersetzen kein geprüftes Handwerkerangebot.</p>
+      </div>
+
+      @for (section of professionalPriceGroups(); track section.label) {
+        <section class="calculation-group">
+          <div class="calculation-grid">
+            @for (item of section.items; track item.path) {
+              <label class="calculation-field">
+                <span class="calculation-field-head">
+                  <span>
+                    <strong>{{ item.assumption.label }}</strong>
+                    @if (item.assumption.description) {
+                      <small>{{ item.assumption.description }}</small>
+                    }
+                  </span>
+                  <span
+                    class="status-badge"
+                    [class.user-override]="item.assumption.source === 'user_override'"
+                    [class.wizard-source]="item.assumption.source === 'wizard'"
+                  >{{ assumptionStatus(item.assumption) }}</span>
+                </span>
+                <span class="input-row">
+                  <input
+                    type="number"
+                    min="0"
+                    [max]="item.max"
+                    step="0.1"
+                    [ngModel]="item.assumption.value"
+                    (ngModelChange)="updateCalculationAssumption(item.path, $event)"
+                  />
+                  <em>{{ item.assumption.unit }}</em>
+                  @if (item.assumption.source === 'user_override') {
+                    <button type="button" class="reset-button" (click)="resetCalculationAssumption(item.path)">
+                      Zurücksetzen
+                    </button>
+                  }
+                </span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+    </details>
+
+    <section class="summary-section legacy-room-assumptions" aria-hidden="true">
+    <div class="section-header">
+      <p>Raumdetails</p>
+      <span>Maße und Ausstattungswerte, die aus deinen Angaben abgeleitet wurden</span>
+    </div>
+
+    <div class="assumptions-grid">
+      @if (assumptionsState.tile) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Fliesen</h3>
+              <p>{{ tileQualityLabel(data.tileQuality) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <label class="field">
+            <span>Preis pro m²</span>
+            <div class="input-row">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                [ngModel]="assumptionsState.tile.pricePerM2"
+                (ngModelChange)="updateTilePricePerM2($event)"
+              />
+              <em>€/m²</em>
+            </div>
+          </label>
+
+        </article>
+      }
+
+      @if (assumptionsState.bathtub) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Badewanne</h3>
+              <p>{{ bathtubLabel(data.bathtubType) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Lange</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.bathtub.lengthCm"
+                  (ngModelChange)="updateBathtubLengthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Breite</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.bathtub.widthCm"
+                  (ngModelChange)="updateBathtubWidthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+          </div>
+        </article>
+      }
+
+      @if (assumptionsState.shower) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Dusche</h3>
+              <p>{{ showerLabel(data.showerType) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Lange</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.shower.lengthCm"
+                  (ngModelChange)="updateShowerLengthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Breite</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.shower.widthCm"
+                  (ngModelChange)="updateShowerWidthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+          </div>
+        </article>
+      }
+
+      @if (assumptionsState.sink) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Waschtisch</h3>
+              <p>{{ sinkLabel(data.sinkOption) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Breite</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.sink.widthCm"
+                  (ngModelChange)="updateSinkWidthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Anzahl Waschplätze</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="assumptionsState.sink.count"
+                  (ngModelChange)="updateSinkCount($event)"
+                />
+                <em>Stück</em>
+              </div>
+            </label>
+          </div>
+        </article>
+      }
+
+      @if (assumptionsState.toilet) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>WC</h3>
+              <p>{{ toiletLabel(data.toiletOption) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Breite</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [ngModel]="assumptionsState.toilet.estimatedWidthCm"
+                  (ngModelChange)="updateToiletWidthCm($event)"
+                />
+                <em>cm</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Installationsart</span>
+              <select
+                [ngModel]="assumptionsState.toilet.installationType"
+                (ngModelChange)="updateToiletInstallationType($event)"
+              >
+                @for (option of installationTypeOptions; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        </article>
+      }
+
+      @if (showHeatingCard()) {
+        <article class="assumption-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Heizung</h3>
+              <p>{{ heatingLabel(data.heatingOption) }}</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid two-columns">
+            @if (assumptionsState.heating.towelRadiatorCount > 0) {
+              <label class="field">
+                <span>Handtuchheizkorper</span>
+                <div class="input-row">
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    [ngModel]="assumptionsState.heating.towelRadiatorCount"
+                    (ngModelChange)="updateTowelRadiatorCount($event)"
+                  />
+                  <em>Stück</em>
+                </div>
+              </label>
+            }
+          </div>
+        </article>
+      }
+
+      @if (showElectricalCard()) {
+        <article class="assumption-card electrical-card">
+          <div class="assumption-head">
+            <div>
+              <h3>Elektro & Anschlüsse im Fliesenbereich</h3>
+              <p>Abgeleitet aus Zusatzausstattung und Heizung</p>
+            </div>
+            <small>Richtwert, kann angepasst werden</small>
+          </div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>Zusätzliche Steckdosen</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="assumptionsState.electrical.additionalSocketsCount"
+                  (ngModelChange)="updateElectricalAssumption('additionalSocketsCount', $event)"
+                />
+                <em>Stück</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Spiegel-Stromanschlüsse</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="assumptionsState.electrical.mirrorPowerConnectionCount"
+                  (ngModelChange)="updateElectricalAssumption('mirrorPowerConnectionCount', $event)"
+                />
+                <em>Stück</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Wandleuchten-Anschlüsse</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="assumptionsState.electrical.wallLightConnectionCount"
+                  (ngModelChange)="updateElectricalAssumption('wallLightConnectionCount', $event)"
+                />
+                <em>Stück</em>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Lüftungs-Öffnungen</span>
+              <div class="input-row">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="assumptionsState.electrical.ventilationOpeningCount"
+                  (ngModelChange)="updateElectricalAssumption('ventilationOpeningCount', $event)"
+                />
+                <em>Stück</em>
+              </div>
+            </label>
+
+          </div>
+        </article>
+      }
+    </div>
+    </section>
+  }
+
+  @if (showJson()) {
+    <section class="summary-section json-block">
+    <div class="section-header">
+      <div>
+        <p>Bereich 4</p>
+        <h2>JSON-Ausgabe</h2>
+      </div>
+      <button type="button" class="copy-button" (click)="copyJson()">JSON kopieren</button>
+    </div>
+
+    @if (copyFeedback()) {
+      <p class="copy-feedback">{{ copyFeedback() }}</p>
+    }
+
+    <pre><code>{{ payloadJson() }}</code></pre>
+    </section>
+  }
+</div>

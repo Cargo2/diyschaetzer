@@ -1,0 +1,259 @@
+@if (wizardCompleted()) {
+  @let data = payload();
+  @let list = materialList();
+  @let tile = list.tileCalculation;
+
+  <section class="material-page">
+    <header class="material-header">
+      <div>
+        <p>Materialliste</p>
+        <h1>Material und Werkzeug nach Arbeitsschritten</h1>
+        <span>
+          Die Mengen sind nachvollziehbare Richtwerte aus deinen Wizard-Angaben. Prüfe Gebinde und
+          Herstellerverbrauch vor dem Einkauf.
+        </span>
+      </div>
+      <div class="cost-summary">
+        <span>Aktuelle Materialkosten</span>
+        <strong>{{ formatCurrency(list.totalDisplayCost) }}</strong>
+        <small>Preise aus dem hinterlegten Materialkatalog</small>
+        <app-premium-export-button
+          label="Materialliste als PDF exportieren"
+          hintId="material-list-pdf-hint"
+        />
+      </div>
+    </header>
+
+    <section class="material-controls" aria-label="Materialliste anpassen">
+      <div class="optional-toggle">
+        <button
+          type="button"
+          class="toggle-track"
+          role="switch"
+          aria-label="Optionale Materialien berücksichtigen"
+          [attr.aria-checked]="userState().includeOptionalMaterials"
+          [class.active]="userState().includeOptionalMaterials"
+          (click)="toggleOptionalMaterials()"
+        >
+          <i aria-hidden="true"></i>
+        </button>
+        <span>
+          <strong>Optionale Materialien berücksichtigen</strong>
+          <small>
+            Wenn deaktiviert, werden optionale Materialien aus der Kostenschätzung entfernt.
+          </small>
+        </span>
+      </div>
+      <button type="button" class="reset-button" (click)="resetMaterialOverrides()">
+        Materialliste zurücksetzen
+      </button>
+    </section>
+
+    <section class="project-snapshot" aria-label="Projektübersicht">
+      <div>
+        <p>Fliesenfläche</p>
+        <strong>{{ formatNumber(tile.baseTileAreaM2) }} m²</strong>
+      </div>
+      <div>
+        <p>Mit Verschnitt</p>
+        <strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</strong>
+      </div>
+      <div>
+        <p>Fliesenformat</p>
+        <strong>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</strong>
+      </div>
+      <div>
+        <p>Aktive Positionen</p>
+        <strong>{{ list.activeItemCount }}</strong>
+      </div>
+      <div>
+        <p>Entfernte Positionen</p>
+        <strong>{{ list.inactiveItemCount }}</strong>
+      </div>
+    </section>
+
+    @if (list.warnings.length > 0) {
+      <section class="warning-list" aria-label="Hinweise zur Materialberechnung">
+        @for (warning of list.warnings; track warning) {
+          <p>{{ warning }}</p>
+        }
+      </section>
+    }
+
+    <div class="accordion-list">
+      <article class="accordion">
+        <button
+          type="button"
+          class="accordion-trigger"
+          [attr.aria-expanded]="isSectionOpen('tile-calculation')"
+          aria-controls="tile-calculation-panel"
+          (click)="toggleSection('tile-calculation')"
+        >
+          <span>
+            <small>Berechnungsgrundlage</small>
+            <strong>Fliesenmenge & Verschnitt</strong>
+          </span>
+          <span class="accordion-meta">
+            {{ formatNumber(tile.tileAreaWithWasteM2) }} m²
+            <i [class.open]="isSectionOpen('tile-calculation')">⌄</i>
+          </span>
+        </button>
+
+        @if (isSectionOpen('tile-calculation')) {
+          <div id="tile-calculation-panel" class="accordion-panel">
+            <div class="tile-calculation-grid">
+              <div><span>Zu fliesende Fläche</span><strong>{{ formatNumber(tile.baseTileAreaM2) }} m²</strong></div>
+              <div><span>Verschnitt</span><strong>{{ formatNumber(tile.wasteFactorPercent, 0) }} %</strong></div>
+              <div><span>Verschnittfläche</span><strong>{{ formatNumber(tile.wasteAreaM2) }} m²</strong></div>
+              <div><span>Fliesenmenge inkl. Verschnitt</span><strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</strong></div>
+              <div><span>Fliesenformat</span><strong>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</strong></div>
+              <div><span>Fläche pro Fliese</span><strong>{{ formatNumber(tile.singleTileAreaM2) }} m²</strong></div>
+              <div><span>Benötigte Fliesen</span><strong>{{ tile.tileCount }} Stück</strong></div>
+              <div><span>Tatsächliche Fläche nach Stückzahl</span><strong>{{ formatNumber(tile.actualTileAreaByCountM2) }} m²</strong></div>
+            </div>
+
+            @if (!data.scope.includeTileMaterial) {
+              <p class="scope-note">
+                Fliesenmaterial ist im Leistungsumfang ausgeschlossen. Die Menge wird nur zur
+                Orientierung angezeigt.
+              </p>
+            }
+          </div>
+        }
+      </article>
+
+      @for (section of list.sections; track section.id) {
+        <article class="accordion">
+          <button
+            type="button"
+            class="accordion-trigger"
+            [attr.aria-expanded]="isSectionOpen(section.id)"
+            [attr.aria-controls]="section.id + '-panel'"
+            (click)="toggleSection(section.id)"
+          >
+            <span>
+              <small>{{ section.items.length }} Artikel</small>
+              <strong>{{ section.title }}</strong>
+            </span>
+            <span class="accordion-meta">
+              {{ formatCurrency(section.totalDisplayCost) }}
+              <i [class.open]="isSectionOpen(section.id)">⌄</i>
+            </span>
+          </button>
+
+          @if (isSectionOpen(section.id)) {
+            <div [id]="section.id + '-panel'" class="accordion-panel">
+              <p class="section-description">{{ section.description }}</p>
+
+              <div class="material-items">
+                @for (item of section.items; track item.materialId) {
+                  <article class="material-item" [class.inactive]="!item.isActive">
+                    <div class="item-heading">
+                      <div>
+                        <div class="item-badges">
+                          <span>{{ articleTypeLabel(item.articleType) }}</span>
+                          <span>{{ requirementLabel(item.requirementType) }}</span>
+                        </div>
+                        <h3>{{ item.name }}</h3>
+                        <p>{{ item.description }}</p>
+                      </div>
+                      <div class="item-actions">
+                        @if (item.isActive) {
+                          <button
+                            type="button"
+                            class="state-button remove"
+                            title="Aus Materialliste entfernen"
+                            [attr.aria-label]="item.name + ' aus Materialliste entfernen'"
+                            (click)="excludeMaterial(item.materialId)"
+                          >
+                            −
+                          </button>
+                        } @else {
+                          <button
+                            type="button"
+                            class="state-button add"
+                            title="Zur Materialliste hinzufügen"
+                            [attr.aria-label]="item.name + ' zur Materialliste hinzufügen'"
+                            (click)="includeMaterial(item.materialId, item.requirementType === 'optional')"
+                          >
+                            +
+                          </button>
+                        }
+                        <div class="item-cost">
+                          @if (item.isActive) {
+                            <strong>{{ formatCurrency(item.displayCost) }}</strong>
+                          } @else {
+                            <del>{{ formatCurrency(item.calculatedCost) }}</del>
+                            <strong>{{ formatCurrency(item.displayCost) }}</strong>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (!item.isActive) {
+                      <p class="excluded-note">
+                        {{
+                          item.excludedReason === 'optional_toggle'
+                            ? 'Durch Toggle ausgeschlossen'
+                            : 'Aus Berechnung entfernt'
+                        }}
+                      </p>
+                    }
+
+                    <dl class="item-facts">
+                      <div>
+                        <dt>Menge</dt>
+                        <dd>
+                          @if (item.packageCount !== null) {
+                            {{ formatNumber(item.packageCount, 0) }} {{ item.packageUnit }}
+                            @if (item.quantity !== null && item.unit) {
+                              / {{ formatNumber(item.quantity) }} {{ item.unit }}
+                            }
+                          } @else if (item.quantity !== null) {
+                            {{ formatNumber(item.quantity) }} {{ item.unit }}
+                          } @else {
+                            Nach Bedarf
+                          }
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Einzelpreis</dt>
+                        <dd>{{ formatCurrency(item.unitPrice) }} @if (item.priceUnit) { / {{ item.priceUnit }} }</dd>
+                      </div>
+                      <div>
+                        <dt>Berechnung</dt>
+                        <dd>{{ item.calculationNote }}</dd>
+                      </div>
+                      <div>
+                        <dt>Verwendet in</dt>
+                        <dd>{{ item.workStepLabels.join(', ') }}</dd>
+                      </div>
+                    </dl>
+
+                    @if (item.affiliateLink) {
+                      <a
+                        class="product-link"
+                        [href]="item.affiliateLink"
+                        target="_blank"
+                        rel="nofollow sponsored noopener"
+                      >
+                        Produkt ansehen
+                      </a>
+                    }
+                  </article>
+                }
+              </div>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  </section>
+} @else {
+  <section class="locked-panel">
+    <p class="locked-eyebrow">Materialliste noch nicht verfügbar</p>
+    <h1>Bitte schließe zuerst den Wizard ab.</h1>
+    <p>Danach berechnen wir Materialmengen und Kosten aus deinen Angaben.</p>
+    <a routerLink="/wizard">Zum Wizard</a>
+  </section>
+}

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(grep -Hm1 ^description: 'B:\\\\cursor_projekte\\\\02_BessereUI/.claude/skills/*/SKILL.md')",
+      "Bash(npx ng *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4200)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(taskkill //PID 19304 //F //T)",
+      "Bash(exit 0)"
+    ]
+  }
+}

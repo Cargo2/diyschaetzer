@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+/* ── Atelier Verde design tokens ─────────────────────────────── */
+@theme {
+	--font-sans: 'Manrope', 'Segoe UI', sans-serif;
+
+	/* Viridian primary scale (replaces emerald) */
+	--color-emerald-50: #eef5f1;
+	--color-emerald-100: #dcebe3;
+	--color-emerald-200: #b9d8c9;
+	--color-emerald-300: #8fc4ad;
+	--color-emerald-400: #5aa78c;
+	--color-emerald-500: #2f8a6e;
+	--color-emerald-600: #1c6e58;
+	--color-emerald-700: #11574a;
+	--color-emerald-800: #0c423a;
+	--color-emerald-900: #09332e;
+	--color-emerald-950: #052320;
+
+	--color-teal-200: #b3dccf;
+	--color-teal-300: #84c7b2;
+	--color-teal-600: #19705c;
+	--color-teal-700: #115a4b;
+	--color-teal-800: #0c453c;
+
+	--color-cyan-200: #cfe6d4;
+
+	/* Warm-green inked neutrals (replaces cool stone) */
+	--color-stone-50: #f8f6f0;
+	--color-stone-100: #f1ede2;
+	--color-stone-200: #e3ddcd;
+	--color-stone-300: #cdc5b0;
+	--color-stone-400: #a59d88;
+	--color-stone-500: #7d775f;
+	--color-stone-600: #5d5946;
+	--color-stone-700: #474336;
+	--color-stone-800: #2e2c24;
+	--color-stone-900: #20211c;
+	--color-stone-950: #131711;
+}
+
+:root {
+	--ink: #131711;
+	--ink-soft: #5d5946;
+	--paper: #f3efe6;
+	--paper-deep: #ece6d8;
+	--card: #fffdf8;
+	--verde: #11574a;
+	--verde-deep: #0a352f;
+	--verde-night: #07241f;
+	--copper: #c2703d;
+	--copper-soft: #e9c7ad;
+	--mint: #e6f0e9;
+	--gold: #b4873e;
+	--radius-lg: 1.6rem;
+	--radius-md: 1.1rem;
+	--shadow-card: 0 1px 2px rgba(19, 23, 17, 0.05), 0 12px 32px -8px rgba(19, 23, 17, 0.1);
+	--shadow-float: 0 2px 4px rgba(19, 23, 17, 0.06), 0 28px 60px -16px rgba(10, 53, 47, 0.22);
+	--font-display: 'Fraunces', Georgia, serif;
+}
+
+html {
+	font-family: 'Manrope', 'Segoe UI', sans-serif;
+	background: var(--paper);
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	color: var(--ink);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+/* Editorial serif display for all headings */
+h1,
+h2 {
+	font-family: var(--font-display);
+	font-weight: 620;
+	letter-spacing: -0.015em;
+	font-variation-settings: 'opsz' 80;
+}
+
+h3 {
+	letter-spacing: -0.01em;
+}
+
+::selection {
+	background: var(--copper);
+	color: #fff7ee;
+}
+
+:focus-visible {
+	outline: 2px solid var(--copper);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+/* Slim, tinted scrollbar */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: #c8c0aa;
+	border-radius: 99px;
+	border: 2px solid var(--paper);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--verde);
+}
+
+/* ── Shared motion ───────────────────────────────────────────── */
+@keyframes rise-in {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes glow-drift {
+	0%,
+	100% {
+		transform: translate3d(0, 0, 0) scale(1);
+	}
+	50% {
+		transform: translate3d(2%, -3%, 0) scale(1.06);
+	}
+}
+
+@keyframes sheen {
+	from {
+		background-position: 200% 0;
+	}
+	to {
+		background-position: -200% 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}

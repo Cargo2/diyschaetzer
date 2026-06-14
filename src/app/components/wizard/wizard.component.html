@@ -1,0 +1,801 @@
+@let step = currentStep();
+@let state = formState();
+
+<section class="mx-auto w-full rounded-[1.25rem] border border-white/80 bg-white p-5 shadow-[0_20px_55px_rgba(83,91,76,0.10)] sm:w-[80vw] sm:p-8">
+  <div class="mx-auto flex min-h-[calc(100vh-8.5rem)] w-full flex-col justify-between gap-8">
+    <div class="space-y-8">
+      <header class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div class="space-y-3">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">{{ step.eyebrow }}</p>
+          <h1 class="text-3xl font-extrabold leading-tight text-stone-950 sm:text-4xl">{{ step.title }}</h1>
+          <p class="max-w-3xl text-sm leading-6 text-stone-600 sm:text-base">{{ step.description }}</p>
+        </div>
+
+        <div class="w-full max-w-xs rounded-[1.1rem] border border-stone-200 bg-stone-950 p-4 text-stone-50 shadow-[0_20px_40px_rgba(28,25,23,0.12)]">
+          <div class="mb-3 flex items-center justify-between text-sm">
+            <span class="text-stone-300">Fortschritt</span>
+            <strong>{{ currentStepIndex() + 1 }} / {{ steps.length }}</strong>
+          </div>
+          <div class="h-2 rounded-full bg-white/10">
+            <div
+              class="h-2 rounded-full bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-200 transition-[width] duration-300"
+              [style.width.%]="progressPercent()"
+            ></div>
+          </div>
+        </div>
+      </header>
+          @switch (step.id) {
+            @case ('project-type') {
+              <div class="space-y-6">
+                <div class="option-grid grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  @for (option of roomTypeOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                      [class.border-emerald-700]="state.room.roomType === option.value"
+                      [class.bg-emerald-50]="state.room.roomType === option.value"
+                      [class.border-stone-200]="state.room.roomType !== option.value"
+                      [class.hover:border-emerald-300]="state.room.roomType !== option.value"
+                      (click)="selectRoomType(option.value)"
+                    >
+                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+
+                <label class="block rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                  <span class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Raumname</span>
+                  <input
+                    type="text"
+                    maxlength="80"
+                    class="mt-3 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base font-semibold text-stone-900 outline-none"
+                    [ngModel]="state.room.roomName"
+                    (ngModelChange)="updateRoomName($event)"
+                    placeholder="z. B. Bad OG oder Terrasse Südseite"
+                  />
+                </label>
+
+                @if (isOtherRoomType()) {
+                  <label class="flex items-center gap-3 rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <input
+                      type="checkbox"
+                      class="size-5 accent-emerald-700"
+                      [ngModel]="state.room.isOutdoor"
+                      (ngModelChange)="toggleRoomOutdoor($event)"
+                    />
+                    <span>
+                      <span class="block font-semibold text-stone-900">Außenbereich</span>
+                      <span class="block text-sm leading-6 text-stone-600">Liegt dieser Bereich im Freien, z. B. Terrasse, Balkon oder Außentreppe?</span>
+                    </span>
+                  </label>
+                }
+
+                @if (state.room.isOutdoor) {
+                  <div class="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
+                    <strong class="block">Außenbereich</strong>
+                    Frostsichere, witterungsbeständige Outdoor-Fliesen oder Feinsteinzeug-Terrassenplatten werden empfohlen.
+                    Achte außerdem auf Rutschhemmung, Gefälle und eine funktionierende Entwässerung.
+                  </div>
+                }
+              </div>
+            }
+
+            @case ('bathroom-size') {
+              <div class="space-y-6 rounded-[1.75rem] border border-stone-200 bg-stone-50 p-6">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Raumgröße</p>
+                    <div class="mt-2 text-4xl font-black text-stone-950">{{ formattedSize() }} m²</div>
+                  </div>
+                  <label class="text-sm text-stone-500">
+                    Direkt eingeben
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="0.5"
+                      class="mt-2 block w-32 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base font-semibold text-stone-900 outline-none ring-0"
+                      [ngModel]="state.bathroomSizeM2"
+                      (ngModelChange)="updateBathroomSize($event)"
+                    />
+                  </label>
+                </div>
+
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="0.5"
+                  class="size-slider w-full accent-emerald-700"
+                  [ngModel]="state.bathroomSizeM2"
+                  (ngModelChange)="updateBathroomSize($event)"
+                />
+
+                <div class="flex justify-between text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  <span>1,0 m²</span>
+                  <span>100,0 m²</span>
+                </div>
+              </div>
+            }
+
+            @case ('sink') {
+              <div class="space-y-6">
+                <div class="option-grid grid gap-4 md:grid-cols-2">
+                  @for (option of sinkOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                      [class.border-emerald-700]="state.sinkOption === option.value"
+                      [class.bg-emerald-50]="state.sinkOption === option.value"
+                      [class.border-stone-200]="state.sinkOption !== option.value"
+                      (click)="selectSinkOption(option.value)"
+                    >
+                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+
+                @if (state.sinkOption && state.sinkOption !== 'no_sink') {
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Optional</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Soll ein Unterschrank berücksichtigt werden?</h2>
+                    <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
+                      @for (option of vanityCabinetOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                          [class.border-emerald-700]="state.vanityCabinet === option.value"
+                          [class.bg-white]="state.vanityCabinet !== option.value"
+                          [class.bg-emerald-50]="state.vanityCabinet === option.value"
+                          [class.border-stone-200]="state.vanityCabinet !== option.value"
+                          (click)="selectVanityCabinet(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @case ('shower-bath') {
+              <div class="space-y-6">
+                <div class="option-grid grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  @for (option of showerBathOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                      [class.border-emerald-700]="state.showerBathOption === option.value"
+                      [class.bg-emerald-50]="state.showerBathOption === option.value"
+                      [class.border-stone-200]="state.showerBathOption !== option.value"
+                      (click)="selectShowerBathOption(option.value)"
+                    >
+                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+
+                <div class="grid gap-6 xl:grid-cols-2">
+                  @if (hasShowerSelection()) {
+                    <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Dusche ist geplant?</h2>
+                      <div class="option-grid mt-5 grid gap-3">
+                        @for (option of showerTypeOptions; track option.value) {
+                          <button
+                            type="button"
+                            class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                            [class.border-emerald-700]="state.showerType === option.value"
+                            [class.bg-white]="state.showerType !== option.value"
+                            [class.bg-emerald-50]="state.showerType === option.value"
+                            [class.border-stone-200]="state.showerType !== option.value"
+                            (click)="selectShowerType(option.value)"
+                          >
+                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  @if (hasBathtubSelection()) {
+                    <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Badewanne ist geplant?</h2>
+                      <div class="option-grid mt-5 grid gap-3">
+                        @for (option of bathtubTypeOptions; track option.value) {
+                          <button
+                            type="button"
+                            class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                            [class.border-emerald-700]="state.bathtubType === option.value"
+                            [class.bg-white]="state.bathtubType !== option.value"
+                            [class.bg-emerald-50]="state.bathtubType === option.value"
+                            [class.border-stone-200]="state.bathtubType !== option.value"
+                            (click)="selectBathtubType(option.value)"
+                          >
+                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('heating') {
+              <div class="option-grid grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                @for (option of heatingOptions; track option.value) {
+                  <button
+                    type="button"
+                    class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                    [class.border-emerald-700]="state.heatingOption === option.value"
+                    [class.bg-emerald-50]="state.heatingOption === option.value"
+                    [class.border-stone-200]="state.heatingOption !== option.value"
+                    (click)="selectHeatingOption(option.value)"
+                  >
+                    <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                  </button>
+                }
+              </div>
+            }
+
+            @case ('toilet') {
+              <div class="option-grid grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                @for (option of toiletOptions; track option.value) {
+                  <button
+                    type="button"
+                    class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                    [class.border-emerald-700]="state.toiletOption === option.value"
+                    [class.bg-emerald-50]="state.toiletOption === option.value"
+                    [class.border-stone-200]="state.toiletOption !== option.value"
+                    (click)="selectToiletOption(option.value)"
+                  >
+                    <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                  </button>
+                }
+              </div>
+            }
+
+            @case ('tiling') {
+              <div class="space-y-6">
+                <div class="option-grid grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  @for (option of tilingOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                      [class.border-emerald-700]="state.tilingScope === option.value"
+                      [class.bg-emerald-50]="state.tilingScope === option.value"
+                      [class.border-stone-200]="state.tilingScope !== option.value"
+                      (click)="selectTilingScope(option.value)"
+                    >
+                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+
+                <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesenqualität möchtest du ungefähr?</h2>
+                  <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                    @for (option of tileQualityOptions; track option.value) {
+                      <button
+                        type="button"
+                        class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                        [class.border-emerald-700]="state.tileQuality === option.value"
+                        [class.bg-white]="state.tileQuality !== option.value"
+                        [class.bg-emerald-50]="state.tileQuality === option.value"
+                        [class.border-stone-200]="state.tileQuality !== option.value"
+                        (click)="selectTileQuality(option.value)"
+                      >
+                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesengröße ist für den Boden geplant?</h2>
+                  <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                    @for (option of tileSizeOptions; track option.value) {
+                      <button
+                        type="button"
+                        class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                        [class.border-emerald-700]="state.floorTileSize === option.value"
+                        [class.bg-white]="state.floorTileSize !== option.value"
+                        [class.bg-emerald-50]="state.floorTileSize === option.value"
+                        [class.border-stone-200]="state.floorTileSize !== option.value"
+                        (click)="selectFloorTileSize(option.value)"
+                      >
+                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            @case ('walls') {
+              <div class="space-y-6">
+                <div class="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Flaechenbasis</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Waende und Teilbereiche</h2>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Bodenflaeche: {{ formatArea(state.bathroomSizeM2) }} m²</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="rounded-2xl bg-emerald-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    (click)="addWall()"
+                  >
+                    Wand hinzufuegen
+                  </button>
+                </div>
+
+                <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesengröße ist für die Wände geplant?</h2>
+                  <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                    @for (option of tileSizeOptions; track option.value) {
+                      <button
+                        type="button"
+                        class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                        [class.border-emerald-700]="state.wallTileSize === option.value"
+                        [class.bg-white]="state.wallTileSize !== option.value"
+                        [class.bg-emerald-50]="state.wallTileSize === option.value"
+                        [class.border-stone-200]="state.wallTileSize !== option.value"
+                        (click)="selectWallTileSize(option.value)"
+                      >
+                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                @if (state.walls.length === 0) {
+                  <div class="rounded-3xl border border-dashed border-stone-300 bg-white p-6 text-sm leading-6 text-stone-600">
+                    Noch keine Wand erfasst. Bei "Noch unklar" ist das optional; bei Wandfliesen kannst du hier einzelne Waende oder Bereiche hinzufuegen.
+                  </div>
+                }
+
+                <div class="grid gap-5">
+                  @for (wall of state.walls; track wall.id) {
+                    <article class="rounded-3xl border border-stone-200 bg-white p-5 shadow-[0_14px_35px_rgba(28,25,23,0.06)]">
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h2 class="text-xl font-bold text-stone-950">{{ wall.name }}</h2>
+                          <p class="mt-1 text-sm text-stone-500">Netto-Fliesenflaeche: {{ formatArea(wall.tileAreaM2) }} m²</p>
+                        </div>
+                        <button
+                          type="button"
+                          class="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                          (click)="removeWall(wall.id)"
+                        >
+                          Wand entfernen
+                        </button>
+                      </div>
+
+                      <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <label class="text-sm font-medium text-stone-700">
+                          Name der Wand
+                          <input
+                            type="text"
+                            class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                            [ngModel]="wall.name"
+                            (ngModelChange)="updateWall(wall.id, 'name', $event)"
+                          />
+                        </label>
+
+                        <label class="text-sm font-medium text-stone-700">
+                          Breite der Wand in m
+                          <input
+                            type="number"
+                            min="0.1"
+                            max="20"
+                            step="0.1"
+                            class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                            [ngModel]="wall.widthM"
+                            (ngModelChange)="updateWall(wall.id, 'widthM', $event)"
+                          />
+                        </label>
+
+                        <label class="text-sm font-medium text-stone-700">
+                          Wandhoehe in m
+                          <input
+                            type="number"
+                            min="0.1"
+                            max="5"
+                            step="0.1"
+                            class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                            [ngModel]="wall.heightM"
+                            (ngModelChange)="updateWall(wall.id, 'heightM', $event)"
+                          />
+                        </label>
+
+                        <label class="text-sm font-medium text-stone-700">
+                          Bis zu welcher Hoehe soll gefliest werden?
+                          <input
+                            type="number"
+                            min="0"
+                            [max]="wall.heightM"
+                            step="0.1"
+                            class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                            [ngModel]="wall.tileHeightM"
+                            (ngModelChange)="updateWall(wall.id, 'tileHeightM', $event)"
+                          />
+                        </label>
+                      </div>
+
+                      @if (wall.tileHeightM > wall.heightM) {
+                        <p class="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                          Die Fliesenhoehe darf nicht groesser als die Wandhoehe sein.
+                        </p>
+                      }
+
+                      <div class="mt-6 rounded-3xl border border-stone-200 bg-stone-50 p-4">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 class="font-bold text-stone-900">Aussparungen</h3>
+                          <button
+                            type="button"
+                            class="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-emerald-700"
+                            (click)="addOpening(wall.id)"
+                          >
+                            Aussparung hinzufuegen
+                          </button>
+                        </div>
+
+                        @if (wall.openings.length === 0) {
+                          <p class="mt-4 text-sm text-stone-500">Keine Aussparungen erfasst.</p>
+                        }
+
+                        <div class="mt-4 space-y-4">
+                          @for (opening of wall.openings; track opening.id) {
+                            <div class="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+                              <label class="text-sm font-medium text-stone-700">
+                                Typ
+                                <select
+                                  class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                                  [ngModel]="opening.type"
+                                  (ngModelChange)="updateOpening(wall.id, opening.id, 'type', $event)"
+                                >
+                                  <option value="door">Tuer</option>
+                                  <option value="window">Fenster</option>
+                                  <option value="niche">Nische</option>
+                                  <option value="other">Sonstige</option>
+                                </select>
+                              </label>
+
+                              <label class="text-sm font-medium text-stone-700">
+                                Breite in m
+                                <input
+                                  type="number"
+                                  min="0.1"
+                                  [max]="wall.widthM"
+                                  step="0.1"
+                                  class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                                  [ngModel]="opening.widthM"
+                                  (ngModelChange)="updateOpening(wall.id, opening.id, 'widthM', $event)"
+                                />
+                              </label>
+
+                              <label class="text-sm font-medium text-stone-700">
+                                Hoehe in m
+                                <input
+                                  type="number"
+                                  min="0.1"
+                                  [max]="wall.heightM"
+                                  step="0.1"
+                                  class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
+                                  [ngModel]="opening.heightM"
+                                  (ngModelChange)="updateOpening(wall.id, opening.id, 'heightM', $event)"
+                                />
+                              </label>
+
+                              <div class="flex items-center justify-between gap-3 md:block">
+                                <p class="text-sm font-semibold text-stone-700">{{ formatArea(opening.areaM2) }} m²</p>
+                                <button
+                                  type="button"
+                                  class="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                                  (click)="removeOpening(wall.id, opening.id)"
+                                >
+                                  Aussparung entfernen
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+
+                      @if (hasAreaWarning(wall)) {
+                        <p class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                          Die Aussparungen sind groesser als die zu fliesende Wandflaeche.
+                        </p>
+                      }
+
+                      <div class="mt-5 grid gap-3 md:grid-cols-3">
+                        <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Bruttoflaeche</p>
+                          <strong class="mt-2 block text-lg text-stone-950">{{ formatArea(wall.grossAreaM2) }} m²</strong>
+                        </div>
+                        <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Aussparungen</p>
+                          <strong class="mt-2 block text-lg text-stone-950">{{ formatArea(wall.openingsAreaM2) }} m²</strong>
+                        </div>
+                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Netto-Fliesenflaeche</p>
+                          <strong class="mt-2 block text-lg text-emerald-950">{{ formatArea(wall.tileAreaM2) }} m²</strong>
+                        </div>
+                      </div>
+                    </article>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('preparation') {
+              <div class="space-y-6">
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Alter Belag</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Ist aktuell ein alter Boden- oder Wandbelag vorhanden?</h2>
+                    <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                      @for (option of existingCoveringOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                          [class.border-emerald-700]="state.preparation.existingCovering.location === option.value"
+                          [class.bg-emerald-50]="state.preparation.existingCovering.location === option.value"
+                          [class.bg-white]="state.preparation.existingCovering.location !== option.value"
+                          [class.border-stone-200]="state.preparation.existingCovering.location !== option.value"
+                          (click)="selectExistingCovering(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  @if (shouldShowCoveringRemoval()) {
+                    <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Rückbau</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">Soll der alte Belag entfernt werden?</h2>
+                      <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
+                        @for (option of workStatusOptions; track option.value) {
+                          <button
+                            type="button"
+                            class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                            [class.border-emerald-700]="state.preparation.existingCovering.removeRequired === option.value"
+                            [class.bg-emerald-50]="state.preparation.existingCovering.removeRequired === option.value"
+                            [class.bg-white]="state.preparation.existingCovering.removeRequired !== option.value"
+                            [class.border-stone-200]="state.preparation.existingCovering.removeRequired !== option.value"
+                            (click)="selectExistingCoveringRemoval(option.value)"
+                          >
+                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          </button>
+                        }
+                      </div>
+                      @if (state.preparation.existingCovering.removeRequired === 'no') {
+                        <p class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                          Das Überfliesen vorhandener Beläge ist nicht immer möglich. Der Untergrund muss tragfähig, eben und geeignet sein.
+                        </p>
+                      }
+                    </div>
+                  }
+
+                  @if (shouldShowSanitaryRemoval()) {
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Sanitärobjekte</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Müssen alte Sanitärobjekte entfernt werden?</h2>
+                    <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
+                      @for (option of workStatusOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                          [class.border-emerald-700]="state.preparation.oldSanitaryObjects.removeRequired === option.value"
+                          [class.bg-emerald-50]="state.preparation.oldSanitaryObjects.removeRequired === option.value"
+                          [class.bg-white]="state.preparation.oldSanitaryObjects.removeRequired !== option.value"
+                          [class.border-stone-200]="state.preparation.oldSanitaryObjects.removeRequired !== option.value"
+                          (click)="selectOldSanitaryRemoval(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  }
+
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Untergrund</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Ist der vorhandene Untergrund für das Fliesenlegen geeignet?</h2>
+                    <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      @for (option of substrateOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                          [class.border-emerald-700]="state.preparation.substrate.condition === option.value"
+                          [class.bg-emerald-50]="state.preparation.substrate.condition === option.value"
+                          [class.bg-white]="state.preparation.substrate.condition !== option.value"
+                          [class.border-stone-200]="state.preparation.substrate.condition !== option.value"
+                          (click)="selectSubstrateCondition(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Grundierung</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">Soll eine Grundierung berücksichtigt werden?</h2>
+                    <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
+                      @for (option of workStatusOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                          [class.border-emerald-700]="state.preparation.substrate.primerRequired === option.value"
+                          [class.bg-emerald-50]="state.preparation.substrate.primerRequired === option.value"
+                          [class.bg-white]="state.preparation.substrate.primerRequired !== option.value"
+                          [class.border-stone-200]="state.preparation.substrate.primerRequired !== option.value"
+                          (click)="selectPrimerRequired(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                @if (shouldShowDisposal()) {
+                <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Entsorgung</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">Soll Entsorgung berücksichtigt werden?</h2>
+                  <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
+                    @for (option of workStatusOptions; track option.value) {
+                      <button
+                        type="button"
+                        class="wizard-option-card-sm rounded-2xl border p-4 text-left transition"
+                        [class.border-emerald-700]="state.preparation.disposal.required === option.value"
+                        [class.bg-emerald-50]="state.preparation.disposal.required === option.value"
+                        [class.bg-white]="state.preparation.disposal.required !== option.value"
+                        [class.border-stone-200]="state.preparation.disposal.required !== option.value"
+                        (click)="selectDisposalRequired(option.value)"
+                      >
+                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      </button>
+                    }
+                  </div>
+                </div>
+                }
+
+                @if (state.preparation.waterproofing.required === 'yes') {
+                  <p class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                    Für Nassbereiche wie Dusche oder Badewanne wird eine Abdichtung berücksichtigt.
+                  </p>
+                }
+              </div>
+            }
+
+            @case ('scope') {
+              <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                <div class="option-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  @for (option of scopeOptions; track option.key) {
+                    <button
+                      type="button"
+                      class="wizard-option-card-sm rounded-2xl border px-4 py-4 text-left transition"
+                      [class.border-emerald-700]="isScopeIncluded(option.key)"
+                      [class.bg-emerald-50]="isScopeIncluded(option.key)"
+                      [class.bg-white]="!isScopeIncluded(option.key)"
+                      [class.border-stone-200]="!isScopeIncluded(option.key)"
+                      (click)="toggleScope(option.key)"
+                    >
+                      <p class="font-semibold text-stone-900">
+                        <span class="mr-2">{{ isScopeIncluded(option.key) ? '✓' : '□' }}</span>{{ option.title }}
+                      </p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('extras') {
+              <div class="space-y-6">
+                <div class="option-grid grid gap-4 md:grid-cols-3">
+                  @for (option of extrasSelectionOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="wizard-option-card rounded-3xl border p-5 text-left transition duration-200"
+                      [class.border-emerald-700]="state.extrasSelection === option.value"
+                      [class.bg-emerald-50]="state.extrasSelection === option.value"
+                      [class.border-stone-200]="state.extrasSelection !== option.value"
+                      (click)="selectExtrasSelection(option.value)"
+                    >
+                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    </button>
+                  }
+                </div>
+
+                @if (hasCustomExtras()) {
+                  <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
+                    <div class="option-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      @for (option of extraOptions; track option.value) {
+                        <button
+                          type="button"
+                          class="wizard-option-card-sm rounded-2xl border px-4 py-4 text-left transition"
+                          [class.border-emerald-700]="isExtraSelected(option.value)"
+                          [class.bg-white]="!isExtraSelected(option.value)"
+                          [class.bg-emerald-50]="isExtraSelected(option.value)"
+                          [class.border-stone-200]="!isExtraSelected(option.value)"
+                          (click)="toggleExtra(option.value)"
+                        >
+                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @case ('summary') {
+              <app-summary-assumptions
+                [showOptions]="true"
+                [showAssumptions]="true"
+                [showJson]="false"
+              />
+            }
+          }
+
+          @if (showValidation() && !isCurrentStepValid()) {
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              {{ validationMessage() }}
+            </div>
+          }
+        </div>
+
+        <div class="flex flex-col gap-3 border-t border-stone-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            class="rounded-2xl border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:border-stone-500 disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="currentStepIndex() === 0"
+            (click)="previousStep()"
+          >
+            Zurück
+          </button>
+
+          <button
+            type="button"
+            class="rounded-2xl bg-emerald-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-emerald-800"
+            (click)="nextStep()"
+          >
+            {{
+              currentStepIndex() === steps.length - 1
+                ? 'Zur Zusammenfassung'
+                : currentStepIndex() === steps.length - 2
+                  ? 'Zur Zusammenfassung'
+                  : 'Weiter'
+            }}
+          </button>
+        </div>
+      </div>
+</section>
