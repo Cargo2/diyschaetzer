@@ -3,7 +3,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SummaryAssumptionsComponent } from '../../components/summary-assumptions/summary-assumptions.component';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
+import { ExportDocumentData } from '../../models/export-document.model';
 import { CostComparisonService } from '../../services/cost-comparison.service';
+import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { MaterialListService } from '../../services/material-list.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { LocalProjectService } from '../../services/local-project.service';
@@ -20,6 +22,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
           <app-premium-export-button
             label="Raum-Zusammenfassung als PDF exportieren"
             hintId="room-summary-pdf-hint"
+            [document]="buildRoomSummaryDocument"
           />
         </div>
         <app-summary-assumptions
@@ -205,6 +208,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
                   <app-premium-export-button
                     label="Profi-Kalkulation als PDF exportieren"
                     hintId="professional-pdf-hint"
+                    [document]="buildProfessionalDocument"
                   />
                 </div>
                 <div class="comparison-table-wrap">
@@ -860,6 +864,7 @@ export class SummaryPageComponent {
   private readonly materialListState = inject(MaterialListStateService);
   private readonly costComparisonService = inject(CostComparisonService);
   private readonly localProject = inject(LocalProjectService);
+  private readonly exportMapper = inject(ExportDataMapperService);
   private readonly router = inject(Router);
 
   readonly wizardCompleted = this.wizardState.resultsAvailable;
@@ -882,6 +887,16 @@ export class SummaryPageComponent {
       this.materialList()
     )
   );
+
+  // Export-Factories: werden erst beim Klick ausgewertet (aktueller Stand).
+  readonly buildRoomSummaryDocument = (): ExportDocumentData =>
+    this.exportMapper.buildRoomSummaryExportData(
+      this.payload(),
+      this.materialList(),
+      this.costComparison()
+    );
+  readonly buildProfessionalDocument = (): ExportDocumentData =>
+    this.exportMapper.buildProfessionalComparisonExportData(this.costComparison());
 
   formatNumber(value: number, digits = 2): string {
     return new Intl.NumberFormat('de-DE', {

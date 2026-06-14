@@ -5,6 +5,8 @@ import {
   ROOM_TYPE_DEFAULT_NAMES,
   RoomType
 } from '../../models/bathroom-wizard.model';
+import { ExportDocumentData } from '../../models/export-document.model';
+import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { LocalProjectService } from '../../services/local-project.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { ProjectAggregationService } from '../../services/project-aggregation.service';
@@ -21,10 +23,16 @@ export class ProjectSummaryComponent implements OnInit {
   private readonly localProject = inject(LocalProjectService);
   private readonly aggregationService = inject(ProjectAggregationService);
   private readonly materialListState = inject(MaterialListStateService);
+  private readonly exportMapper = inject(ExportDataMapperService);
   private readonly router = inject(Router);
 
   readonly rooms = this.localProject.rooms;
   readonly result = computed(() => this.aggregationService.aggregateProject(this.rooms()));
+
+  // Exportiert die projektweite Materialliste (Mengen inkl. empfohlener Gebinde
+  // über alle Räume). Wird erst beim Klick ausgewertet.
+  readonly buildProjectExportDocument = (): ExportDocumentData =>
+    this.exportMapper.buildProjectMaterialListExportData(this.result().projectMaterialList);
   readonly projectMaterialListOpen = signal(false);
   readonly openWarningRoomId = signal<string | null>(null);
 

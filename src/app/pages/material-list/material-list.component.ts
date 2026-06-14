@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ExportDocumentData } from '../../models/export-document.model';
+import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { MaterialListService } from '../../services/material-list.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { WizardStateService } from '../../services/wizard-state.service';
@@ -17,6 +19,7 @@ export class MaterialListComponent {
   private readonly wizardState = inject(WizardStateService);
   private readonly materialListService = inject(MaterialListService);
   private readonly materialListState = inject(MaterialListStateService);
+  private readonly exportMapper = inject(ExportDataMapperService);
   private readonly openSectionIds = signal<Set<string>>(new Set(['tile-calculation']));
 
   readonly wizardCompleted = this.wizardState.resultsAvailable;
@@ -25,6 +28,11 @@ export class MaterialListComponent {
   readonly materialList = computed(() =>
     this.materialListService.buildMaterialList(this.payload(), this.userState())
   );
+
+  // Als gebundene Methode an den Export-Button übergeben; wird erst beim Klick
+  // ausgewertet und nutzt damit immer den aktuellen Materiallisten-Stand.
+  readonly buildExportDocument = (): ExportDocumentData =>
+    this.exportMapper.buildMaterialListExportData(this.payload(), this.materialList());
 
   toggleOptionalMaterials(): void {
     this.materialListState.setIncludeOptionalMaterials(!this.userState().includeOptionalMaterials);

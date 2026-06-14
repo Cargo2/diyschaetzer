@@ -1,6 +1,45 @@
-# Project3
+# diyschaetzer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.13.
+Ein Fliesen-Kostenschätzer für private Nutzer (und perspektivisch Handwerker).
+Über einen Wizard wird **ein Raum oder Bereich pro Durchlauf** erfasst (Bad,
+Gäste-WC, Küche, Flur, Wohnraum, Keller, HWR, Terrasse/Balkon oder ein freier
+Raum). Aus den Angaben werden Flächen, Fliesenmengen inkl. Verschnitt, eine
+Materialliste, DIY-Kosten und eine grobe Profi-Kalkulation abgeleitet. Mehrere
+gespeicherte Räume bilden zusammen ein lokales Projekt mit Gesamtschätzung.
+
+Die Anwendung läuft rein clientseitig (Angular, Stand der Daten im
+`localStorage`) — kein Login, keine Datenbank.
+
+## Funktionen
+
+- **Raumbezogener Wizard** mit raumtyp-abhängigen Fragen und zentraler
+  Relevanzlogik ([wizard-field-relevance.service.ts](src/app/services/wizard-field-relevance.service.ts)).
+- **Materialliste je Raum** mit optionalen Materialien und Plus/Minus je Position.
+- **DIY-/Profi-Vergleich** über ein Angebotspositionsmodell (keine Stundenlohnposition).
+- **Projekt-Dashboard** mit projektweiter Materialliste; Werkzeuge werden
+  projektweit nur einmal gerechnet, Verbrauchsmaterial wird aus der Gesamtmenge
+  neu gerundet.
+- **PDF-Export** (siehe unten) als echtes, generiertes Dokument.
+
+## PDF-Export
+
+Der Export erzeugt ein **echtes, generiertes PDF** (kein Ausdruck der Webseite).
+Die strukturierten Exportdaten ([ExportDataMapperService](src/app/services/export-data-mapper.service.ts))
+werden über [PdfDocumentBuilderService](src/app/services/pdf-document-builder.service.ts)
+in eine [pdfmake](https://pdfmake.github.io/docs/)-Definition übersetzt und von
+[PdfExportService](src/app/services/pdf-export.service.ts) als Datei
+heruntergeladen.
+
+- **Materialliste** (je Raum): Tabelle mit Position, Menge, **empfohlenem
+  Einkauf** (Gebinde, z. B. „3 × 25-kg-Sack"), Einzelpreis und Summe. Nur aktive
+  Positionen erscheinen in der Einkaufsliste.
+- **Projekt-Materialliste**: gleiche Tabellenform über alle Räume.
+- **Raum-Zusammenfassung** und **Profi-Kalkulation** als weitere Dokumenttypen.
+
+`pdfmake` wird **dynamisch** geladen (Lazy-Chunk) und bleibt damit außerhalb des
+Initial-Bundles. Der Zugriff läuft über [FeatureAccessService](src/app/services/feature-access.service.ts)
+(`canUsePdfExport`) — aktuell für alle Nutzer freigeschaltet, später als
+Premium-Feature vorbereitet.
 
 ## Development server
 
@@ -74,10 +113,16 @@ sales features.
 
 ### PDF Export
 
-- Export material lists.
-- Export project and total cost summaries.
-- Export the professional comparison.
-- Later export reviewed contractor offers.
+Implemented (see [PDF-Export](#pdf-export) above):
+
+- ✅ Export material lists (per room).
+- ✅ Export the project-wide material list.
+- ✅ Export the room summary and the professional comparison.
+
+Planned:
+
+- Export reviewed contractor offers once the contractor mode exists.
+- Gate PDF export behind the premium plan for professional users.
 
 ### Own Product Catalog
 

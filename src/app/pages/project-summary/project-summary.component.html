@@ -6,8 +6,9 @@
     </div>
     <div class="actions">
       <app-premium-export-button
-        label="Projekt als PDF exportieren"
+        label="Projekt-Materialliste als PDF"
         hintId="project-pdf-hint"
+        [document]="buildProjectExportDocument"
       />
       <button type="button" (click)="startNewRoom()">Neuen Raum anlegen</button>
     </div>
@@ -180,8 +181,9 @@
         <button type="button" class="secondary" (click)="toggleProjectMaterialList()">Projekt-Materialliste prüfen</button>
         <button type="button" class="secondary" (click)="openCurrentRoomSummary(totals.roomSummaries[0].roomId)">Zusammenfassung prüfen</button>
         <app-premium-export-button
-          label="Projekt als PDF exportieren"
+          label="Projekt-Materialliste als PDF"
           hintId="project-footer-pdf-hint"
+          [document]="buildProjectExportDocument"
         />
       </div>
     </section>
