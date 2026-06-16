@@ -220,6 +220,37 @@
                       <div>
                         <dt>Einzelpreis</dt>
                         <dd>{{ formatCurrency(item.unitPrice) }} @if (item.priceUnit) { / {{ item.priceUnit }} }</dd>
+                        @let offers = offersFor(item.materialId);
+                        @if (offers.length > 0) {
+                          <div class="shop-offers">
+                            <span
+                              class="shop-disclosure"
+                              tabindex="0"
+                              role="note"
+                              aria-label="Anzeige – Affiliate-Werbung, Links führen zu Partner-Shops"
+                            >
+                              <span aria-hidden="true">*</span>
+                              <span class="shop-disclosure-tip" aria-hidden="true">Anzeige</span>
+                            </span>
+                            @for (offer of offers; track offer.merchantId) {
+                              <a
+                                class="shop-chip"
+                                [href]="offer.url"
+                                [attr.rel]="offer.rel"
+                                target="_blank"
+                                [attr.aria-label]="'Bei ' + offer.displayName + ' ansehen (Anzeige, öffnet neuen Tab)'"
+                                [title]="'Bei ' + offer.displayName + ' ansehen'"
+                              >
+                                <img
+                                  [src]="'shops/' + offer.iconKey + '.svg'"
+                                  [attr.alt]="offer.displayName"
+                                  width="50"
+                                  height="20"
+                                />
+                              </a>
+                            }
+                          </div>
+                        }
                       </div>
                       <div>
                         <dt>Berechnung</dt>

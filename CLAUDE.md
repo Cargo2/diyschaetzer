@@ -116,7 +116,18 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   globaler + je-Shop-Schalter. Noch ohne UI, ohne DB, Katalog unangetastet.
 
 ### Getroffene Entscheidungen
-- **DB (ab Phase 10): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
+- **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
+- **DB-Source-of-Truth**: Ab der Backend-Phase ist die **DB die alleinige Source of Truth**. Der
+  TS-Katalog (`material-catalog-with-prices.ts`, `product-offers.ts`) dient dann **nur noch als
+  initialer Seed**, nicht mehr als Laufzeitquelle.
+- **Backend abgekapselt**: Das Frontend spricht **nie direkt** mit Supabase, sondern nur über eine
+  Repository-/Datenservice-Schicht (Interfaces). Ziel: austauschbares Backend, klare Grenze.
+- **Admin-UI abgekapselt**: Eigenes lazy-geladenes Feature-Modul mit eigenem Routen-Prefix
+  (`/admin`), hinter Rolle `admin` + Route-Guard. Eigene Service-/State-Grenze, keine
+  Abhängigkeit der Endkunden-/Profi-Flows von Admin-Code → später unabhängig (ggf. als separat
+  deploybare App) weiterentwickelbar.
+- **Export global ausschaltbar**: PDF **und** Excel laufen über das Feature-Gate
+  (`COMMERCIAL_CONFIG`/`FeatureAccessService`); beide pro Tenant/Plan ein-/ausschaltbar.
 - **Affiliate-Anzeige: nur Shop-Icons, die rausverlinken – kein Shop-Preis** (pflegearm,
   Amazon-Preisregel-konform). Interner Schätzpreis bleibt der einzige angezeigte Preis.
 - **Rollen-Mapping**: Hobby = `customer`, Profi = `contractor`, dazu `admin`. Profi schaltet
@@ -127,15 +138,33 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - **Phase 9 – Affiliate-UI**: Shop-Icons (Obi/Toom/Amazon) neben jedem Material über
   `AffiliateService`; `rel="nofollow sponsored noopener"`, neues Tab; Werbe-/Sponsored-Kennzeichnung;
   globaler Toggle sichtbar. Braucht kleine SVG-Icons in `/public`. Kein Backend.
-- **Phase 10 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
-  Katalog/Offers & Projekte in die DB (Seed aus dem TS-Katalog als Single Source of Truth);
-  RLS; lokalen Stand beim ersten Login importieren.
-- **Phase 11 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
-  Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.); `contractor_offer`;
-  gebrandetes Schätzungs-PDF **versenden** (Edge Function + Mailversand). Gate via Feature-Access.
-- **Phase 12 – Produktkatalog & Adminpflege**: minimal – Merchants/Offers/Produkte pflegen,
-  eigene/Partner-Produkte. Bewusst klein (Ziel: wenig pflegen).
-- **Phase 13 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
+- **Phase 10 – Excel-Export**: Materialliste/Projektliste zusätzlich als **XLSX** herunterladbar,
+  analog zum PDF-Export und aus derselben neutralen `ExportDocumentData`-Quelle
+  (`ExportDataMapperService`). **Global ein-/ausschaltbar** über das Feature-Gate (wie PDF/Affiliate).
+  Frontend-only, kein Backend; Lib dynamisch importieren wie pdfmake (Lazy-Chunk).
+- **Phase 11 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
+  Katalog/Offers & Projekte in die DB. **TS-Katalog ist nur noch Seed – die DB wird alleinige
+  Source of Truth.** Backend **sauber abgekapselt**: Zugriff ausschließlich über eine
+  Repository-/Datenservice-Schicht (Interfaces), das Frontend kennt Supabase nicht direkt
+  (austauschbar). RLS; lokalen Stand beim ersten Login importieren.
+- **Phase 12 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
+  Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.). **Profil-Standardannahmen**:
+  Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
+  Fliesen-Richtwert, …) gelten als Default im Wizard. Sind im Profil Werte gesetzt, erscheinen sie
+  als Standard bei den bearbeitbaren Annahmen; werden sie in der Raumkalkulation geändert, gilt der
+  raumspezifische Wert. **Vorrang: Raum-`user_override` > Profil-Default > System-Default**
+  (`AssumptionService` konserviert weiterhin nur `user_override`, der Profil-Wert ersetzt nur den
+  Ausgangs-Default). `contractor_offer`; gebrandetes Schätzungs-PDF **versenden** (Edge Function +
+  Mailversand). Gate via Feature-Access.
+- **Phase 13 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
+  Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation
+  + öffentlicher Lese-Token via RLS); reine localStorage-Stände sind nicht teilbar.
+- **Phase 14 – Admin-UI & Produktkatalogpflege**: eigene, **abgekapselte Admin-UI** (lazy-geladenes
+  Feature-Modul unter `/admin`, Route-Guard auf Rolle `admin`, eigene Service-/State-Grenze, keine
+  Kopplung an Endkunden-/Profi-Flows → später eigenständig, ggf. separat deploybar, weiterentwickelbar).
+  Inhalt minimal halten: Merchants/Offers/Produkte pflegen, eigene/Partner-Produkte, ggf. Nutzer-/
+  Rollenübersicht. Bewusst klein (Ziel: wenig pflegen).
+- **Phase 15 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
   (`WhiteLabelConfig` ist vorbereitet).
 
 ### Offen vor Affiliate-Livegang
@@ -146,5 +175,6 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 
 ## Bekannte Altlasten / Hinweise
 - Prod-Build endet mit einer Warnung zum Initial-Bundle (~660 kB) – kein Fehler.
-- Der statische Materialkatalog ist die aktuelle Quelle; mit Phase 10 wird er DB-Seed.
+- Der statische Materialkatalog ist die aktuelle Quelle; mit der Backend-Phase (Phase 11) wird er
+  zum reinen DB-Seed, danach ist die DB die Source of Truth.
 - Gespeicherte Alträume im localStorage werden beim Laden normalisiert (fehlende Felder ergänzt).

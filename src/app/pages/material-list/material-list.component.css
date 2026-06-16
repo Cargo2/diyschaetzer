@@ -517,6 +517,82 @@
   margin: 0.25rem 0 0;
 }
 
+/* ── Affiliate-Shop-Kästchen (Phase 9) ───────────────────────── */
+.shop-offers {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+/* Dezente Werbe-Kennzeichnung: dauerhaft sichtbares "*", Klartext beim Hover. */
+.shop-disclosure {
+  align-self: flex-start;
+  color: var(--ink-soft);
+  cursor: help;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  position: relative;
+}
+
+.shop-disclosure-tip {
+  background: var(--ink);
+  border-radius: 0.4rem;
+  bottom: 145%;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  left: 0;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  padding: 0.25rem 0.45rem;
+  pointer-events: none;
+  position: absolute;
+  text-transform: uppercase;
+  transform: translateY(3px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.shop-disclosure:hover .shop-disclosure-tip,
+.shop-disclosure:focus-visible .shop-disclosure-tip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.shop-disclosure:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+
+.shop-chip {
+  border-radius: 0.4rem;
+  display: inline-flex;
+  line-height: 0;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.shop-chip img {
+  border-radius: 0.4rem;
+  display: block;
+  height: 20px;
+  width: auto;
+}
+
+.shop-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -7px rgba(10, 53, 47, 0.6);
+}
+
+.shop-chip:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+
 .product-link,
 .locked-panel a {
   align-items: center;

@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ResolvedOffer } from '../../models/affiliate.model';
 import { ExportDocumentData } from '../../models/export-document.model';
+import { AffiliateService } from '../../services/affiliate.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { MaterialListService } from '../../services/material-list.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
@@ -20,6 +22,7 @@ export class MaterialListComponent {
   private readonly materialListService = inject(MaterialListService);
   private readonly materialListState = inject(MaterialListStateService);
   private readonly exportMapper = inject(ExportDataMapperService);
+  private readonly affiliate = inject(AffiliateService);
   private readonly openSectionIds = signal<Set<string>>(new Set(['tile-calculation']));
 
   readonly wizardCompleted = this.wizardState.resultsAvailable;
@@ -51,6 +54,15 @@ export class MaterialListComponent {
 
   resetMaterialOverrides(): void {
     this.materialListState.resetMaterialOverrides();
+  }
+
+  /**
+   * Anzeigefertige Shop-Angebote für ein Material. Leer, wenn Affiliate global
+   * oder für alle hinterlegten Shops deaktiviert ist (gelesen über Signals →
+   * reaktiv). Nur Shops, die für das Produkt hinterlegt sind, erscheinen.
+   */
+  offersFor(materialId: string): ResolvedOffer[] {
+    return this.affiliate.getOffersForMaterial(materialId);
   }
 
   toggleSection(sectionId: string): void {
