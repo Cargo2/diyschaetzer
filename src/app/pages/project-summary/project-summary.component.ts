@@ -5,7 +5,9 @@ import {
   ROOM_TYPE_DEFAULT_NAMES,
   RoomType
 } from '../../models/bathroom-wizard.model';
+import { ResolvedOffer } from '../../models/affiliate.model';
 import { ExportDocumentData } from '../../models/export-document.model';
+import { AffiliateService } from '../../services/affiliate.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { LocalProjectService } from '../../services/local-project.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
@@ -24,10 +26,20 @@ export class ProjectSummaryComponent implements OnInit {
   private readonly aggregationService = inject(ProjectAggregationService);
   private readonly materialListState = inject(MaterialListStateService);
   private readonly exportMapper = inject(ExportDataMapperService);
+  private readonly affiliate = inject(AffiliateService);
   private readonly router = inject(Router);
 
   readonly rooms = this.localProject.rooms;
   readonly result = computed(() => this.aggregationService.aggregateProject(this.rooms()));
+
+  // „Wo"-Spalte nur zeigen, wenn überhaupt ein Material ein anzeigbares Angebot
+  // hat. hasOffers() liefert bei global deaktiviertem Affiliate leer → Spalte
+  // verschwindet dann komplett (reaktiv über die Settings-Signals).
+  readonly showAffiliateColumn = computed(() =>
+    this.result().projectMaterialList.sections.some((section) =>
+      section.items.some((item) => this.affiliate.hasOffers(item.materialId))
+    )
+  );
 
   // Exportiert die projektweite Materialliste (Mengen inkl. empfohlener Gebinde
   // über alle Räume). Wird erst beim Klick ausgewertet.
@@ -78,6 +90,15 @@ export class ProjectSummaryComponent implements OnInit {
 
   toggleProjectMaterialList(): void {
     this.projectMaterialListOpen.update((open) => !open);
+  }
+
+  /**
+   * Anzeigefertige Shop-Angebote für ein Material (Spalte „Wo"). Leer, wenn
+   * Affiliate global bzw. für alle hinterlegten Shops deaktiviert ist. Nur Shops,
+   * die für das Produkt hinterlegt sind, erscheinen.
+   */
+  offersFor(materialId: string): ResolvedOffer[] {
+    return this.affiliate.getOffersForMaterial(materialId);
   }
 
   toggleRoomWarnings(roomId: string): void {
