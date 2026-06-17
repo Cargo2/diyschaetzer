@@ -7,6 +7,7 @@ export const COMMERCIAL_CONFIG = {
   monetizationEnabled: false,
   affiliateEnabled: false,
   pdfExportEnabled: false,
+  excelExportEnabled: false,
   ownProductCatalogEnabled: false,
   whiteLabelEnabled: false,
   contractorSaasEnabled: false

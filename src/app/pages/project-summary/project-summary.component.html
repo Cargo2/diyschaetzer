@@ -10,6 +10,12 @@
         hintId="project-pdf-hint"
         [document]="buildProjectExportDocument"
       />
+      <app-premium-export-button
+        format="excel"
+        label="Projekt-Materialliste als Excel"
+        hintId="project-excel-hint"
+        [document]="buildProjectExportDocument"
+      />
       <button type="button" (click)="startNewRoom()">Neuen Raum anlegen</button>
     </div>
   </header>
@@ -225,6 +231,12 @@
         <app-premium-export-button
           label="Projekt-Materialliste als PDF"
           hintId="project-footer-pdf-hint"
+          [document]="buildProjectExportDocument"
+        />
+        <app-premium-export-button
+          format="excel"
+          label="Projekt-Materialliste als Excel"
+          hintId="project-footer-excel-hint"
           [document]="buildProjectExportDocument"
         />
       </div>

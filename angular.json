@@ -21,7 +21,8 @@
             "tsConfig": "tsconfig.app.json",
             "allowedCommonJsDependencies": [
               "pdfmake/build/pdfmake",
-              "pdfmake/build/vfs_fonts"
+              "pdfmake/build/vfs_fonts",
+              "exceljs"
             ],
             "assets": [
               {
