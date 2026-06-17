@@ -630,6 +630,14 @@
   text-align: center;
 }
 
+@media (max-width: 1024px) {
+  .material-page,
+  .locked-panel {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 @media (max-width: 900px) {
   .material-header {
     flex-direction: column;

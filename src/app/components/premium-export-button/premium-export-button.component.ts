@@ -1,7 +1,10 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { ExportDocumentData } from '../../models/export-document.model';
+import { ExcelExportService } from '../../services/excel-export.service';
 import { FeatureAccessService } from '../../services/feature-access.service';
 import { PdfExportService } from '../../services/pdf-export.service';
+
+type ExportFormat = 'pdf' | 'excel';
 
 @Component({
   selector: 'app-premium-export-button',
@@ -10,10 +13,10 @@ import { PdfExportService } from '../../services/pdf-export.service';
     <span class="pdf-export-action">
       <button
         type="button"
-        [disabled]="!canExport || busy()"
-        (click)="exportPdf()"
+        [disabled]="!canExport() || busy()"
+        (click)="exportDocument()"
       >
-        {{ busy() ? 'PDF wird erstellt …' : label() }}
+        {{ busy() ? busyLabel() : label() }}
       </button>
       @if (feedback()) {
         <small role="status">{{ feedback() }}</small>
@@ -30,18 +33,29 @@ import { PdfExportService } from '../../services/pdf-export.service';
 export class PremiumExportButtonComponent {
   private readonly featureAccess = inject(FeatureAccessService);
   private readonly pdfExport = inject(PdfExportService);
+  private readonly excelExport = inject(ExcelExportService);
 
   readonly label = input.required<string>();
   readonly hintId = input('pdf-premium-hint');
+  /** Exportformat – steuert Service, Zugriffsprüfung und Statusmeldungen. */
+  readonly format = input<ExportFormat>('pdf');
   /** Liefert die Exportdaten erst beim Klick, damit immer der aktuelle Stand exportiert wird. */
   readonly document = input.required<() => ExportDocumentData | null>();
 
-  readonly canExport = this.featureAccess.canUsePdfExport();
+  readonly canExport = computed(() =>
+    this.format() === 'excel'
+      ? this.featureAccess.canUseExcelExport()
+      : this.featureAccess.canUsePdfExport()
+  );
   readonly busy = signal(false);
   readonly feedback = signal('');
 
-  async exportPdf(): Promise<void> {
-    if (!this.canExport || this.busy()) {
+  busyLabel(): string {
+    return this.format() === 'excel' ? 'Excel wird erstellt …' : 'PDF wird erstellt …';
+  }
+
+  async exportDocument(): Promise<void> {
+    if (!this.canExport() || this.busy()) {
       return;
     }
 
@@ -54,16 +68,22 @@ export class PremiumExportButtonComponent {
     this.busy.set(true);
     this.feedback.set('');
     try {
-      const result = await this.pdfExport.exportDocument(data);
+      const result =
+        this.format() === 'excel'
+          ? await this.excelExport.exportDocument(data)
+          : await this.pdfExport.exportDocument(data);
       if (!result.exported) {
-        this.feedback.set(
-          result.reason === 'access_denied'
-            ? 'PDF-Export ist für deinen Zugang nicht verfügbar.'
-            : 'PDF konnte nicht erstellt werden. Bitte erneut versuchen.'
-        );
+        this.feedback.set(this.errorMessage(result.reason));
       }
     } finally {
       this.busy.set(false);
     }
+  }
+
+  private errorMessage(reason: 'downloaded' | 'access_denied' | 'generation_failed'): string {
+    const formatLabel = this.format() === 'excel' ? 'Excel' : 'PDF';
+    return reason === 'access_denied'
+      ? `${formatLabel}-Export ist für deinen Zugang nicht verfügbar.`
+      : `${formatLabel} konnte nicht erstellt werden. Bitte erneut versuchen.`;
   }
 }

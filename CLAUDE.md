@@ -101,6 +101,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Geteilte Ableitungen | `services/wizard-data-derivations.ts` |
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
 | PDF-Export | `services/pdf-export.service.ts`, `services/pdf-document-builder.service.ts`, `services/export-data-mapper.service.ts` |
+| Excel-Export (Phase 10) | `services/excel-export.service.ts`, `services/excel-document-builder.service.ts` (gemeinsame `ExportDocumentData`) |
 | Commercial/Feature-Gates | `models/commercial.model.ts`, `services/feature-access.service.ts`, `config/commercial.config.ts` |
 | Affiliate (Phase 8) | `models/affiliate.model.ts`, `config/affiliate.config.ts`, `data/product-offers.ts`, `services/affiliate.service.ts`, `services/affiliate-settings.service.ts` |
 
@@ -114,6 +115,13 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - **Phase 8 – Affiliate-Datenmodell**: mehrere ein-/ausschaltbare Shop-Angebote pro Produkt
   (`Merchant`, `ProductOffer`, `ResolvedOffer`), `AffiliateService.getOffersForMaterial()`,
   globaler + je-Shop-Schalter. Noch ohne UI, ohne DB, Katalog unangetastet.
+- **Phase 9 – Affiliate-UI**: Shop-Icons in Material- und Projektliste über `AffiliateService`.
+- **Responsive-Optimierung**: Tablet/Handy – Hamburger-Menü ab Handy, gestufte Textskalierung,
+  ausgesetzter Randabstand ab Tablet, überarbeiteter Kostenvergleich/Profi-Tabelle in der Zusammenfassung.
+- **Phase 10 – Excel-Export**: Materialliste/Projektliste zusätzlich als **XLSX** (exceljs, lazy
+  geladener Chunk wie pdfmake) aus derselben neutralen `ExportDocumentData`. Feature-Gate
+  `canUseExcelExport()` + `COMMERCIAL_CONFIG.excelExportEnabled`. `PremiumExportButton` mit
+  `format`-Variante (`pdf`/`excel`). `exceljs` in `angular.json` als `allowedCommonJsDependencies`.
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -135,13 +143,6 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 9 – Affiliate-UI**: Shop-Icons (Obi/Toom/Amazon) neben jedem Material über
-  `AffiliateService`; `rel="nofollow sponsored noopener"`, neues Tab; Werbe-/Sponsored-Kennzeichnung;
-  globaler Toggle sichtbar. Braucht kleine SVG-Icons in `/public`. Kein Backend.
-- **Phase 10 – Excel-Export**: Materialliste/Projektliste zusätzlich als **XLSX** herunterladbar,
-  analog zum PDF-Export und aus derselben neutralen `ExportDocumentData`-Quelle
-  (`ExportDataMapperService`). **Global ein-/ausschaltbar** über das Feature-Gate (wie PDF/Affiliate).
-  Frontend-only, kein Backend; Lib dynamisch importieren wie pdfmake (Lazy-Chunk).
 - **Phase 11 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
   Katalog/Offers & Projekte in die DB. **TS-Katalog ist nur noch Seed – die DB wird alleinige
   Source of Truth.** Backend **sauber abgekapselt**: Zugriff ausschließlich über eine

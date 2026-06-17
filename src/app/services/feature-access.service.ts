@@ -28,6 +28,13 @@ export class FeatureAccessService {
     return true;
   }
 
+  canUseExcelExport(): boolean {
+    // Spiegelt bewusst canUsePdfExport(): aktuell für alle verfügbar. Der globale
+    // Schalter COMMERCIAL_CONFIG.excelExportEnabled bzw. die Feature-Regel
+    // ('pdf_export') greifen erst beim späteren Rollout.
+    return true;
+  }
+
   getPdfAccessHint(): string {
     return '';
   }

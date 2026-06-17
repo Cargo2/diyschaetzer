@@ -66,6 +66,20 @@ html {
 	scroll-behavior: smooth;
 }
 
+/* Texte/Abstände auf kleineren Bildschirmen proportional verkleinern.
+   Das gesamte UI ist rem-basiert, daher skaliert die Root-Schriftgröße alles mit. */
+@media (max-width: 1024px) {
+	html {
+		font-size: 15px;
+	}
+}
+
+@media (max-width: 640px) {
+	html {
+		font-size: 14px;
+	}
+}
+
 body {
 	margin: 0;
 	min-height: 100vh;
