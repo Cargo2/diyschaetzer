@@ -1,17 +1,31 @@
 <section class="app-shell">
-  <header class="top-menu">
-    <div class="menu-title">Fliesenprojekt</div>
+  <header class="top-menu" [class.menu-open]="menuOpen()">
+    <div class="menu-bar">
+      <div class="menu-title">Fliesenprojekt</div>
+
+      <button
+        type="button"
+        class="menu-toggle"
+        [attr.aria-expanded]="menuOpen()"
+        [attr.aria-label]="menuOpen() ? 'Menü schließen' : 'Menü öffnen'"
+        (click)="toggleMenu()"
+      >
+        <span class="menu-toggle-bars" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+      </button>
+    </div>
 
     <nav class="tab-list" aria-label="Hauptnavigation">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="tab-button">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="tab-button" (click)="closeMenu()">
         Start
       </a>
-      <a routerLink="/wizard" routerLinkActive="active" class="tab-button">
+      <a routerLink="/wizard" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
         Wizard
       </a>
 
       @if (resultsAvailable()) {
-        <a routerLink="/summary" routerLinkActive="active" class="tab-button">
+        <a routerLink="/summary" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
           Zusammenfassung
         </a>
       } @else {
@@ -26,7 +40,7 @@
       }
 
       @if (resultsAvailable()) {
-        <a routerLink="/materialliste" routerLinkActive="active" class="tab-button">
+        <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
           Materialliste
         </a>
       } @else {
@@ -40,11 +54,11 @@
         </button>
       }
 
-      <a routerLink="/gesamtschaetzung" routerLinkActive="active" class="tab-button">
+      <a routerLink="/gesamtschaetzung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
         Gesamtschätzung
       </a>
 
-      <a routerLink="/ratgeber" routerLinkActive="active" class="tab-button">
+      <a routerLink="/ratgeber" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
         Ratgeber
       </a>
     </nav>

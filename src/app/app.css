@@ -66,6 +66,13 @@
   animation: rise-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.menu-bar {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+}
+
 .menu-title {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -78,6 +85,72 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+/* ── Hamburger toggle (erst ab Handy-Breakpoint sichtbar) ─────── */
+.menu-toggle {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(17, 87, 74, 0.18);
+  border-radius: 0.8rem;
+  cursor: pointer;
+  display: none;
+  flex: 0 0 auto;
+  height: 2.6rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.6rem;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.menu-toggle:hover {
+  background: rgba(17, 87, 74, 0.1);
+}
+
+.menu-toggle-bars {
+  display: block;
+  height: 0.85rem;
+  position: relative;
+  width: 1.3rem;
+}
+
+.menu-toggle-bars span {
+  background: var(--verde-deep);
+  border-radius: 2px;
+  height: 2px;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  transition: transform 240ms ease, opacity 180ms ease, top 240ms ease;
+}
+
+.menu-toggle-bars span:nth-child(1) {
+  top: 0;
+}
+
+.menu-toggle-bars span:nth-child(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.menu-toggle-bars span:nth-child(3) {
+  top: 100%;
+  transform: translateY(-100%);
+}
+
+/* Hamburger → X, wenn geöffnet */
+.top-menu.menu-open .menu-toggle-bars span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.top-menu.menu-open .menu-toggle-bars span:nth-child(2) {
+  opacity: 0;
+}
+
+.top-menu.menu-open .menu-toggle-bars span:nth-child(3) {
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
 }
 
 /* Tiny tile-mark before the wordmark */
@@ -255,11 +328,28 @@
   text-align: center;
 }
 
+/* ── Tablet & kleiner: Randabstand am Bildschirmrand aussetzen ── */
+@media (max-width: 1024px) {
+  .content-stage {
+    margin-top: 1.4rem;
+    padding-inline: 0;
+  }
+
+  .footer-inner {
+    padding-inline: 1.2rem;
+  }
+}
+
+/* ── Tablet: Navigation mittig umbrechen ─────────────────────── */
 @media (max-width: 920px) {
   .top-menu {
     grid-template-columns: 1fr;
     padding: 0.7rem 0.75rem;
     top: 0.5rem;
+  }
+
+  .menu-bar {
+    justify-content: center;
   }
 
   .menu-title {
@@ -272,29 +362,51 @@
   }
 }
 
-@media (max-width: 560px) {
-  .app-shell {
+/* ── Handy: Vollbreite Kopfleiste + aufklappbares Hamburger-Menü ─ */
+@media (max-width: 640px) {
+  .top-menu {
+    border-left: 0;
+    border-radius: 0 0 1.1rem 1.1rem;
+    border-right: 0;
+    gap: 0;
+    margin: 0;
+    padding: 0.55rem 0.95rem;
+    top: 0;
+    width: 100%;
+  }
+
+  .menu-bar {
+    justify-content: space-between;
+  }
+
+  .menu-title {
+    justify-content: flex-start;
     padding: 0;
   }
 
+  .menu-toggle {
+    display: inline-flex;
+  }
+
   .tab-list {
+    display: none;
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    justify-content: stretch;
+    margin-top: 0.55rem;
+  }
+
+  .top-menu.menu-open .tab-list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tab-button {
-    padding-inline: 0.5rem;
-  }
-
-  .content-stage {
-    padding: 0 4%;
+    justify-content: flex-start;
+    min-height: 2.9rem;
+    padding-inline: 0.9rem;
   }
 
   .site-footer {
-    padding: 2.5rem 0 0;
-  }
-
-  .footer-inner {
-    padding: 1.4rem 5%;
+    padding-top: 2.5rem;
   }
 }

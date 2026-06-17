@@ -591,13 +591,24 @@ import { WizardStateService } from '../../services/wizard-state.service';
       .comparison-details {
         display: grid;
         gap: 1rem;
+      }
+
+      .comparison-details {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      /* Desktop/Tablet: Eigenleistung links, Fliesenleger rechtsbündig
+         (Kacheln nebeneinander, an die Panelränder geschoben). */
+      .comparison-cards {
+        grid-template-columns: repeat(2, minmax(0, 40rem));
+        justify-content: space-between;
       }
 
       .comparison-card,
       .comparison-section {
         border: 1px solid #e7e5e4;
         border-radius: 1rem;
+        min-width: 0;
         padding: 1.1rem;
       }
 
@@ -703,22 +714,36 @@ import { WizardStateService } from '../../services/wizard-state.service';
         overflow-x: auto;
       }
 
+      /* Tabelle nutzt die volle Panelbreite; die Bezeichnung bekommt ~40 %,
+         die Zahlenspalten teilen sich den Rest gleichmäßig auf. */
       .comparison-table {
         border-collapse: collapse;
-        min-width: 34rem;
+        min-width: 32rem;
         width: 100%;
       }
 
       .comparison-table th,
       .comparison-table td {
         border-bottom: 1px solid #e7e5e4;
-        padding: 0.75rem;
+        padding: 0.6rem 0.8rem;
         text-align: right;
+        vertical-align: top;
+      }
+
+      /* Zahlenspalten nicht umbrechen, damit Beträge zusammenhängend bleiben. */
+      .comparison-table th:not(:first-child),
+      .comparison-table td:not(:first-child) {
+        white-space: nowrap;
       }
 
       .comparison-table th:first-child,
       .comparison-table td:first-child {
         text-align: left;
+        width: 40%;
+      }
+
+      .comparison-table tbody tr:nth-child(even) {
+        background: #fafaf9;
       }
 
       .comparison-table th {
@@ -759,7 +784,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
         display: grid;
         gap: 0.5rem;
         margin: 1rem 0 0 auto;
-        max-width: 32rem;
+        max-width: 34rem;
       }
 
       .offer-totals div {
@@ -767,7 +792,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
         background: #fff;
         border-radius: 0.65rem;
         display: flex;
-        gap: 1rem;
+        gap: 0.8rem;
         justify-content: space-between;
         padding: 0.7rem 0.8rem;
       }
@@ -775,11 +800,14 @@ import { WizardStateService } from '../../services/wizard-state.service';
       .offer-totals dt,
       .offer-totals dd {
         margin: 0;
+        min-width: 0;
       }
 
-      .offer-totals dd {
+      .offer-totals dd,
+      .group-list dd {
         font-weight: 800;
         text-align: right;
+        white-space: nowrap;
       }
 
       .offer-totals .offer-grand-total {
@@ -817,6 +845,16 @@ import { WizardStateService } from '../../services/wizard-state.service';
         color: #92400e;
       }
 
+      /* Ab Tablet die volle Breite nutzen (kein großer Seitenrand). */
+      @media (max-width: 1024px) {
+        .summary-page {
+          max-width: 100%;
+          width: 100%;
+        }
+      }
+
+      /* Portrait-Tablet/kleiner: Kacheln untereinander, jeweils volle
+         Panelbreite (größere Kacheln, nur kleiner Rand links/rechts). */
       @media (max-width: 900px) {
         .cost-panel,
         .comparison-cards,
@@ -843,6 +881,33 @@ import { WizardStateService } from '../../services/wizard-state.service';
 
         .metric-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        /* Auf dem Handy mehr Platz für den Inhalt schaffen … */
+        .comparison-panel,
+        .cost-panel {
+          padding: 0.9rem;
+        }
+
+        .comparison-section {
+          padding: 0.85rem;
+        }
+
+        /* … und die Beträge-Listen kompakter machen, damit Preise passen. */
+        .offer-totals,
+        .group-list {
+          gap: 0.4rem;
+        }
+
+        .offer-totals div,
+        .group-list div {
+          font-size: 0.85rem;
+          gap: 0.6rem;
+          padding: 0.55rem 0.65rem;
+        }
+
+        .offer-totals .offer-grand-total {
+          font-size: 0.92rem;
         }
       }
 
