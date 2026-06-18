@@ -6,6 +6,9 @@ import { MaterialListComponent } from './pages/material-list/material-list.compo
 import { SummaryPageComponent } from './pages/summary-page/summary-page.component';
 import { WizardPageComponent } from './pages/wizard-page/wizard-page.component';
 import { ProjectSummaryComponent } from './pages/project-summary/project-summary.component';
+import { ImpressumComponent } from './pages/legal/impressum.component';
+import { DatenschutzComponent } from './pages/legal/datenschutz.component';
+import { KontaktComponent } from './pages/legal/kontakt.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -14,5 +17,8 @@ export const routes: Routes = [
   { path: 'summary', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },
   { path: 'gesamtschaetzung', component: ProjectSummaryComponent },
   { path: 'ratgeber', component: GuideComponent },
+  { path: 'impressum', component: ImpressumComponent },
+  { path: 'datenschutz', component: DatenschutzComponent },
+  { path: 'kontakt', component: KontaktComponent },
   { path: '**', redirectTo: '' }
 ];
