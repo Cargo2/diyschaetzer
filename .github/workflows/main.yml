@@ -66,7 +66,8 @@ jobs:
           set ftp:ssl-protect-data yes
           set ftp:ssl-auth TLS
           set ssl:verify-certificate yes
-
+          set ssl:check-hostname no
+          
           open -p "$FTP_PORT" "ftp://$FTP_HOST"
           user "$FTP_USER" "$FTP_PASSWORD"
 
