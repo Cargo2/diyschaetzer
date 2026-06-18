@@ -1,0 +1,60 @@
+name: Build and deploy Angular to netcup
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netcup-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Angular-Anwendung bauen
+        run: npm run build -- --configuration production
+
+      - name: Build-Ausgabe prüfen
+        run: test -f dist/project3/browser/index.html
+
+      - name: SFTP-Client installieren
+        run: sudo apt-get update && sudo apt-get install --yes lftp
+
+      - name: Auf netcup veröffentlichen
+        env:
+          SFTP_HOST: ${{ secrets.NETCUP_SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.NETCUP_SFTP_PORT }}
+          SFTP_USER: ${{ secrets.NETCUP_SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.NETCUP_SFTP_PASSWORD }}
+          REMOTE_PATH: ${{ secrets.NETCUP_REMOTE_PATH }}
+        run: |
+          lftp -u "$SFTP_USER","$SFTP_PASSWORD" -p "${SFTP_PORT:-22}" "sftp://$SFTP_HOST" <<EOF
+          set cmd:fail-exit yes
+          set net:max-retries 2
+          set net:timeout 20
+          set sftp:auto-confirm yes
+          mirror --reverse --delete --verbose \
+            dist/project3/browser/ \
+            "$REMOTE_PATH"
+          bye
+          EOF
