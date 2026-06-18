@@ -42,19 +42,40 @@ jobs:
 
       - name: Auf netcup veröffentlichen
         env:
-          SFTP_HOST: ${{ secrets.NETCUP_SFTP_HOST }}
-          SFTP_PORT: ${{ secrets.NETCUP_SFTP_PORT }}
-          SFTP_USER: ${{ secrets.NETCUP_SFTP_USER }}
-          SFTP_PASSWORD: ${{ secrets.NETCUP_SFTP_PASSWORD }}
+          FTP_HOST: ${{ secrets.NETCUP_SFTP_HOST }}
+          FTP_PORT: ${{ secrets.NETCUP_SFTP_PORT }}
+          FTP_USER: ${{ secrets.NETCUP_SFTP_USER }}
+          FTP_PASSWORD: ${{ secrets.NETCUP_SFTP_PASSWORD }}
           REMOTE_PATH: ${{ secrets.NETCUP_REMOTE_PATH }}
         run: |
-          lftp -u "$SFTP_USER","$SFTP_PASSWORD" -p "${SFTP_PORT:-22}" "sftp://$SFTP_HOST" <<EOF
+          set -euo pipefail
+
+          test -n "$FTP_HOST" || { echo "::error::NETCUP_FTP_HOST fehlt"; exit 1; }
+          test -n "$FTP_USER" || { echo "::error::NETCUP_FTP_USER fehlt"; exit 1; }
+          test -n "$FTP_PASSWORD" || { echo "::error::NETCUP_FTP_PASSWORD fehlt"; exit 1; }
+          test -n "$REMOTE_PATH" || { echo "::error::NETCUP_REMOTE_PATH fehlt"; exit 1; }
+
+          FTP_PORT="${FTP_PORT:-21}"
+
+          lftp <<EOF
           set cmd:fail-exit yes
           set net:max-retries 2
-          set net:timeout 20
-          set sftp:auto-confirm yes
+          set net:timeout 30
+
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:ssl-auth TLS
+          set ssl:verify-certificate yes
+
+          open -p "$FTP_PORT" "ftp://$FTP_HOST"
+          user "$FTP_USER" "$FTP_PASSWORD"
+
+          pwd
+          cls -la
+
           mirror --reverse --delete --verbose \
             dist/project3/browser/ \
             "$REMOTE_PATH"
+
           bye
           EOF
