@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.component';
 import { WizardStateService } from './services/wizard-state.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, CookieNoticeComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

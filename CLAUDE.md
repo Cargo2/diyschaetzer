@@ -102,6 +102,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
 | PDF-Export | `services/pdf-export.service.ts`, `services/pdf-document-builder.service.ts`, `services/export-data-mapper.service.ts` |
 | Excel-Export (Phase 10) | `services/excel-export.service.ts`, `services/excel-document-builder.service.ts` (gemeinsame `ExportDocumentData`) |
+| Rechtstexte/Cookie (Phase 11) | `pages/legal/` (Impressum/Datenschutz/Kontakt + `legal.css`), `components/cookie-notice/`, Routen in `app.routes.ts` |
 | Commercial/Feature-Gates | `models/commercial.model.ts`, `services/feature-access.service.ts`, `config/commercial.config.ts` |
 | Affiliate (Phase 8) | `models/affiliate.model.ts`, `config/affiliate.config.ts`, `data/product-offers.ts`, `services/affiliate.service.ts`, `services/affiliate-settings.service.ts` |
 
@@ -122,6 +123,11 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   geladener Chunk wie pdfmake) aus derselben neutralen `ExportDocumentData`. Feature-Gate
   `canUseExcelExport()` + `COMMERCIAL_CONFIG.excelExportEnabled`. `PremiumExportButton` mit
   `format`-Variante (`pdf`/`excel`). `exceljs` in `angular.json` als `allowedCommonJsDependencies`.
+- **Phase 11 – Rechtstexte & Cookie-Hinweis**: Seiten + Routen `/impressum`, `/datenschutz`,
+  `/kontakt` (`pages/legal/`, geteiltes `legal.css`); Footer-Links auf `routerLink` umgestellt;
+  informativer Cookie-/Speicher-Hinweis (`components/cookie-notice/`, Ack in `localStorage`-Key
+  `badprojekt:cookie-notice-ack`, kein Consent-Gate). Inhalte mit klar markierten
+  `[Platzhalter: …]` (`.legal-placeholder`) – vor Livegang füllen und rechtlich prüfen.
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -143,12 +149,12 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 11 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
+- **Phase 12 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
   Katalog/Offers & Projekte in die DB. **TS-Katalog ist nur noch Seed – die DB wird alleinige
   Source of Truth.** Backend **sauber abgekapselt**: Zugriff ausschließlich über eine
   Repository-/Datenservice-Schicht (Interfaces), das Frontend kennt Supabase nicht direkt
   (austauschbar). RLS; lokalen Stand beim ersten Login importieren.
-- **Phase 12 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
+- **Phase 13 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
   Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.). **Profil-Standardannahmen**:
   Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
   Fliesen-Richtwert, …) gelten als Default im Wizard. Sind im Profil Werte gesetzt, erscheinen sie
@@ -157,25 +163,34 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   (`AssumptionService` konserviert weiterhin nur `user_override`, der Profil-Wert ersetzt nur den
   Ausgangs-Default). `contractor_offer`; gebrandetes Schätzungs-PDF **versenden** (Edge Function +
   Mailversand). Gate via Feature-Access.
-- **Phase 13 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
+- **Phase 14 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
   Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation
   + öffentlicher Lese-Token via RLS); reine localStorage-Stände sind nicht teilbar.
-- **Phase 14 – Admin-UI & Produktkatalogpflege**: eigene, **abgekapselte Admin-UI** (lazy-geladenes
+- **Phase 15 – Admin-UI & Produktkatalogpflege**: eigene, **abgekapselte Admin-UI** (lazy-geladenes
   Feature-Modul unter `/admin`, Route-Guard auf Rolle `admin`, eigene Service-/State-Grenze, keine
   Kopplung an Endkunden-/Profi-Flows → später eigenständig, ggf. separat deploybar, weiterentwickelbar).
   Inhalt minimal halten: Merchants/Offers/Produkte pflegen, eigene/Partner-Produkte, ggf. Nutzer-/
   Rollenübersicht. Bewusst klein (Ziel: wenig pflegen).
-- **Phase 15 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
+- **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
   (`WhiteLabelConfig` ist vorbereitet).
+
+### Offen vor öffentlichem Livegang
+- **Rechtstext-Platzhalter füllen**: alle `[Platzhalter: …]` in `pages/legal/` (Impressum,
+  Datenschutz, Kontakt) mit den tatsächlichen Anbieterdaten ersetzen und rechtlich prüfen lassen.
+  Der `mailto:[platzhalter@example.com]`-Link in Kontakt/Impressum/Datenschutz ist ebenfalls Platzhalter.
 
 ### Offen vor Affiliate-Livegang
 - Echte Affiliate-URLs statt der `PLACEHOLDER`-Links in `data/product-offers.ts`.
 - Amazon-Partner-Tag (`tag=REPLACE-21` in `config/affiliate.config.ts`) ersetzen.
 - Klären, welche Shops überhaupt **SKU-Deeplinks** erlauben (sonst `type: 'search'` nutzen);
   ggf. `gtin`/`ean` ans Produkt nehmen, um Links generierbar zu machen.
+- **Cookie-Consent für nicht-essentielle/Affiliate-Cookies**: Phase 11 liefert nur den Basis-Hinweis
+  (technisch notwendiges `localStorage`). Vor Affiliate-Livegang vollwertigen Consent-Manager
+  (Opt-in mit Kategorien) ergänzen und die Datenschutzerklärung um die Affiliate-/Drittanbieter-
+  Hinweise (z. B. Amazon-Partnerprogramm) erweitern.
 
 ## Bekannte Altlasten / Hinweise
 - Prod-Build endet mit einer Warnung zum Initial-Bundle (~660 kB) – kein Fehler.
-- Der statische Materialkatalog ist die aktuelle Quelle; mit der Backend-Phase (Phase 11) wird er
+- Der statische Materialkatalog ist die aktuelle Quelle; mit der Backend-Phase (Phase 12) wird er
   zum reinen DB-Seed, danach ist die DB die Source of Truth.
 - Gespeicherte Alträume im localStorage werden beim Laden normalisiert (fehlende Felder ergänzt).
