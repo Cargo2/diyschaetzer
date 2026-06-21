@@ -253,6 +253,22 @@
   width: 0;
 }
 
+/* Angemeldete E-Mail in der Kopfzeile (kein Button). */
+.tab-account {
+  align-items: center;
+  color: var(--ink-soft);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  max-width: 14rem;
+  min-height: 2.6rem;
+  opacity: 0.85;
+  overflow: hidden;
+  padding: 0.55rem 0.6rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Stage ───────────────────────────────────────────────────── */
 .content-stage {
   flex: 1 0 auto;

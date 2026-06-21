@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.component';
 import { WizardStateService } from './services/wizard-state.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -13,8 +14,14 @@ import { WizardStateService } from './services/wizard-state.service';
 export class App {
   private readonly wizardState = inject(WizardStateService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
+
+  /** Auth-Zustand für die Kopfzeile. */
+  readonly authConfigured = this.auth.isConfigured;
+  readonly isAuthenticated = this.auth.isAuthenticated;
+  readonly userEmail = this.auth.userEmail;
 
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger). Auf Desktop ohne Wirkung. */
   readonly menuOpen = signal(false);
@@ -40,5 +47,14 @@ export class App {
         resultsLocked: '1'
       }
     });
+  }
+
+  async logout(): Promise<void> {
+    this.closeMenu();
+    try {
+      await this.auth.signOut();
+    } finally {
+      void this.router.navigateByUrl('/');
+    }
   }
 }

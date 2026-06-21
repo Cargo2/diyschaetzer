@@ -1,0 +1,98 @@
+<section class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-title">
+      {{ mode() === 'login' ? 'Anmelden' : 'Konto erstellen' }}
+    </h1>
+    <p class="auth-subtitle">
+      {{ mode() === 'login'
+        ? 'Melde dich an, um deine Projekte geräteübergreifend zu speichern.'
+        : 'Lege ein Konto an, um deine Fliesenprojekte sicher zu speichern.' }}
+    </p>
+
+    @if (!isConfigured) {
+      <p class="auth-notice auth-notice--warn">
+        Das Backend ist in dieser Umgebung nicht konfiguriert. Anmeldung ist derzeit
+        nicht möglich – deine Eingaben bleiben lokal auf diesem Gerät gespeichert.
+      </p>
+    }
+
+    <div class="auth-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="auth-tab"
+        [class.active]="mode() === 'login'"
+        [attr.aria-selected]="mode() === 'login'"
+        (click)="setMode('login')"
+      >
+        Anmelden
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="auth-tab"
+        [class.active]="mode() === 'register'"
+        [attr.aria-selected]="mode() === 'register'"
+        (click)="setMode('register')"
+      >
+        Registrieren
+      </button>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="submit()">
+      @if (mode() === 'register') {
+        <fieldset class="auth-role" [disabled]="loading()">
+          <legend>Ich nutze den Schätzer als…</legend>
+          <label class="auth-role-option" [class.active]="role() === 'customer'">
+            <input type="radio" name="role" value="customer"
+              [checked]="role() === 'customer'" (change)="role.set('customer')" />
+            <span class="auth-role-label">
+              <strong>Heimwerker</strong>
+              <small>Privat, für die eigene Renovierung</small>
+            </span>
+          </label>
+          <label class="auth-role-option" [class.active]="role() === 'contractor'">
+            <input type="radio" name="role" value="contractor"
+              [checked]="role() === 'contractor'" (change)="role.set('contractor')" />
+            <span class="auth-role-label">
+              <strong>Profi / Handwerker</strong>
+              <small>Gewerblich, für Kundenangebote</small>
+            </span>
+          </label>
+        </fieldset>
+
+        <label class="auth-field">
+          <span>Anzeigename <small>(optional)</small></span>
+          <input type="text" name="displayName" autocomplete="name"
+            [(ngModel)]="displayName" [disabled]="loading()" />
+        </label>
+      }
+
+      <label class="auth-field">
+        <span>E-Mail</span>
+        <input type="email" name="email" autocomplete="email" required
+          [(ngModel)]="email" [disabled]="loading()" />
+      </label>
+
+      <label class="auth-field">
+        <span>Passwort</span>
+        <input type="password" name="password"
+          [attr.autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+          required [(ngModel)]="password" [disabled]="loading()" />
+      </label>
+
+      @if (errorMsg()) {
+        <p class="auth-notice auth-notice--error" role="alert">{{ errorMsg() }}</p>
+      }
+      @if (infoMsg()) {
+        <p class="auth-notice auth-notice--info">{{ infoMsg() }}</p>
+      }
+
+      <button type="submit" class="auth-submit" [disabled]="loading() || !isConfigured">
+        {{ loading()
+          ? 'Bitte warten…'
+          : (mode() === 'login' ? 'Anmelden' : 'Konto erstellen') }}
+      </button>
+    </form>
+  </div>
+</section>

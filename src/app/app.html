@@ -63,6 +63,17 @@
         Ratgeber
       </a>
       -->
+
+      @if (authConfigured) {
+        @if (isAuthenticated()) {
+          <span class="tab-account" title="Angemeldet als {{ userEmail() }}">{{ userEmail() }}</span>
+          <button type="button" class="tab-button" (click)="logout()">Abmelden</button>
+        } @else {
+          <a routerLink="/login" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            Anmelden
+          </a>
+        }
+      }
     </nav>
   </header>
 

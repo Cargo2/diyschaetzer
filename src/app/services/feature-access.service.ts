@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   CURRENT_USER_CONTEXT,
   DEFAULT_FEATURE_ACCESS,
@@ -6,12 +6,26 @@ import {
   PlanType,
   UserContext
 } from '../models/commercial.model';
+import { AuthService } from './auth.service';
 
 const PLAN_ORDER: PlanType[] = ['free', 'plus', 'pro', 'business', 'enterprise'];
 
 @Injectable({ providedIn: 'root' })
 export class FeatureAccessService {
-  private userContext: UserContext = CURRENT_USER_CONTEXT;
+  private readonly auth = inject(AuthService);
+  /** Test-Override; im Normalbetrieb leitet sich der Kontext aus dem Auth-Profil ab. */
+  private testContextOverride: UserContext | null = null;
+
+  /** Aktueller Nutzerkontext: angemeldetes Profil oder anonym/free als Fallback. */
+  private get userContext(): UserContext {
+    if (this.testContextOverride) {
+      return this.testContextOverride;
+    }
+    const profile = this.auth.profile();
+    return profile
+      ? { role: profile.role, plan: profile.plan }
+      : CURRENT_USER_CONTEXT;
+  }
 
   canUseFeature(feature: FeatureKey): boolean {
     const access = DEFAULT_FEATURE_ACCESS.find((item) => item.feature === feature);
@@ -40,6 +54,6 @@ export class FeatureAccessService {
   }
 
   setUserContextForTesting(context: UserContext): void {
-    this.userContext = context;
+    this.testContextOverride = context;
   }
 }

@@ -9,9 +9,11 @@ import { ProjectSummaryComponent } from './pages/project-summary/project-summary
 import { ImpressumComponent } from './pages/legal/impressum.component';
 import { DatenschutzComponent } from './pages/legal/datenschutz.component';
 import { KontaktComponent } from './pages/legal/kontakt.component';
+import { AuthPageComponent } from './pages/auth/auth-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'login', component: AuthPageComponent },
   { path: 'wizard', component: WizardPageComponent },
   { path: 'materialliste', component: MaterialListComponent, canActivate: [wizardCompletedGuard] },
   { path: 'summary', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },
