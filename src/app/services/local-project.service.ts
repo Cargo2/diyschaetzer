@@ -14,10 +14,14 @@ import {
   SavedRoomCalculation
 } from '../models/local-project.model';
 import { MaterialListUserState } from '../models/material-list.model';
+import { PROJECT_REPOSITORY } from '../data-access/project-repository';
+import { LOCAL_PROJECT_STORAGE_KEY } from '../data-access/local-storage-project-repository';
 import { AssumptionService } from './assumption.service';
 import { WizardStateService } from './wizard-state.service';
 
-export const LOCAL_PROJECT_STORAGE_KEY = 'tileEstimator.localProject';
+// Re-Export für Rückwärtskompatibilität – der Schlüssel lebt jetzt im Repository.
+export { LOCAL_PROJECT_STORAGE_KEY };
+
 const DEFAULT_MATERIAL_LIST_USER_STATE: MaterialListUserState = {
   includeOptionalMaterials: true,
   excludedMaterialIds: []
@@ -27,8 +31,14 @@ const DEFAULT_MATERIAL_LIST_USER_STATE: MaterialListUserState = {
 export class LocalProjectService {
   private readonly wizardState = inject(WizardStateService);
   private readonly assumptionService = inject(AssumptionService);
-  private readonly projectSignal = signal<LocalTileProject>(this.loadProject());
+  private readonly repository = inject(PROJECT_REPOSITORY);
+  private readonly projectSignal = signal<LocalTileProject>(this.createFallbackProject());
   private readonly editingRoomIdSignal = signal<string | null>(null);
+
+  /** `true`, sobald eine Mutation vor Abschluss der Hydration erfolgte (verhindert Überschreiben). */
+  private mutatedBeforeHydration = false;
+  /** Auflösbar, sobald der persistierte Stand geladen (oder als leer bestätigt) wurde. */
+  readonly ready: Promise<void> = this.hydrate();
 
   readonly project = this.projectSignal.asReadonly();
   readonly rooms = computed(() => this.projectSignal().rooms);
@@ -207,9 +217,9 @@ export class LocalProjectService {
     this.wizardState.startNewRoom();
   }
 
-  private loadProject(): LocalTileProject {
+  private createFallbackProject(): LocalTileProject {
     const now = new Date().toISOString();
-    const fallback: LocalTileProject = {
+    return {
       id: this.createId(),
       name: 'Mein Fliesenprojekt',
       status: 'draft',
@@ -217,27 +227,39 @@ export class LocalProjectService {
       createdAt: now,
       updatedAt: now
     };
+  }
 
+  /**
+   * Lädt den persistierten Stand über das Repository und hydratisiert das Signal.
+   * Erfolgte vor Abschluss bereits eine Nutzer-Mutation, wird der geladene Stand
+   * verworfen, damit Eingaben nicht überschrieben werden.
+   */
+  private async hydrate(): Promise<void> {
+    let parsed: LocalTileProject | null = null;
     try {
-      const raw = globalThis.localStorage?.getItem(LOCAL_PROJECT_STORAGE_KEY);
-      if (!raw) {
-        return fallback;
-      }
-      const parsed = JSON.parse(raw) as Partial<LocalTileProject>;
-      const rooms = Array.isArray(parsed.rooms)
-        ? parsed.rooms.map((room) => this.normalizeSavedRoom(room)).filter(Boolean) as SavedRoomCalculation[]
-        : [];
-      return {
-        id: typeof parsed.id === 'string' ? parsed.id : fallback.id,
-        name: typeof parsed.name === 'string' ? parsed.name : fallback.name,
-        status: this.normalizeProjectStatus(parsed.status, rooms.length > 0),
-        rooms,
-        createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : now,
-        updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : now
-      };
+      parsed = await this.repository.loadProject();
     } catch {
-      return fallback;
+      parsed = null;
     }
+    if (this.mutatedBeforeHydration || !parsed) {
+      return;
+    }
+    this.projectSignal.set(this.normalizeProject(parsed));
+  }
+
+  private normalizeProject(parsed: Partial<LocalTileProject>): LocalTileProject {
+    const fallback = this.createFallbackProject();
+    const rooms = Array.isArray(parsed.rooms)
+      ? parsed.rooms.map((room) => this.normalizeSavedRoom(room)).filter(Boolean) as SavedRoomCalculation[]
+      : [];
+    return {
+      id: typeof parsed.id === 'string' ? parsed.id : fallback.id,
+      name: typeof parsed.name === 'string' ? parsed.name : fallback.name,
+      status: this.normalizeProjectStatus(parsed.status, rooms.length > 0),
+      rooms,
+      createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : fallback.createdAt,
+      updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : fallback.updatedAt
+    };
   }
 
   private normalizeProjectStatus(
@@ -334,13 +356,12 @@ export class LocalProjectService {
   }
 
   private updateProject(updater: (project: LocalTileProject) => LocalTileProject): void {
+    this.mutatedBeforeHydration = true;
     this.projectSignal.update((project) => {
       const next = updater(project);
-      try {
-        globalThis.localStorage?.setItem(LOCAL_PROJECT_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Keep the in-memory project usable when storage is unavailable.
-      }
+      // Persistenz läuft über das Repository (austauschbares Backend); fire-and-forget,
+      // der reaktive In-Memory-Stand bleibt die Source of Truth für die UI.
+      void this.repository.saveProject(next);
       return next;
     });
   }
