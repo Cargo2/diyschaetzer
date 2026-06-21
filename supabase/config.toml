@@ -1,0 +1,31 @@
+# Supabase CLI Konfiguration (Phase 12). Doku: https://supabase.com/docs/guides/cli/config
+project_id = "diyschaetzer"
+
+[db]
+# Lokaler Shadow-/Dev-Port der CLI (nur lokal relevant).
+port = 54322
+major_version = 17
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+# Vor Livegang auf die echte Domain setzen.
+site_url = "http://localhost:4200"
+additional_redirect_urls = ["http://localhost:4200"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# Für lokale Entwicklung Bestätigung aus; in Produktion einschalten.
+enable_confirmations = false

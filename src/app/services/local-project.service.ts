@@ -361,7 +361,11 @@ export class LocalProjectService {
       const next = updater(project);
       // Persistenz läuft über das Repository (austauschbares Backend); fire-and-forget,
       // der reaktive In-Memory-Stand bleibt die Source of Truth für die UI.
-      void this.repository.saveProject(next);
+      // Fehler (z. B. Backend offline) dürfen die UI nicht stören.
+      this.repository.saveProject(next).catch(() => {
+        // Bewusst geschluckt: In-Memory-Stand bleibt nutzbar; Persistenz wird beim
+        // nächsten Schreibvorgang erneut versucht.
+      });
       return next;
     });
   }

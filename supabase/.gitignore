@@ -1,0 +1,4 @@
+# Supabase CLI – lokale, maschinenspezifische Artefakte (nicht committen)
+.branches
+.temp
+.env
