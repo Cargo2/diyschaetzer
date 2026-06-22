@@ -1,11 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  MATERIAL_CATALOG,
   MaterialCatalogItem,
   RequiredLevel,
-  WORK_STEPS,
   WorkStepId
 } from '../data/material-catalog-with-prices';
+import { CatalogService } from './catalog.service';
 import { BathroomWizardData, defaultScopeData } from '../models/bathroom-wizard.model';
 import {
   MaterialListItemViewModel,
@@ -30,14 +29,16 @@ export class MaterialListService {
   private readonly tileCalculation = inject(TileCalculationService);
   private readonly materialRequirement = inject(MaterialRequirementService);
   private readonly materialQuantity = inject(MaterialQuantityService);
+  private readonly catalog = inject(CatalogService);
 
   buildMaterialList(
     wizardData: BathroomWizardData,
     userState: MaterialListUserState
   ): MaterialListViewModel {
     const tileCalculation = this.tileCalculation.calculate(wizardData);
-    const materials = this.materialRequirement.getRequiredMaterials(wizardData, MATERIAL_CATALOG);
-    const stepMap = new Map(WORK_STEPS.map((step) => [step.id, step]));
+    const workSteps = this.catalog.workSteps();
+    const materials = this.materialRequirement.getRequiredMaterials(wizardData, this.catalog.materials());
+    const stepMap = new Map(workSteps.map((step) => [step.id, step]));
     const sectionItems = new Map<WorkStepId, MaterialListItemViewModel[]>();
 
     for (const material of materials) {
@@ -95,7 +96,7 @@ export class MaterialListService {
       sectionItems.set(primaryStep, [...(sectionItems.get(primaryStep) ?? []), item]);
     }
 
-    const sections: MaterialListSection[] = WORK_STEPS
+    const sections: MaterialListSection[] = workSteps
       .filter((step) => sectionItems.has(step.id))
       .map((step) => {
         const items = (sectionItems.get(step.id) ?? []).sort(
@@ -136,7 +137,7 @@ export class MaterialListService {
   }
 
   private primaryStep(material: MaterialCatalogItem): WorkStepId | null {
-    return WORK_STEPS
+    return this.catalog.workSteps()
       .filter((step) => material.workStepIds.includes(step.id))
       .sort((a, b) => a.order - b.order)[0]?.id ?? null;
   }

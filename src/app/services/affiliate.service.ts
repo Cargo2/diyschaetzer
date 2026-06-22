@@ -1,13 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { MERCHANTS } from '../config/affiliate.config';
-import { MATERIAL_CATALOG } from '../data/material-catalog-with-prices';
-import { PRODUCT_OFFERS } from '../data/product-offers';
 import {
   Merchant,
   ProductOffer,
   ResolvedOffer
 } from '../models/affiliate.model';
 import { AffiliateSettingsService } from './affiliate-settings.service';
+import { CatalogService } from './catalog.service';
 
 /**
  * Einzige Schnittstelle für die Affiliate-Anzeige (Phase 9 liest nur hier).
@@ -18,6 +17,7 @@ import { AffiliateSettingsService } from './affiliate-settings.service';
 @Injectable({ providedIn: 'root' })
 export class AffiliateService {
   private readonly settings = inject(AffiliateSettingsService);
+  private readonly catalog = inject(CatalogService);
   private readonly merchantsById = new Map<string, Merchant>(
     MERCHANTS.map((merchant) => [merchant.id, merchant])
   );
@@ -27,7 +27,7 @@ export class AffiliateService {
       return [];
     }
 
-    const offers = PRODUCT_OFFERS[materialId] ?? [];
+    const offers = this.catalog.offersFor(materialId);
     if (offers.length === 0) {
       return [];
     }
@@ -84,6 +84,6 @@ export class AffiliateService {
   }
 
   private productName(materialId: string): string {
-    return MATERIAL_CATALOG.find((item) => item.id === materialId)?.name ?? '';
+    return this.catalog.materialById(materialId)?.name ?? '';
   }
 }

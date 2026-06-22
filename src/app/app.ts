@@ -5,6 +5,7 @@ import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.
 import { WizardStateService } from './services/wizard-state.service';
 import { AuthService } from './services/auth.service';
 import { ProjectSessionSyncService } from './services/project-session-sync.service';
+import { CatalogService } from './services/catalog.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,8 @@ export class App {
   private readonly auth = inject(AuthService);
   // Beim App-Start instanziieren, damit der Login→DB-Sync (Phase 12, Block 4) aktiv ist.
   private readonly projectSessionSync = inject(ProjectSessionSyncService);
+  // Katalog früh laden, damit die DB-Daten vor den Ergebnisseiten bereitstehen.
+  private readonly catalog = inject(CatalogService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
 

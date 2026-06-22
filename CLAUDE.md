@@ -115,7 +115,8 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 |---|---|
 | Wizard-State (Signals, Payload) | `services/wizard-state.service.ts` |
 | Domänen-Typen | `models/bathroom-wizard.model.ts` |
-| Materialkatalog (~100 Artikel) | `data/material-catalog-with-prices.ts` |
+| Materialkatalog (~100 Artikel) | `data/material-catalog-with-prices.ts` (TS-Seed/Fallback) |
+| Katalog aus DB (Phase 12) | `services/catalog.service.ts`, `data-access/catalog-repository.ts` (+ `local-`/`supabase-catalog-repository.ts`), Seed-Generator `tools/generate-catalog-seed.mts` |
 | Berechnungs-Defaults | `data/material-calculation-defaults.ts`, `config/professional-offer-defaults.ts`, `config/diy-cost-defaults.ts` |
 | Geteilte Ableitungen | `services/wizard-data-derivations.ts` |
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
@@ -154,8 +155,15 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   umgeschaltet vom `SessionAwareProjectRepository` (anonym → localStorage, angemeldet → DB). Beim
   ersten Login mit **leerer** DB wird der lokale Stand **einmalig importiert**; hat die DB bereits
   Daten, wird der In-Memory-Stand aus der DB übernommen (`ProjectSessionSyncService`). localStorage
-  bleibt als Offline-Fallback unangetastet. **Offen bleibt** die Migration von Katalog/Offers in die
-  DB (s. „Kommende Phasen").
+  bleibt als Offline-Fallback unangetastet.
+- **Phase 12 (Rest) – Katalog/Offers in der DB**: Materialkatalog, Arbeitsschritte und Produkt-Offers
+  liegen jetzt in der DB (Tabellen `materials`/`work_steps`/`product_offers`, Migration `0004`; Seed
+  aus dem TS-Katalog via `tools/generate-catalog-seed.mts` → Migration `0005`). **RLS: öffentlich
+  lesbar** (auch anonym), Schreiben nur über `service_role`. Zugriff über die abgekapselte
+  `CatalogRepository`-Schicht (`SupabaseCatalogRepository`/`LocalCatalogRepository`); der
+  `CatalogService` lädt **einmal** und cached – die **synchrone** Berechnungs-Pipeline bleibt
+  unangetastet. Der TS-Katalog ist jetzt nur noch **Seed + Offline-Fallback**; die **DB ist
+  Laufzeitquelle**, wenn Supabase konfiguriert ist. Katalog-Pflege/Admin-UI folgt in Phase 15.
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -177,10 +185,6 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 12 (Rest) – Katalog/Offers in die DB**: Materialkatalog und Produkt-Offers von den
-  TS-Seeds in die DB überführen; **TS-Katalog wird dann nur noch Seed, die DB die alleinige
-  Source of Truth** (Laufzeitquelle). Zugriff weiterhin nur über die abgekapselte Repository-/
-  Datenservice-Schicht. Auth, Rollen und Projekt-Persistenz sind erledigt (s. „Erledigt").
 - **Phase 13 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
   Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.). **Profil-Standardannahmen**:
   Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
@@ -218,6 +222,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 
 ## Bekannte Altlasten / Hinweise
 - Prod-Build endet mit einer Warnung zum Initial-Bundle (~660 kB) – kein Fehler.
-- Der statische Materialkatalog ist die aktuelle Quelle; mit der Backend-Phase (Phase 12) wird er
-  zum reinen DB-Seed, danach ist die DB die Source of Truth.
+- Der TS-Materialkatalog (`material-catalog-with-prices.ts`, `product-offers.ts`) ist seit Phase 12
+  nur noch **Seed + Offline-Fallback**; Laufzeitquelle ist die DB (über `CatalogService`). Bei
+  Katalog-Änderungen `tools/generate-catalog-seed.mts` neu laufen lassen und Migration anwenden.
 - Gespeicherte Alträume im localStorage werden beim Laden normalisiert (fehlende Felder ergänzt).
