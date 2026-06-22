@@ -29,6 +29,8 @@ Projekt mit Gesamtschätzung.
   (Supabase) Projekt-Persistenz in der DB (seit Phase 12). Ohne konfiguriertes Supabase läuft alles
   weiter anonym/offline.
 - **Sprache**: UI und Domäne sind deutsch. Codebezeichner englisch.
+- **Sicherheit**: projektbezogene Security-Checkliste (RLS, Secrets, offene Punkte vor Livegang) in
+  [`SECURITY.md`](SECURITY.md) – bei jeder Backend-/Auth-Änderung mitpflegen.
 - Repo: https://github.com/Cargo2/diyschaetzer
 
 ## Befehle
