@@ -25,6 +25,12 @@ export class AuthService {
   private readonly profileSig = signal<UserProfile | null>(null);
   private readonly initializingSig = signal(true);
 
+  /** User-ID des aktuell geladenen Profils – verhindert Neuladen bei gleichbleibendem User. */
+  private loadedUserId: string | null = null;
+  /** Laufender Profil-Ladevorgang (in-flight) zur Deduplizierung paralleler Events. */
+  private inFlightUserId: string | null = null;
+  private inFlight: Promise<void> | null = null;
+
   readonly session = this.sessionSig.asReadonly();
   readonly profile = this.profileSig.asReadonly();
   /** `true`, solange die initiale Session-Prüfung läuft. */
@@ -84,6 +90,9 @@ export class AuthService {
     }
     this.sessionSig.set(null);
     this.profileSig.set(null);
+    this.loadedUserId = null;
+    this.inFlightUserId = null;
+    this.inFlight = null;
   }
 
   private requireClient(): SupabaseClient {
@@ -103,12 +112,41 @@ export class AuthService {
     }
   }
 
-  private async loadProfile(session: Session | null): Promise<void> {
+  /**
+   * Lädt das Profil zur Session. `onAuthStateChange` feuert mehrfach pro Seitenladen
+   * (INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED, Fensterfokus …); daher wird nur bei
+   * tatsächlichem User-Wechsel neu geladen und ein laufender Ladevorgang dedupliziert,
+   * statt pro Event einen identischen `profiles`-Call abzusetzen.
+   */
+  private loadProfile(session: Session | null): Promise<void> {
     if (!session || !this.client) {
+      this.loadedUserId = null;
+      this.inFlightUserId = null;
+      this.inFlight = null;
       this.profileSig.set(null);
-      return;
+      return Promise.resolve();
     }
-    const { data } = await this.client
+    const userId = session.user.id;
+    // Profil zu diesem User bereits geladen → kein erneuter DB-Call.
+    if (userId === this.loadedUserId) {
+      return Promise.resolve();
+    }
+    // Ladevorgang für denselben User bereits unterwegs → dessen Promise teilen.
+    if (this.inFlight && userId === this.inFlightUserId) {
+      return this.inFlight;
+    }
+    this.inFlightUserId = userId;
+    this.inFlight = this.fetchProfile(session).finally(() => {
+      if (this.inFlightUserId === userId) {
+        this.inFlightUserId = null;
+        this.inFlight = null;
+      }
+    });
+    return this.inFlight;
+  }
+
+  private async fetchProfile(session: Session): Promise<void> {
+    const { data } = await this.requireClient()
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
@@ -120,5 +158,6 @@ export class AuthService {
         : // Fallback, falls der handle_new_user-Trigger noch nicht durch ist.
           { id: session.user.id, role: 'customer', plan: 'free', displayName: null }
     );
+    this.loadedUserId = session.user.id;
   }
 }
