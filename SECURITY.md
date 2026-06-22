@@ -35,12 +35,12 @@ Postgres-RLS ist **nicht spaltenbasiert**. Der Kommentar im Migrationsskript sag
 `role = 'admin'` oder `plan = 'enterprise'` auf sein eigenes Profil setzen und sich so
 selbst Rolle/Plan hochstufen.
 
-**Status: Fix bereitgestellt** in [0003_protect_profile_role_plan.sql](supabase/migrations/0003_protect_profile_role_plan.sql) –
+**Status: ✅ behoben & verifiziert** (2026-06-22) via [0003_protect_profile_role_plan.sql](supabase/migrations/0003_protect_profile_role_plan.sql) –
 ein `BEFORE UPDATE`-Trigger friert `role`/`plan` für angemeldete Endnutzer ein; Admin- und
-`service_role`-Pfade (Dashboard/direkter SQL, `auth.uid() IS NULL`) bleiben erlaubt.
-**Noch offen:** Migration in der **Live-DB anwenden** (`supabase db push` o. ä.) und kurz
-verifizieren (als Nutzer `update profiles set role='admin' where id=auth.uid()` muss wirkungslos
-bleiben). Bis dahin: keine sicherheitsrelevante Entscheidung allein an `profiles.role`/`plan` knüpfen.
+`service_role`-Pfade (Dashboard/direkter SQL, `auth.uid() IS NULL`) bleiben erlaubt. Migration in
+der Live-DB angewandt (`supabase db push`); Verhaltenstest mit simuliertem End-Nutzer-Kontext
+(`request.jwt.claims.sub`) bestätigt: ein `update profiles set role='admin', plan='enterprise'`
+bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 
 ---
 
@@ -70,7 +70,7 @@ bleiben). Bis dahin: keine sicherheitsrelevante Entscheidung allein an `profiles
 | 20 | Webhooks ohne Signaturprüfung | ➖ | Keine Webhooks. Ab Phase 13 (Mail/Edge): eingehende Hooks signatur­verifizieren. |
 | 21 | Payment/Abo nur im Frontend | ⚠️/🔲 | `plan` liegt in `profiles` (DB), Durchsetzung aber im Frontend. Noch keine Zahlungsanbindung. Mit bezahlten Features serverseitig erzwingen (siehe Pkt. 10/23). |
 | 22 | IDOR | ✅ | `owner_id` wird aus der **Session** (`auth.getUser`) abgeleitet, nicht aus Nutzereingaben ([supabase-project-repository.ts](src/app/data-access/supabase-project-repository.ts)); RLS-`with check` weist gefälschte `owner_id` ab. IDs sind UUIDv4. |
-| 23 | Endpoints vertrauen Nutzer-IDs/Rollen | ⚠️→🔲 | **Fix bereitgestellt** ([0003](supabase/migrations/0003_protect_profile_role_plan.sql)), Trigger friert `role`/`plan` für Endnutzer ein – **muss noch in die Live-DB**. Sonst: keine eigenen Endpoints, RLS nutzt `auth.uid()`. |
+| 23 | Endpoints vertrauen Nutzer-IDs/Rollen | ✅ | **Behoben & verifiziert** ([0003](supabase/migrations/0003_protect_profile_role_plan.sql)): Trigger friert `role`/`plan` für Endnutzer ein, in Live-DB angewandt und per Verhaltenstest bestätigt (s. o.). Sonst: keine eigenen Endpoints, RLS nutzt `auth.uid()`. |
 | 24 | Logs mit Tokens/PII/Passwörtern | ✅ | App loggt keine Secrets; Repos schlucken Fehler still. Keine Passwort-Logs. Supabase-Log-Retention/PII im Dashboard im Blick behalten. |
 | 25 | Source-Maps in Produktion | ✅ | `sourceMap: true` nur in der **development**-Config ([angular.json](angular.json)); Prod (`defaultConfiguration: production`) emittiert keine. |
 | 26 | Übermäßige DB-Rechte des App-Users | ✅/🔲 | Client nutzt anon-Key, durch RLS beschränkt. service_role nur serverseitig (aktuell nirgends). Im Dashboard bestätigen, dass `anon`/`authenticated` keine Extra-Grants haben. |
@@ -84,7 +84,7 @@ bleiben). Bis dahin: keine sicherheitsrelevante Entscheidung allein an `profiles
 
 ## Vor öffentlichem Livegang (Kurzliste)
 
-1. **Pkt. 23**: Migration [0003](supabase/migrations/0003_protect_profile_role_plan.sql) in der Live-DB anwenden + verifizieren (Fix im Repo, noch nicht eingespielt).
+1. ~~**Pkt. 23**: Migration 0003 anwenden + verifizieren~~ – ✅ erledigt (2026-06-22).
 2. Migrationen in der Live-DB anwenden und **RLS aktiv** bestätigen (Pkt. 3/4).
 3. Supabase-Dashboard: Auth-Redirect-URLs/CORS einschränken, Passwort-Reset-Flow, E-Mail-Bestätigung (Pkt. 18/19).
 4. Hosting: Security-Header setzen (Pkt. 28); Prod-Supabase-Werte sicher injizieren (Pkt. 2).
