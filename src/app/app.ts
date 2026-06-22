@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.component';
 import { WizardStateService } from './services/wizard-state.service';
 import { AuthService } from './services/auth.service';
+import { ProjectSessionSyncService } from './services/project-session-sync.service';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,8 @@ export class App {
   private readonly wizardState = inject(WizardStateService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  // Beim App-Start instanziieren, damit der Login→DB-Sync (Phase 12, Block 4) aktiv ist.
+  private readonly projectSessionSync = inject(ProjectSessionSyncService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
 

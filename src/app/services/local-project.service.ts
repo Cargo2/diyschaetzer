@@ -48,6 +48,17 @@ export class LocalProjectService {
     return this.projectSignal();
   }
 
+  /**
+   * Ersetzt den In-Memory-Stand mit einem extern geladenen Projekt (z. B. nach
+   * Login aus der DB), **ohne** erneut zu persistieren – sonst entstünde ein
+   * unnötiger Rückschreib-Zyklus. Wird vom {@link ProjectSessionSyncService}
+   * genutzt; der Stand wird wie beim Laden normalisiert.
+   */
+  replaceProject(project: LocalTileProject): void {
+    this.projectSignal.set(this.normalizeProject(project));
+    this.editingRoomIdSignal.set(null);
+  }
+
   getRooms(): SavedRoomCalculation[] {
     return this.projectSignal().rooms;
   }

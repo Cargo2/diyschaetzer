@@ -3,14 +3,15 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { PROJECT_REPOSITORY } from './data-access/project-repository';
-import { LocalStorageProjectRepository } from './data-access/local-storage-project-repository';
+import { SessionAwareProjectRepository } from './data-access/session-aware-project-repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    // Persistenz-Backend des lokalen Projekts. Ab Phase 12 wird hier der
-    // Supabase-Adapter eingehängt – Konsumenten bleiben unverändert.
-    { provide: PROJECT_REPOSITORY, useClass: LocalStorageProjectRepository }
+    // Persistenz-Backend des lokalen Projekts. Schaltet sessionabhängig zwischen
+    // localStorage (anonym) und Supabase (angemeldet) um – Konsumenten bleiben
+    // unverändert (siehe SessionAwareProjectRepository).
+    { provide: PROJECT_REPOSITORY, useClass: SessionAwareProjectRepository }
   ]
 };

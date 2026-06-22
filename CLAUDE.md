@@ -2,6 +2,21 @@
 
 Leitfaden für die Arbeit an diesem Repository (diyschaetzer).
 
+## Arbeitsweise
+
+- **Ask, don't assume.** If something is unclear, ask before writing a single line.
+  Never make silent assumptions about intent, architecture, or requirements.
+- **Simplest solution first.** Always implement the simplest thing that could work.
+  Do not add abstractions or flexibility that weren't explicitly requested.
+- **Don't touch unrelated code.** If a file or function is not directly part of the
+  current task, do not modify it, even if you think it could be improved.
+- **Flag uncertainty explicitly.** If you are not confident about an approach or technical
+  detail, say so before proceeding. Confidence without certainty causes more damage than
+  admitting a gap.
+- **Suggest better ways.** I'm always open to ideas on better ways to do things. Don't
+  hesitate to suggest a better approach, or one that has long-lasting impact over a tactical
+  change.
+
 ## Projekt
 
 Fliesen-Kostenschätzer für private Heimwerker (und perspektivisch Handwerker).
@@ -10,7 +25,9 @@ Flächen, Fliesenmengen inkl. Verschnitt, eine Materialliste, DIY-Kosten und ein
 grobe Profi-Kalkulation ab. Mehrere gespeicherte Räume bilden ein lokales
 Projekt mit Gesamtschätzung.
 
-- **Rein clientseitig**: Angular 21, Stand im `localStorage`. Kein Login, keine DB (Stand jetzt).
+- **Clientseitig mit optionalem Backend**: Angular 21. Ohne Login Stand im `localStorage`; mit Login
+  (Supabase) Projekt-Persistenz in der DB (seit Phase 12). Ohne konfiguriertes Supabase läuft alles
+  weiter anonym/offline.
 - **Sprache**: UI und Domäne sind deutsch. Codebezeichner englisch.
 - Repo: https://github.com/Cargo2/diyschaetzer
 
@@ -128,6 +145,15 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   informativer Cookie-/Speicher-Hinweis (`components/cookie-notice/`, Ack in `localStorage`-Key
   `badprojekt:cookie-notice-ack`, kein Consent-Gate). Inhalte mit klar markierten
   `[Platzhalter: …]` (`.legal-placeholder`) – vor Livegang füllen und rechtlich prüfen.
+- **Phase 12 – Backend, Auth & Rollen (Projekt-Persistenz)**: Supabase angebunden; Registrierung
+  **Hobby (`customer`)/Profi (`contractor`)** + Login (`AuthService`, Seite `/login`). Projekt-
+  Persistenz über die abgekapselte Repository-Schicht (`ProjectRepository`-Interface): `LocalStorage-
+  ProjectRepository` (anonym) und `SupabaseProjectRepository` (DB, RLS über `owner_id`), zur Laufzeit
+  umgeschaltet vom `SessionAwareProjectRepository` (anonym → localStorage, angemeldet → DB). Beim
+  ersten Login mit **leerer** DB wird der lokale Stand **einmalig importiert**; hat die DB bereits
+  Daten, wird der In-Memory-Stand aus der DB übernommen (`ProjectSessionSyncService`). localStorage
+  bleibt als Offline-Fallback unangetastet. **Offen bleibt** die Migration von Katalog/Offers in die
+  DB (s. „Kommende Phasen").
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -149,11 +175,10 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 12 – Backend + Auth + Rollen**: Supabase aufsetzen; Registrierung **Hobby/Profi**;
-  Katalog/Offers & Projekte in die DB. **TS-Katalog ist nur noch Seed – die DB wird alleinige
-  Source of Truth.** Backend **sauber abgekapselt**: Zugriff ausschließlich über eine
-  Repository-/Datenservice-Schicht (Interfaces), das Frontend kennt Supabase nicht direkt
-  (austauschbar). RLS; lokalen Stand beim ersten Login importieren.
+- **Phase 12 (Rest) – Katalog/Offers in die DB**: Materialkatalog und Produkt-Offers von den
+  TS-Seeds in die DB überführen; **TS-Katalog wird dann nur noch Seed, die DB die alleinige
+  Source of Truth** (Laufzeitquelle). Zugriff weiterhin nur über die abgekapselte Repository-/
+  Datenservice-Schicht. Auth, Rollen und Projekt-Persistenz sind erledigt (s. „Erledigt").
 - **Phase 13 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
   Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.). **Profil-Standardannahmen**:
   Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
