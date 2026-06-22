@@ -117,6 +117,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Domänen-Typen | `models/bathroom-wizard.model.ts` |
 | Materialkatalog (~100 Artikel) | `data/material-catalog-with-prices.ts` (TS-Seed/Fallback) |
 | Katalog aus DB (Phase 12) | `services/catalog.service.ts`, `data-access/catalog-repository.ts` (+ `local-`/`supabase-catalog-repository.ts`), Seed-Generator `tools/generate-catalog-seed.mts` |
+| Firmenprofil (Phase 13) | `pages/profile/`, `services/company-profile.service.ts`, `data-access/company-profile-repository.ts` (+ `supabase-…`), `guards/contractor.guard.ts`, Migration `0006` |
 | Berechnungs-Defaults | `data/material-calculation-defaults.ts`, `config/professional-offer-defaults.ts`, `config/diy-cost-defaults.ts` |
 | Geteilte Ableitungen | `services/wizard-data-derivations.ts` |
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
@@ -185,8 +186,13 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 13 – Profi-Modus**: Profi editiert Positionsdaten (Felder existieren bereits) in
-  Wizard/Profil; **Firmenprofil** (Logo, Adresse, Kontakt, USt-IdNr.). **Profil-Standardannahmen**:
+- **Phase 13 – Profi-Modus** (in Arbeit). **Block 1 erledigt: Firmenprofil** – Tabelle
+  `company_profiles` (owner-scoped RLS, Migration `0006`), Repository-Schicht
+  (`CompanyProfileRepository`/`SupabaseCompanyProfileRepository`), `CompanyProfileService`,
+  Seite `/profil` hinter `contractorGuard` (eingeloggt + Rolle `contractor`), Nav-Link nur für
+  Profis. **Logo bewusst noch nicht** (eigener Folgeblock). Noch offen in Phase 13: Profi editiert
+  Positionsdaten (Felder existieren bereits) in
+  Wizard/Profil. **Profil-Standardannahmen**:
   Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
   Fliesen-Richtwert, …) gelten als Default im Wizard. Sind im Profil Werte gesetzt, erscheinen sie
   als Standard bei den bearbeitbaren Annahmen; werden sie in der Raumkalkulation geändert, gilt der

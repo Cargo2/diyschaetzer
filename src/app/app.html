@@ -66,6 +66,11 @@
 
       @if (authConfigured) {
         @if (isAuthenticated()) {
+          @if (isContractor()) {
+            <a routerLink="/profil" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+              Firmenprofil
+            </a>
+          }
           <span class="tab-account" title="Angemeldet als {{ userEmail() }}">{{ userEmail() }}</span>
           <button type="button" class="tab-button" (click)="logout()">Abmelden</button>
         } @else {

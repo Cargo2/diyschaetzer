@@ -1,0 +1,73 @@
+<section class="profile-page">
+  <header class="profile-header">
+    <h1>Firmenprofil</h1>
+    <p class="profile-intro">
+      Diese Angaben erscheinen später auf deinen gebrandeten Schätzungen (PDF) und dienen als
+      Grundlage für deine Profi-Angebote.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <p class="profile-status">Profil wird geladen …</p>
+  } @else {
+    <form class="profile-form" (ngSubmit)="save()">
+      <label class="field field-wide">
+        <span>Firmenname</span>
+        <input type="text" name="companyName" [(ngModel)]="profile.companyName" autocomplete="organization" />
+      </label>
+
+      <label class="field field-wide">
+        <span>Ansprechpartner</span>
+        <input type="text" name="contactName" [(ngModel)]="profile.contactName" autocomplete="name" />
+      </label>
+
+      <label class="field field-wide">
+        <span>Straße &amp; Hausnummer</span>
+        <input type="text" name="street" [(ngModel)]="profile.street" autocomplete="street-address" />
+      </label>
+
+      <label class="field field-narrow">
+        <span>PLZ</span>
+        <input type="text" name="postalCode" [(ngModel)]="profile.postalCode" autocomplete="postal-code" inputmode="numeric" />
+      </label>
+
+      <label class="field">
+        <span>Ort</span>
+        <input type="text" name="city" [(ngModel)]="profile.city" autocomplete="address-level2" />
+      </label>
+
+      <label class="field">
+        <span>Telefon</span>
+        <input type="tel" name="phone" [(ngModel)]="profile.phone" autocomplete="tel" />
+      </label>
+
+      <label class="field">
+        <span>E-Mail</span>
+        <input type="email" name="email" [(ngModel)]="profile.email" autocomplete="email" />
+      </label>
+
+      <label class="field">
+        <span>Website</span>
+        <input type="url" name="website" [(ngModel)]="profile.website" autocomplete="url" placeholder="https://" />
+      </label>
+
+      <label class="field">
+        <span>USt-IdNr.</span>
+        <input type="text" name="vatId" [(ngModel)]="profile.vatId" />
+      </label>
+
+      @if (errorMsg()) {
+        <p class="profile-message error" role="alert">{{ errorMsg() }}</p>
+      }
+      @if (successMsg()) {
+        <p class="profile-message success" role="status">{{ successMsg() }}</p>
+      }
+
+      <div class="profile-actions">
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          {{ saving() ? 'Speichern …' : 'Speichern' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>
