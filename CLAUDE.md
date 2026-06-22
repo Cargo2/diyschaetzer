@@ -118,6 +118,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Materialkatalog (~100 Artikel) | `data/material-catalog-with-prices.ts` (TS-Seed/Fallback) |
 | Katalog aus DB (Phase 12) | `services/catalog.service.ts`, `data-access/catalog-repository.ts` (+ `local-`/`supabase-catalog-repository.ts`), Seed-Generator `tools/generate-catalog-seed.mts` |
 | Firmenprofil (Phase 13) | `pages/profile/`, `services/company-profile.service.ts`, `data-access/company-profile-repository.ts` (+ `supabase-…`), `guards/contractor.guard.ts`, Migration `0006` |
+| Profil-Standardannahmen (Phase 13) | `config/profile-price-fields.ts`, `services/profile-assumption-defaults.service.ts`, `data-access/profile-assumption-defaults-repository.ts` (+ `supabase-…`), Overlay in `services/assumption.service.ts`, Migration `0007` |
 | Berechnungs-Defaults | `data/material-calculation-defaults.ts`, `config/professional-offer-defaults.ts`, `config/diy-cost-defaults.ts` |
 | Geteilte Ableitungen | `services/wizard-data-derivations.ts` |
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
@@ -186,20 +187,22 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
 
 ### Kommende Phasen
-- **Phase 13 – Profi-Modus** (in Arbeit). **Block 1 erledigt: Firmenprofil** – Tabelle
-  `company_profiles` (owner-scoped RLS, Migration `0006`), Repository-Schicht
-  (`CompanyProfileRepository`/`SupabaseCompanyProfileRepository`), `CompanyProfileService`,
-  Seite `/profil` hinter `contractorGuard` (eingeloggt + Rolle `contractor`), Nav-Link nur für
-  Profis. **Logo bewusst noch nicht** (eigener Folgeblock). Noch offen in Phase 13: Profi editiert
-  Positionsdaten (Felder existieren bereits) in
-  Wizard/Profil. **Profil-Standardannahmen**:
-  Im Profi-Profil hinterlegbare Werte für die **bearbeitbaren Annahmen** (Profi-Einheitspreise,
-  Fliesen-Richtwert, …) gelten als Default im Wizard. Sind im Profil Werte gesetzt, erscheinen sie
-  als Standard bei den bearbeitbaren Annahmen; werden sie in der Raumkalkulation geändert, gilt der
-  raumspezifische Wert. **Vorrang: Raum-`user_override` > Profil-Default > System-Default**
-  (`AssumptionService` konserviert weiterhin nur `user_override`, der Profil-Wert ersetzt nur den
-  Ausgangs-Default). `contractor_offer`; gebrandetes Schätzungs-PDF **versenden** (Edge Function +
-  Mailversand). Gate via Feature-Access.
+- **Phase 13 – Profi-Modus** (in Arbeit).
+  - **Block 1 erledigt: Firmenprofil** – Tabelle `company_profiles` (owner-scoped RLS, Migration
+    `0006`), Repository-Schicht (`CompanyProfileRepository`/`SupabaseCompanyProfileRepository`),
+    `CompanyProfileService`, Seite `/profil` hinter `contractorGuard` (eingeloggt + Rolle
+    `contractor`), Nav-Link nur für Profis. **Logo bewusst noch nicht** (eigener Folgeblock).
+  - **Block erledigt: Profil-Standardannahmen** – Profis hinterlegen eigene Default-Preise
+    (Profi-Einheitspreise + Fliesen-Richtwert) im Profil. Speicherung als jsonb-Spalte
+    `assumption_defaults` auf `company_profiles` (Migration `0007`, partielle Map
+    `assumptions-pfad -> wert`; Felder in `config/profile-price-fields.ts`). Der
+    `ProfileAssumptionDefaultsService` cached die Defaults synchron; der `AssumptionService`
+    überlagert die System-Defaults damit in `createDefaultAssumptions`. **Vorrang gilt: Raum-
+    `user_override` > Profil-Default > System-Default** (`mergeGroup` legt den Raum-Override danach
+    auf; `source` bleibt `'default'`). Leere Felder = System-Standard (als Platzhalter angezeigt).
+  - **Noch offen in Phase 13**: Logo-Upload; Profi editiert Positionsdaten (Felder existieren
+    bereits) im `contractor_offer`-Modus; gebrandetes Schätzungs-PDF **versenden** (Edge Function +
+    Mailversand). Gate via Feature-Access.
 - **Phase 14 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
   Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation
   + öffentlicher Lese-Token via RLS); reine localStorage-Stände sind nicht teilbar.

@@ -6,6 +6,7 @@ import { WizardStateService } from './services/wizard-state.service';
 import { AuthService } from './services/auth.service';
 import { ProjectSessionSyncService } from './services/project-session-sync.service';
 import { CatalogService } from './services/catalog.service';
+import { ProfileAssumptionDefaultsService } from './services/profile-assumption-defaults.service';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,8 @@ export class App {
   private readonly projectSessionSync = inject(ProjectSessionSyncService);
   // Katalog früh laden, damit die DB-Daten vor den Ergebnisseiten bereitstehen.
   private readonly catalog = inject(CatalogService);
+  // Profil-Standardannahmen früh laden, damit sie vor den Kalkulationen greifen.
+  private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
 

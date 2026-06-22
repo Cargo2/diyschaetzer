@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { PROFESSIONAL_OFFER_DEFAULTS as P } from '../config/professional-offer-defaults';
+import { PROFILE_PRICE_FIELD_PATHS } from '../config/profile-price-fields';
 import { MATERIAL_CALCULATION_DEFAULTS as M } from '../data/material-calculation-defaults';
 import {
   AssumptionSource,
@@ -8,6 +9,7 @@ import {
   RoomCalculationAssumptions,
   tilePriceDefaults
 } from '../models/bathroom-wizard.model';
+import { ProfileAssumptionDefaultsService } from './profile-assumption-defaults.service';
 import {
   deriveDrillHoleCount,
   deriveSealingSleeveCount,
@@ -19,6 +21,8 @@ type NumericAssumption = AssumptionValue<number>;
 
 @Injectable({ providedIn: 'root' })
 export class AssumptionService {
+  private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
+
   createDefaultAssumptions(data: BathroomWizardData): RoomCalculationAssumptions {
     const bathroom = isBathroomRoom(data);
     const waterproofing =
@@ -67,7 +71,7 @@ export class AssumptionService {
     const sealingSleeves = deriveSealingSleeveCount(data, P.defaultSealingSleeveCount);
     const wizardWaterproofingArea = data.preparation?.waterproofing?.areaM2;
 
-    return {
+    const assumptions: RoomCalculationAssumptions = {
       wastePercent: value(
         // Defaults stammen ausschließlich aus den Wizard-Daten; manuelle
         // Änderungen überleben über mergeGroup (user_override).
@@ -152,6 +156,32 @@ export class AssumptionService {
         vatPercent: price(P.vatPercent, 'MwSt.', true, '%')
       }
     };
+
+    return this.applyProfileDefaults(assumptions, data);
+  }
+
+  /**
+   * Überlagert die System-Default-Preise mit den Profil-Standardannahmen des
+   * angemeldeten Profis (Vorrang: Raum-`user_override` > Profil-Default >
+   * System-Default). `source` bleibt `'default'`; der Raum-Override wird erst
+   * danach von {@link mergeGroup} aufgelegt. Nicht-relevante Felder bleiben unberührt.
+   */
+  private applyProfileDefaults(
+    assumptions: RoomCalculationAssumptions,
+    data: BathroomWizardData
+  ): RoomCalculationAssumptions {
+    const profile = this.profileDefaults.current();
+    for (const path of PROFILE_PRICE_FIELD_PATHS) {
+      const override = profile[path];
+      if (typeof override !== 'number' || !Number.isFinite(override)) {
+        continue;
+      }
+      const target = this.get(assumptions, path);
+      if (target?.relevant && target.editable) {
+        target.value = this.clamp(data, path, override);
+      }
+    }
+    return assumptions;
   }
 
   normalizeAssumptions(data: BathroomWizardData): RoomCalculationAssumptions {

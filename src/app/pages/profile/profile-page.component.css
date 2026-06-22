@@ -97,6 +97,17 @@
   cursor: default;
 }
 
+.profile-section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.profile-section h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+
 @media (max-width: 560px) {
   .profile-form {
     grid-template-columns: 1fr;

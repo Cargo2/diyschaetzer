@@ -69,5 +69,45 @@
         </button>
       </div>
     </form>
+
+    <section class="profile-section">
+      <header class="profile-header">
+        <h2>Standard-Preise</h2>
+        <p class="profile-intro">
+          Hinterlege deine eigenen Einheitspreise und den Fliesen-Richtwert. Sie gelten als
+          Standard in jeder Raumkalkulation. Leer lassen = System-Standard (als Platzhalter
+          angezeigt). In der einzelnen Kalkulation geänderte Werte haben weiterhin Vorrang.
+        </p>
+      </header>
+
+      <form class="profile-form prices-form" (ngSubmit)="savePrices()">
+        @for (field of priceFields; track field.path) {
+          <label class="field">
+            <span>{{ field.label }} ({{ field.unit }})</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              [name]="field.path"
+              [placeholder]="field.systemDefault"
+              [(ngModel)]="priceValues[field.path]"
+            />
+          </label>
+        }
+
+        @if (priceErrorMsg()) {
+          <p class="profile-message error" role="alert">{{ priceErrorMsg() }}</p>
+        }
+        @if (priceSuccessMsg()) {
+          <p class="profile-message success" role="status">{{ priceSuccessMsg() }}</p>
+        }
+
+        <div class="profile-actions">
+          <button type="submit" class="btn-primary" [disabled]="savingPrices()">
+            {{ savingPrices() ? 'Speichern …' : 'Standard-Preise speichern' }}
+          </button>
+        </div>
+      </form>
+    </section>
   }
 </section>
