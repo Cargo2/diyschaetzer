@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { Workbook } from 'exceljs';
 import { ExportDocumentData } from '../models/export-document.model';
+import { ContractorBrandingService } from './contractor-branding.service';
 import { ExcelDocumentBuilderService } from './excel-document-builder.service';
 import { FeatureAccessService } from './feature-access.service';
 
@@ -20,6 +21,7 @@ const XLSX_MIME =
 export class ExcelExportService {
   private readonly featureAccess = inject(FeatureAccessService);
   private readonly builder = inject(ExcelDocumentBuilderService);
+  private readonly branding = inject(ContractorBrandingService);
   private excelJsPromise: Promise<ExcelJsModule> | null = null;
 
   /** Erzeugt aus dem neutralen Exportmodell eine echte, herunterladbare XLSX-Datei. */
@@ -32,7 +34,7 @@ export class ExcelExportService {
     try {
       const exceljs = await this.loadExcelJs();
       const workbook = new exceljs.Workbook();
-      this.builder.build(workbook, data);
+      this.builder.build(workbook, this.branding.applyTo(data));
       const buffer = await workbook.xlsx.writeBuffer();
       this.triggerDownload(buffer, this.fileName(data));
       return { exported: true, reason: 'downloaded' };

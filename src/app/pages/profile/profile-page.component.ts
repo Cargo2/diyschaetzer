@@ -6,6 +6,7 @@ import {
 } from '../../config/profile-price-fields';
 import { CompanyProfile, emptyCompanyProfile } from '../../models/company-profile.model';
 import { CompanyProfileService } from '../../services/company-profile.service';
+import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
 
 /**
@@ -21,6 +22,7 @@ import { ProfileAssumptionDefaultsService } from '../../services/profile-assumpt
 })
 export class ProfilePageComponent implements OnInit {
   private readonly companyProfile = inject(CompanyProfileService);
+  private readonly branding = inject(ContractorBrandingService);
   private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
 
   readonly loading = signal(true);
@@ -49,6 +51,8 @@ export class ProfilePageComponent implements OnInit {
     this.saving.set(true);
     try {
       await this.companyProfile.save(this.profile);
+      // Branding-Cache auffrischen, damit der geänderte Firmenname sofort im Export erscheint.
+      await this.branding.refresh();
       this.successMsg.set('Firmenprofil gespeichert.');
     } catch {
       this.errorMsg.set('Speichern fehlgeschlagen. Bitte versuche es erneut.');

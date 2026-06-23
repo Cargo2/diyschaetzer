@@ -200,9 +200,17 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
     überlagert die System-Defaults damit in `createDefaultAssumptions`. **Vorrang gilt: Raum-
     `user_override` > Profil-Default > System-Default** (`mergeGroup` legt den Raum-Override danach
     auf; `source` bleibt `'default'`). Leere Felder = System-Standard (als Platzhalter angezeigt).
-  - **Noch offen in Phase 13**: Logo-Upload; Profi editiert Positionsdaten (Felder existieren
-    bereits) im `contractor_offer`-Modus; gebrandetes Schätzungs-PDF **versenden** (Edge Function +
-    Mailversand). Gate via Feature-Access.
+  - **Block erledigt: Export-Branding (Firmenname)** – Beim Export eines angemeldeten Profis
+    erscheint der **Firmenname** als Kopf-/Fußzeile auf PDF **und** Excel. Der bereits vorhandene,
+    bis dahin ungenutzte `branding`-Pfad im Exportmodell wird nun befüllt: der
+    `ContractorBrandingService` cached den Firmennamen **synchron** (analog
+    `ProfileAssumptionDefaultsService`, Refresh bei Auth-Wechsel + nach dem Speichern) und legt ihn
+    in `PdfExportService`/`ExcelExportService` über `applyTo()` aufs Exportmodell. Für Hobby/anonym
+    oder ohne Firmennamen bleibt der bisherige Default („Fliesenprojekt"). **Logo bewusst verworfen**
+    (Upload = vermeidbares Security-Risiko); nur Text-Branding.
+  - **Noch offen in Phase 13**: Profi editiert Positionsdaten (Felder existieren bereits) im
+    `contractor_offer`-Modus; gebrandetes Schätzungs-PDF **versenden** (Edge Function + Mailversand).
+    Gate via Feature-Access.
 - **Phase 14 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
   Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation
   + öffentlicher Lese-Token via RLS); reine localStorage-Stände sind nicht teilbar.

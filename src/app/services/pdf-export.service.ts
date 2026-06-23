@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { ExportDocumentData } from '../models/export-document.model';
+import { ContractorBrandingService } from './contractor-branding.service';
 import { FeatureAccessService } from './feature-access.service';
 import { PdfDocumentBuilderService } from './pdf-document-builder.service';
 
@@ -18,6 +19,7 @@ interface PdfMakeStatic {
 export class PdfExportService {
   private readonly featureAccess = inject(FeatureAccessService);
   private readonly builder = inject(PdfDocumentBuilderService);
+  private readonly branding = inject(ContractorBrandingService);
   private pdfMakePromise: Promise<PdfMakeStatic> | null = null;
 
   /** Erzeugt aus dem neutralen Exportmodell ein echtes, herunterladbares PDF. */
@@ -29,7 +31,7 @@ export class PdfExportService {
 
     try {
       const pdfMake = await this.loadPdfMake();
-      const definition = this.builder.build(data);
+      const definition = this.builder.build(this.branding.applyTo(data));
       pdfMake.createPdf(definition).download(this.fileName(data));
       return { exported: true, reason: 'downloaded' };
     } catch (error) {

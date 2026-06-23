@@ -46,3 +46,15 @@ Thumbs.db
 # Local dev server logs
 ng-serve.log
 ng-serve.err.log
+
+# Secrets / lokale Zugangsdaten – NIEMALS committen (Test-Logins, Tokens, Keys).
+# Defensive Patterns: falls je versehentlich eine Zugangsdatei angelegt wird,
+# bleibt sie aus Git heraus. Echte Test-Passwörter gehören in KEINE Datei.
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets.*
+credentials*
+*.credentials
