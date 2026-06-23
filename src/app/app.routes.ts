@@ -25,10 +25,14 @@ export const routes: Routes = [
         (m) => m.ContractorOffersComponent
       )
   },
-  { path: 'wizard', component: WizardPageComponent },
+  { path: 'raum-anlegen', component: WizardPageComponent },
   { path: 'materialliste', component: MaterialListComponent, canActivate: [wizardCompletedGuard] },
-  { path: 'summary', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },
-  { path: 'gesamtschaetzung', component: ProjectSummaryComponent },
+  { path: 'zusammenfassung', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },
+  { path: 'projekt-dashboard', component: ProjectSummaryComponent },
+  // Alte Pfade (SEO/Bookmarks) dauerhaft auf die neuen umleiten.
+  { path: 'wizard', redirectTo: 'raum-anlegen', pathMatch: 'full' },
+  { path: 'summary', redirectTo: 'zusammenfassung', pathMatch: 'full' },
+  { path: 'gesamtschaetzung', redirectTo: 'projekt-dashboard', pathMatch: 'full' },
   { path: 'ratgeber', component: GuideComponent },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },

@@ -49,6 +49,6 @@ export class WizardPageComponent {
 
   completeWizard(): void {
     this.wizardState.markWizardCompleted();
-    void this.router.navigate(['/summary']);
+    void this.router.navigate(['/zusammenfassung']);
   }
 }

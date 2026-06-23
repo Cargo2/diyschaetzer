@@ -10,7 +10,7 @@ export const wizardCompletedGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/wizard'], {
+  return router.createUrlTree(['/raum-anlegen'], {
     queryParams: {
       resultsLocked: '1'
     }

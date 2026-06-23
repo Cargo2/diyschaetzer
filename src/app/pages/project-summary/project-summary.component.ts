@@ -59,7 +59,7 @@ export class ProjectSummaryComponent implements OnInit {
   editRoom(roomId: string): void {
     this.localProject.loadRoomIntoWizard(roomId);
     this.materialListState.loadStateForRoom(roomId);
-    void this.router.navigate(['/wizard'], {
+    void this.router.navigate(['/raum-anlegen'], {
       queryParams: { step: 'last', editingRoomId: roomId }
     });
   }
@@ -91,7 +91,7 @@ export class ProjectSummaryComponent implements OnInit {
     }
     this.localProject.startNewRoom();
     this.materialListState.resetMaterialOverrides();
-    void this.router.navigate(['/wizard']);
+    void this.router.navigate(['/raum-anlegen']);
   }
 
   roomTypeLabel(roomType: RoomType): string {
@@ -120,7 +120,7 @@ export class ProjectSummaryComponent implements OnInit {
   openCurrentRoomSummary(roomId: string): void {
     this.localProject.loadRoomIntoWizard(roomId);
     this.materialListState.loadStateForRoom(roomId);
-    void this.router.navigate(['/summary']);
+    void this.router.navigate(['/zusammenfassung']);
   }
 
   formatNumber(value: number): string {

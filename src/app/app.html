@@ -20,7 +20,7 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="tab-button" (click)="closeMenu()">
         Start
       </a>
-      <a routerLink="/wizard" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+      <a routerLink="/raum-anlegen" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
         Raum anlegen
       </a>
 
@@ -44,7 +44,7 @@
         <!-- Heimwerker: Raumname (Zusammenfassung) mit Materialliste als Dropdown (Hover/Klick). -->
         <div class="tab-dropdown">
           @if (resultsAvailable()) {
-            <a routerLink="/summary" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            <a routerLink="/zusammenfassung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
               {{ roomName() }}
             </a>
           } @else {
@@ -52,7 +52,7 @@
               type="button"
               class="tab-button disabled"
               title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
-              (click)="openResultsPage('/summary')"
+              (click)="openResultsPage('/zusammenfassung')"
             >
               {{ roomName() }}
             </button>
@@ -76,7 +76,7 @@
         </div>
       }
 
-      <a routerLink="/gesamtschaetzung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+      <a routerLink="/projekt-dashboard" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
         Projekt-Dashboard
       </a>
 

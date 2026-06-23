@@ -72,7 +72,7 @@ export class App {
     this.menuOpen.set(false);
   }
 
-  openResultsPage(path: '/materialliste' | '/summary'): void {
+  openResultsPage(path: '/materialliste' | '/zusammenfassung'): void {
     this.closeMenu();
 
     if (this.resultsAvailable()) {
@@ -80,7 +80,7 @@ export class App {
       return;
     }
 
-    void this.router.navigate(['/wizard'], {
+    void this.router.navigate(['/raum-anlegen'], {
       queryParams: {
         resultsLocked: '1'
       }

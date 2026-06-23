@@ -54,7 +54,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
               </strong>
               <div class="save-actions">
                 <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">Weiteren Raum hinzufügen</button>
-                <a routerLink="/gesamtschaetzung">Zum Projekt-Dashboard</a>
+                <a routerLink="/projekt-dashboard">Zum Projekt-Dashboard</a>
                 <button type="button" (click)="openSavedRoomMaterialList()">Materialliste dieses Raumes prüfen</button>
               </div>
               @if (roomLimitReached()) {
@@ -336,7 +336,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
     } @else {
       <section class="empty-panel">
         <p>Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.</p>
-        <a routerLink="/wizard" class="summary-link">Raum anlegen</a>
+        <a routerLink="/raum-anlegen" class="summary-link">Raum anlegen</a>
       </section>
     }
   `,
@@ -1027,7 +1027,7 @@ export class SummaryPageComponent {
     }
     this.localProject.startNewRoom();
     this.materialListState.resetMaterialOverrides();
-    void this.router.navigate(['/wizard']);
+    void this.router.navigate(['/raum-anlegen']);
   }
 
   openSavedRoomMaterialList(): void {
