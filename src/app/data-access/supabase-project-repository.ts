@@ -52,19 +52,18 @@ export class SupabaseProjectRepository implements ProjectRepository {
     return data.user?.id ?? null;
   }
 
-  async loadProject(): Promise<LocalTileProject | null> {
+  async loadProject(id?: string): Promise<LocalTileProject | null> {
     const client = this.requireClient();
     const userId = await this.currentUserId();
     if (!userId) {
       return null;
     }
 
-    const { data: projects, error } = await client
-      .from('projects')
-      .select('*')
-      .eq('owner_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(1);
+    let query = client.from('projects').select('*').eq('owner_id', userId);
+    query = id
+      ? query.eq('id', id)
+      : query.order('updated_at', { ascending: false }).limit(1);
+    const { data: projects, error } = await query;
     if (error) {
       throw error;
     }
@@ -72,7 +71,52 @@ export class SupabaseProjectRepository implements ProjectRepository {
     if (!project) {
       return null;
     }
+    return this.withRooms(client, project);
+  }
 
+  async listProjects(): Promise<LocalTileProject[]> {
+    const client = this.requireClient();
+    const userId = await this.currentUserId();
+    if (!userId) {
+      return [];
+    }
+    const { data: projects, error } = await client
+      .from('projects')
+      .select('*')
+      .eq('owner_id', userId)
+      .order('updated_at', { ascending: false });
+    if (error) {
+      throw error;
+    }
+    return Promise.all(
+      ((projects ?? []) as ProjectRow[]).map((project) =>
+        this.withRooms(client, project)
+      )
+    );
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    const client = this.requireClient();
+    const userId = await this.currentUserId();
+    if (!userId) {
+      return;
+    }
+    // rooms hängen per ON DELETE CASCADE an projects; RLS schützt zusätzlich über owner_id.
+    const { error } = await client
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .eq('owner_id', userId);
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Lädt die sortierten Räume zu einem Projekt und mappt das Domänenobjekt. */
+  private async withRooms(
+    client: SupabaseClient,
+    project: ProjectRow
+  ): Promise<LocalTileProject> {
     const { data: rooms, error: roomsError } = await client
       .from('rooms')
       .select('*')
@@ -81,7 +125,6 @@ export class SupabaseProjectRepository implements ProjectRepository {
     if (roomsError) {
       throw roomsError;
     }
-
     return this.mapProject(project, (rooms ?? []) as RoomRow[]);
   }
 

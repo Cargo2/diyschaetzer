@@ -119,6 +119,9 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Katalog aus DB (Phase 12) | `services/catalog.service.ts`, `data-access/catalog-repository.ts` (+ `local-`/`supabase-catalog-repository.ts`), Seed-Generator `tools/generate-catalog-seed.mts` |
 | Firmenprofil (Phase 13) | `pages/profile/`, `services/company-profile.service.ts`, `data-access/company-profile-repository.ts` (+ `supabase-…`), `guards/contractor.guard.ts`, Migration `0006` |
 | Profil-Standardannahmen (Phase 13) | `config/profile-price-fields.ts`, `services/profile-assumption-defaults.service.ts`, `data-access/profile-assumption-defaults-repository.ts` (+ `supabase-…`), Overlay in `services/assumption.service.ts`, Migration `0007` |
+| Profi-Angebotsmodul (Phase 13) | `pages/contractor-offers/`, `services/contractor-offer.service.ts`, `models/contractor-offer.model.ts`, `data-access/contractor-offer-repository.ts` (+ `supabase-…`), Migration `0008`; PDF in `services/export-data-mapper.service.ts` + `pdf-document-builder.service.ts` (`offer`-Sektion) |
+| Export-Branding (Firmenname) | `services/contractor-branding.service.ts` (Cache), Anwendung in `pdf-export.service.ts`/`excel-export.service.ts` |
+| Mehrere Projekte (aktives Projekt) | `services/local-project.service.ts`, `data-access/project-repository.ts` (+ `supabase-`/`local-storage-`/`session-aware-`) |
 | Berechnungs-Defaults | `data/material-calculation-defaults.ts`, `config/professional-offer-defaults.ts`, `config/diy-cost-defaults.ts` |
 | Geteilte Ableitungen | `services/wizard-data-derivations.ts` |
 | Lokales Projekt (localStorage) | `services/local-project.service.ts`, `models/local-project.model.ts` |
@@ -208,8 +211,27 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
     in `PdfExportService`/`ExcelExportService` über `applyTo()` aufs Exportmodell. Für Hobby/anonym
     oder ohne Firmennamen bleibt der bisherige Default („Fliesenprojekt"). **Logo bewusst verworfen**
     (Upload = vermeidbares Security-Risiko); nur Text-Branding.
-  - **Noch offen in Phase 13**: Profi editiert Positionsdaten (Felder existieren bereits) im
-    `contractor_offer`-Modus; gebrandetes Schätzungs-PDF **versenden** (Edge Function + Mailversand).
+  - **Block erledigt: Profi-Angebotsmodul (`/angebote`)** – Eigener contractor-only Menüpunkt, in dem
+    der Profi aus einem Projekt ein **editierbares Leistungsverzeichnis** erzeugt, anpasst und als
+    **gebrandetes PDF** herunterlädt. Bausteine:
+    - **Multi-Projekt**: Die App verwaltet jetzt **mehrere Projekte** pro Nutzer (aktives Projekt +
+      Liste). War rein Frontend-seitig limitiert – `projects`-Schema kann es längst. Erweitert:
+      `ProjectRepository` (`listProjects`/`loadProject(id)`/`deleteProject`), Supabase-/localStorage-
+      Adapter (Array + Altstand-Migration), `LocalProjectService` (`createProject`/`switchProject`/
+      `renameProject`/`deleteProject`, alle bestehenden Mutationen wirken aufs **aktive** Projekt),
+      `ProjectSessionSyncService` (Liste statt Einzelprojekt importieren). Hobby-Flows unverändert.
+    - **`ContractorOfferService`**: baut das Angebot aus den Räumen – „Baustelle einrichten"
+      projektweit **einmal**, je Raum eine Positionsgruppe (`Pos. N` / `N.001…`), Material als **eine
+      kompakte Sammelposition** (`professional.materialCost`, Leistung im Vordergrund). Summen werden
+      aus dem Modell **abgeleitet** (`contractor-offer.model.ts`), nicht gespeichert.
+    - **Editor** (`pages/contractor-offers/`): Positionen anpassen (Preis/Menge/Text/aktiv) **plus**
+      eigene Positionen/Gruppen hinzufügen/entfernen/umsortieren; Live-Summen.
+    - **Persistenz** pro Projekt in DB (Tabelle `contractor_offers`, jsonb `offer_data`, owner-scoped
+      RLS, Migration `0008`), abgekapselt über `ContractorOfferRepository`/`Supabase…`.
+    - **PDF**: `ExportDataMapperService.buildContractorOfferExportData` + neuer `offer`-Sektionstyp im
+      `PdfDocumentBuilderService` (Leistungsverzeichnis: Gruppen, Zwischensummen, Netto/MwSt./Brutto).
+      Download über `PremiumExportButton`; Firmenname-Branding automatisch via `ContractorBrandingService`.
+  - **Noch offen in Phase 13**: gebrandetes Schätzungs-PDF **versenden** (Edge Function + Mailversand).
     Gate via Feature-Access.
 - **Phase 14 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
   Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation

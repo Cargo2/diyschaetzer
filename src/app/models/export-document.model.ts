@@ -20,8 +20,27 @@ export interface ExportDocumentTotals {
 export interface ExportDocumentSection {
   id: string;
   title: string;
-  type: 'text' | 'table' | 'summary_cards' | 'warnings' | 'line_items';
+  type: 'text' | 'table' | 'summary_cards' | 'warnings' | 'line_items' | 'offer';
   content: unknown;
+}
+
+/** Eine Zeile in einer Angebots-Positionsgruppe (Leistungsverzeichnis-Export). */
+export interface ExportOfferRow {
+  number: string;
+  label: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  total: number;
+}
+
+/** Eine Positionsgruppe im Angebots-Export (z. B. „Pos. 1 Bad OG" mit Zwischensumme). */
+export interface ExportOfferGroup {
+  positionLabel: string | null;
+  title: string;
+  rows: ExportOfferRow[];
+  subtotal: number | null;
 }
 
 export interface ExportBrandingData {

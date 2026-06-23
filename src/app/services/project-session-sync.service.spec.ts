@@ -42,8 +42,16 @@ class InMemoryProjectRepository implements ProjectRepository {
   async loadProject() {
     return this.saved;
   }
+  async listProjects() {
+    return this.saved ? [this.saved] : [];
+  }
   async saveProject(project: LocalTileProject) {
     this.saved = project;
+  }
+  async deleteProject(id: string) {
+    if (this.saved?.id === id) {
+      this.saved = null;
+    }
   }
   async clearProject() {
     this.saved = null;
@@ -57,9 +65,13 @@ class FakeSupabaseRepository {
   async loadProject() {
     return this.loaded;
   }
+  async listProjects() {
+    return this.loaded ? [this.loaded] : [];
+  }
   async saveProject(project: LocalTileProject) {
     this.saved = project;
   }
+  async deleteProject() {}
   async clearProject() {}
 }
 

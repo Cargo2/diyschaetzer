@@ -13,12 +13,25 @@ class InMemoryProjectRepository implements ProjectRepository {
     this.saved = initial;
   }
 
-  async loadProject(): Promise<LocalTileProject | null> {
+  async loadProject(id?: string): Promise<LocalTileProject | null> {
+    if (id) {
+      return this.saved?.id === id ? this.saved : null;
+    }
     return this.saved;
+  }
+
+  async listProjects(): Promise<LocalTileProject[]> {
+    return this.saved ? [this.saved] : [];
   }
 
   async saveProject(project: LocalTileProject): Promise<void> {
     this.saved = project;
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    if (this.saved?.id === id) {
+      this.saved = null;
+    }
   }
 
   async clearProject(): Promise<void> {
@@ -109,10 +122,12 @@ describe('LocalProjectService with a swapped repository', () => {
   });
 
   it('does not overwrite an early mutation when hydration resolves late', async () => {
-    let resolveLoad: (value: LocalTileProject | null) => void = () => {};
+    let resolveLoad: (value: LocalTileProject[]) => void = () => {};
     const slowRepo: ProjectRepository = {
-      loadProject: () => new Promise((resolve) => (resolveLoad = resolve)),
+      loadProject: async () => null,
+      listProjects: () => new Promise((resolve) => (resolveLoad = resolve)),
       saveProject: async () => {},
+      deleteProject: async () => {},
       clearProject: async () => {}
     };
     TestBed.resetTestingModule();
@@ -129,7 +144,7 @@ describe('LocalProjectService with a swapped repository', () => {
       areaSummary: { floorAreaM2: 8, totalWallTileAreaM2: 0, totalTileAreaM2: 8 }
     } as never);
 
-    resolveLoad(makeProject('Veraltet'));
+    resolveLoad([makeProject('Veraltet')]);
     await service.ready;
 
     expect(service.getRooms().map((room) => room.roomName)).toEqual(['Sofort']);

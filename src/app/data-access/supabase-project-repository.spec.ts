@@ -138,6 +138,38 @@ describe('SupabaseProjectRepository', () => {
     expect(store.rooms.map((r) => r['room_name'])).toEqual(['Bad EG']);
   });
 
+  it('lists all of the user\'s projects with their rooms', async () => {
+    const store = new FakeStore();
+    const repo = setup(store, 'user-1');
+    await repo.saveProject({ ...projectWithRooms(['Bad EG']), id: 'p-a', name: 'A' });
+    const b = projectWithRooms(['Küche']);
+    await repo.saveProject({
+      ...b,
+      id: 'p-b',
+      name: 'B',
+      rooms: b.rooms.map((room, i) => ({ ...room, id: `b-room-${i}` }))
+    });
+
+    const list = await repo.listProjects();
+
+    expect(list.map((project) => project.id).sort()).toEqual(['p-a', 'p-b']);
+    expect(list.find((project) => project.id === 'p-a')?.rooms.map((r) => r.roomName))
+      .toEqual(['Bad EG']);
+    expect(list.find((project) => project.id === 'p-b')?.rooms.map((r) => r.roomName))
+      .toEqual(['Küche']);
+  });
+
+  it('deletes a single project by id', async () => {
+    const store = new FakeStore();
+    const repo = setup(store, 'user-1');
+    await repo.saveProject({ ...projectWithRooms(['Bad EG']), id: 'p-a' });
+    await repo.saveProject({ ...projectWithRooms([]), id: 'p-b' });
+
+    await repo.deleteProject('p-a');
+
+    expect(store.projects.map((project) => project['id'])).toEqual(['p-b']);
+  });
+
   it('clears all of the user\'s projects', async () => {
     const store = new FakeStore();
     const repo = setup(store, 'user-1');

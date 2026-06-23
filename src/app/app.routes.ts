@@ -17,6 +17,14 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: AuthPageComponent },
   { path: 'profil', component: ProfilePageComponent, canActivate: [contractorGuard] },
+  {
+    path: 'angebote',
+    canActivate: [contractorGuard],
+    loadComponent: () =>
+      import('./pages/contractor-offers/contractor-offers.component').then(
+        (m) => m.ContractorOffersComponent
+      )
+  },
   { path: 'wizard', component: WizardPageComponent },
   { path: 'materialliste', component: MaterialListComponent, canActivate: [wizardCompletedGuard] },
   { path: 'summary', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },

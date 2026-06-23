@@ -32,7 +32,10 @@ export class LocalProjectService {
   private readonly wizardState = inject(WizardStateService);
   private readonly assumptionService = inject(AssumptionService);
   private readonly repository = inject(PROJECT_REPOSITORY);
-  private readonly projectSignal = signal<LocalTileProject>(this.createFallbackProject());
+  private readonly projectsSignal = signal<LocalTileProject[]>([
+    this.createFallbackProject()
+  ]);
+  private readonly activeIdSignal = signal<string>(this.projectsSignal()[0].id);
   private readonly editingRoomIdSignal = signal<string | null>(null);
 
   /** `true`, sobald eine Mutation vor Abschluss der Hydration erfolgte (verhindert Überschreiben). */
@@ -40,27 +43,134 @@ export class LocalProjectService {
   /** Auflösbar, sobald der persistierte Stand geladen (oder als leer bestätigt) wurde. */
   readonly ready: Promise<void> = this.hydrate();
 
-  readonly project = this.projectSignal.asReadonly();
-  readonly rooms = computed(() => this.projectSignal().rooms);
+  /** Alle Projekte des aktuellen Scopes (zuletzt geändert zuerst). */
+  readonly projects = this.projectsSignal.asReadonly();
+  /** ID des aktiven Projekts – alle bestehenden Mutationen wirken auf dieses. */
+  readonly activeProjectId = this.activeIdSignal.asReadonly();
+  /** Das aktive Projekt (Name `project` für Abwärtskompatibilität der Konsumenten). */
+  readonly project = computed(() => this.resolveActiveProject());
+  readonly rooms = computed(() => this.resolveActiveProject().rooms);
   readonly editingRoomId = this.editingRoomIdSignal.asReadonly();
 
   getProject(): LocalTileProject {
-    return this.projectSignal();
+    return this.resolveActiveProject();
   }
 
   /**
    * Ersetzt den In-Memory-Stand mit einem extern geladenen Projekt (z. B. nach
-   * Login aus der DB), **ohne** erneut zu persistieren – sonst entstünde ein
-   * unnötiger Rückschreib-Zyklus. Wird vom {@link ProjectSessionSyncService}
-   * genutzt; der Stand wird wie beim Laden normalisiert.
+   * Login aus der DB), **ohne** erneut zu persistieren. Dünner Wrapper um
+   * {@link replaceProjects}.
    */
   replaceProject(project: LocalTileProject): void {
-    this.projectSignal.set(this.normalizeProject(project));
+    this.replaceProjects([project], project.id);
+  }
+
+  /**
+   * Ersetzt die gesamte Projektliste mit extern geladenen Projekten (z. B. nach
+   * Login aus der DB), **ohne** erneut zu persistieren – sonst entstünde ein
+   * unnötiger Rückschreib-Zyklus. Der Stand wird wie beim Laden normalisiert.
+   */
+  replaceProjects(projects: LocalTileProject[], activeId?: string): void {
+    const normalized = projects.map((project) => this.normalizeProject(project));
+    if (normalized.length === 0) {
+      const fresh = this.createFallbackProject();
+      this.projectsSignal.set([fresh]);
+      this.activeIdSignal.set(fresh.id);
+    } else {
+      this.projectsSignal.set(normalized);
+      this.activeIdSignal.set(
+        activeId && normalized.some((project) => project.id === activeId)
+          ? activeId
+          : normalized[0].id
+      );
+    }
     this.editingRoomIdSignal.set(null);
   }
 
+  /** Legt ein neues, leeres Projekt an, macht es aktiv und persistiert es. */
+  createProject(name?: string): LocalTileProject {
+    const now = new Date().toISOString();
+    const project: LocalTileProject = {
+      id: this.createId(),
+      name: name?.trim() || 'Neues Projekt',
+      status: 'draft',
+      rooms: [],
+      createdAt: now,
+      updatedAt: now
+    };
+    this.mutatedBeforeHydration = true;
+    this.projectsSignal.update((list) => [...list, project]);
+    this.activeIdSignal.set(project.id);
+    this.editingRoomIdSignal.set(null);
+    // Neues Projekt = frischer Start: Wizard/Ergebnisse (Zusammenfassung, Materialliste)
+    // zurücksetzen, damit der Wizard für das neue Projekt neu durchlaufen wird.
+    this.wizardState.startNewRoom();
+    this.persist(project);
+    return project;
+  }
+
+  /** Wechselt das aktive Projekt (no-op, wenn die ID unbekannt ist). */
+  switchProject(id: string): void {
+    if (this.projectsSignal().some((project) => project.id === id)) {
+      this.activeIdSignal.set(id);
+      this.editingRoomIdSignal.set(null);
+    }
+  }
+
+  /** Benennt ein Projekt um und persistiert es. */
+  renameProject(id: string, name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return;
+    }
+    this.mutatedBeforeHydration = true;
+    let updated: LocalTileProject | null = null;
+    this.projectsSignal.update((list) =>
+      list.map((project) => {
+        if (project.id !== id) {
+          return project;
+        }
+        updated = { ...project, name: trimmed, updatedAt: new Date().toISOString() };
+        return updated;
+      })
+    );
+    if (updated) {
+      this.persist(updated);
+    }
+  }
+
+  /**
+   * Löscht ein Projekt. Es bleibt stets mindestens ein Projekt erhalten; wird das
+   * letzte gelöscht, tritt ein frisches leeres Projekt an seine Stelle.
+   */
+  deleteProject(id: string): void {
+    this.mutatedBeforeHydration = true;
+    const remaining = this.projectsSignal().filter((project) => project.id !== id);
+    if (remaining.length === 0) {
+      const fresh = this.createFallbackProject();
+      this.projectsSignal.set([fresh]);
+      this.activeIdSignal.set(fresh.id);
+      this.persist(fresh);
+    } else {
+      this.projectsSignal.set(remaining);
+      if (this.activeIdSignal() === id) {
+        this.activeIdSignal.set(remaining[0].id);
+      }
+    }
+    this.editingRoomIdSignal.set(null);
+    this.repository.deleteProject(id).catch(() => {
+      // Bewusst geschluckt: In-Memory-Stand bleibt konsistent.
+    });
+  }
+
   getRooms(): SavedRoomCalculation[] {
-    return this.projectSignal().rooms;
+    return this.resolveActiveProject().rooms;
+  }
+
+  /** Aktives Projekt aus der Liste (garantiert nicht leer – mind. ein Projekt vorhanden). */
+  private resolveActiveProject(): LocalTileProject {
+    const list = this.projectsSignal();
+    return list.find((project) => project.id === this.activeIdSignal()) ?? list[0];
   }
 
   saveCurrentRoom(
@@ -84,7 +194,7 @@ export class LocalProjectService {
       createdAt: now,
       updatedAt: now
     };
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: 'in_progress',
       rooms: [...project.rooms, room],
@@ -99,7 +209,7 @@ export class LocalProjectService {
     wizardData: BathroomWizardData,
     materialListUserState?: MaterialListUserState
   ): SavedRoomCalculation {
-    const existing = this.projectSignal().rooms.find((room) => room.id === roomId);
+    const existing = this.resolveActiveProject().rooms.find((room) => room.id === roomId);
     if (!existing) {
       this.editingRoomIdSignal.set(null);
       return this.saveCurrentRoom(
@@ -121,7 +231,7 @@ export class LocalProjectService {
         : existing.materialListUserState,
       updatedAt: now
     };
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: 'in_progress',
       rooms: project.rooms.map((room) => room.id === roomId ? updated : room),
@@ -137,7 +247,7 @@ export class LocalProjectService {
   ): void {
     const now = new Date().toISOString();
     const normalizedState = this.normalizeMaterialListUserState(materialListUserState);
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: 'in_progress',
       rooms: project.rooms.map((room) =>
@@ -150,7 +260,7 @@ export class LocalProjectService {
   }
 
   deleteRoom(roomId: string): void {
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: project.rooms.length > 1 ? 'in_progress' : 'draft',
       rooms: project.rooms.filter((room) => room.id !== roomId),
@@ -162,7 +272,7 @@ export class LocalProjectService {
   }
 
   duplicateRoom(roomId: string): SavedRoomCalculation {
-    const source = this.projectSignal().rooms.find((room) => room.id === roomId);
+    const source = this.resolveActiveProject().rooms.find((room) => room.id === roomId);
     if (!source) {
       throw new Error('Der zu duplizierende Raum wurde nicht gefunden.');
     }
@@ -186,7 +296,7 @@ export class LocalProjectService {
       createdAt: now,
       updatedAt: now
     };
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: 'in_progress',
       rooms: [...project.rooms, copy],
@@ -204,10 +314,10 @@ export class LocalProjectService {
   }
 
   markProjectReadyForReview(): void {
-    if (this.projectSignal().rooms.length === 0) {
+    if (this.resolveActiveProject().rooms.length === 0) {
       return;
     }
-    this.updateProject((project) => ({
+    this.updateActiveProject((project) => ({
       ...project,
       status: 'ready_for_review',
       updatedAt: new Date().toISOString()
@@ -215,7 +325,7 @@ export class LocalProjectService {
   }
 
   loadRoomIntoWizard(roomId: string): void {
-    const room = this.projectSignal().rooms.find((item) => item.id === roomId);
+    const room = this.resolveActiveProject().rooms.find((item) => item.id === roomId);
     if (!room) {
       return;
     }
@@ -241,21 +351,23 @@ export class LocalProjectService {
   }
 
   /**
-   * Lädt den persistierten Stand über das Repository und hydratisiert das Signal.
-   * Erfolgte vor Abschluss bereits eine Nutzer-Mutation, wird der geladene Stand
-   * verworfen, damit Eingaben nicht überschrieben werden.
+   * Lädt die persistierten Projekte über das Repository und hydratisiert die Liste
+   * (aktiv = zuletzt geändert). Erfolgte vor Abschluss bereits eine Nutzer-Mutation,
+   * wird der geladene Stand verworfen, damit Eingaben nicht überschrieben werden.
    */
   private async hydrate(): Promise<void> {
-    let parsed: LocalTileProject | null = null;
+    let list: LocalTileProject[] | null = null;
     try {
-      parsed = await this.repository.loadProject();
+      list = await this.repository.listProjects();
     } catch {
-      parsed = null;
+      list = null;
     }
-    if (this.mutatedBeforeHydration || !parsed) {
+    if (this.mutatedBeforeHydration || !list || list.length === 0) {
       return;
     }
-    this.projectSignal.set(this.normalizeProject(parsed));
+    const normalized = list.map((project) => this.normalizeProject(project));
+    this.projectsSignal.set(normalized);
+    this.activeIdSignal.set(normalized[0].id);
   }
 
   private normalizeProject(parsed: Partial<LocalTileProject>): LocalTileProject {
@@ -366,18 +478,36 @@ export class LocalProjectService {
     };
   }
 
-  private updateProject(updater: (project: LocalTileProject) => LocalTileProject): void {
+  /** Wendet einen Updater auf das **aktive** Projekt in der Liste an und persistiert es. */
+  private updateActiveProject(
+    updater: (project: LocalTileProject) => LocalTileProject
+  ): void {
     this.mutatedBeforeHydration = true;
-    this.projectSignal.update((project) => {
-      const next = updater(project);
-      // Persistenz läuft über das Repository (austauschbares Backend); fire-and-forget,
-      // der reaktive In-Memory-Stand bleibt die Source of Truth für die UI.
-      // Fehler (z. B. Backend offline) dürfen die UI nicht stören.
-      this.repository.saveProject(next).catch(() => {
-        // Bewusst geschluckt: In-Memory-Stand bleibt nutzbar; Persistenz wird beim
-        // nächsten Schreibvorgang erneut versucht.
-      });
-      return next;
+    const activeId = this.activeIdSignal();
+    let updated: LocalTileProject | null = null;
+    this.projectsSignal.update((list) =>
+      list.map((project) => {
+        if (project.id !== activeId) {
+          return project;
+        }
+        updated = updater(project);
+        return updated;
+      })
+    );
+    if (updated) {
+      this.persist(updated);
+    }
+  }
+
+  /**
+   * Persistiert ein einzelnes Projekt über das Repository (austauschbares Backend);
+   * fire-and-forget – der reaktive In-Memory-Stand bleibt Source of Truth für die UI.
+   * Fehler (z. B. Backend offline) dürfen die UI nicht stören.
+   */
+  private persist(project: LocalTileProject): void {
+    this.repository.saveProject(project).catch(() => {
+      // Bewusst geschluckt: In-Memory-Stand bleibt nutzbar; Persistenz wird beim
+      // nächsten Schreibvorgang erneut versucht.
     });
   }
 

@@ -1,0 +1,184 @@
+<section class="offers-page">
+  <header class="offers-header">
+    <h1>Angebote</h1>
+    <p class="offers-intro">
+      Wähle ein Projekt, erzeuge daraus eine Schätzung und passe die Positionen an. Die
+      Handwerkerleistung steht im Vordergrund; Material erscheint als kompakte Sammelposition.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <p class="offers-status">Projekte werden geladen …</p>
+  } @else {
+    <!-- Projektverwaltung -->
+    <section class="panel">
+      <h2>Projekte</h2>
+      <div class="new-project">
+        <input
+          type="text"
+          placeholder="Name des neuen Projekts"
+          [(ngModel)]="newProjectName"
+          [ngModelOptions]="{ standalone: true }"
+          (keydown.enter)="createProject()"
+        />
+        <button type="button" class="btn-primary" (click)="createProject()">Neues Projekt</button>
+      </div>
+
+      <ul class="project-list">
+        @for (project of projects(); track project.id) {
+          <li class="project-row" [class.active]="project.id === activeProjectId()">
+            <input
+              #nameInput
+              class="project-name"
+              type="text"
+              [value]="project.name"
+              (change)="rename(project.id, nameInput.value)"
+            />
+            <span class="project-meta">{{ roomCount(project.id) }} Raum/Räume</span>
+            @if (project.id === activeProjectId()) {
+              <span class="badge-active">Ausgewählt</span>
+            } @else {
+              <button type="button" class="btn-light" (click)="selectProject(project.id)">Auswählen</button>
+            }
+            @if (confirmingDeleteId === project.id) {
+              <span class="confirm-delete">
+                Sicher?
+                <button type="button" class="btn-danger" (click)="confirmDelete(project.id)">Ja, löschen</button>
+                <button type="button" class="btn-light" (click)="cancelDelete()">Abbrechen</button>
+              </span>
+            } @else {
+              <button type="button" class="btn-light" (click)="requestDelete(project.id)">Löschen</button>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+
+    <!-- Angebot -->
+    <section class="panel">
+      <div class="offer-head">
+        <h2>Schätzung: {{ activeProjectName }}</h2>
+        <div class="offer-head-actions">
+          @if (loadedFromDb()) {
+            <span class="badge-saved">Gespeicherter Stand</span>
+          }
+          <button type="button" class="btn-light" (click)="generate()">Neu aus Projekt erzeugen</button>
+          <button type="button" class="btn-primary" [disabled]="saving() || !offer" (click)="save()">
+            {{ saving() ? 'Speichern …' : 'Speichern' }}
+          </button>
+          @if (hasRooms && offer) {
+            <app-premium-export-button
+              [label]="'PDF herunterladen'"
+              [format]="'pdf'"
+              [document]="exportDocumentFn"
+            />
+          }
+        </div>
+      </div>
+
+      @if (saveError()) {
+        <p class="offers-message error" role="alert">{{ saveError() }}</p>
+      }
+      @if (saveSuccess()) {
+        <p class="offers-message success" role="status">{{ saveSuccess() }}</p>
+      }
+
+      @if (!hasRooms) {
+        <p class="offers-status">
+          Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an –
+          danach kannst du hier die Schätzung erzeugen und bearbeiten.
+        </p>
+      } @else if (offer) {
+        @for (section of offer.sections; track section.id; let si = $index) {
+          <div class="offer-section">
+            <div class="section-head">
+              <span class="pos-badge">
+                {{ section.kind === 'site_setup' ? '–' : 'Pos. ' + posNumber(section) }}
+              </span>
+              <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" />
+              <span class="section-subtotal">{{ eur(sectionSubtotal(section)) }}</span>
+              <span class="section-actions">
+                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" title="Nach oben">↑</button>
+                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === offer.sections.length - 1" title="Nach unten">↓</button>
+                @if (section.kind === 'custom') {
+                  <button type="button" class="btn-danger" (click)="removeSection(section)">Gruppe löschen</button>
+                }
+              </span>
+            </div>
+
+            <table class="line-table">
+              <thead>
+                <tr>
+                  <th class="col-pos">Pos</th>
+                  <th class="col-label">Bezeichnung</th>
+                  <th class="col-num">Menge</th>
+                  <th class="col-unit">Einheit</th>
+                  <th class="col-num">Einheitspreis</th>
+                  <th class="col-num">Gesamt</th>
+                  <th class="col-active">Aktiv</th>
+                  <th class="col-tools"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of section.lines; track line.id; let li = $index) {
+                  <tr [class.inactive]="!line.isActive">
+                    <td class="col-pos">{{ lineNumber(section, li) }}</td>
+                    <td class="col-label">
+                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input cell-desc" placeholder="Beschreibung (optional)" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
+                    </td>
+                    <td class="col-num">
+                      <input class="cell-input num" type="number" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
+                    </td>
+                    <td class="col-unit">
+                      <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }">
+                        @for (option of unitOptions; track option.value) {
+                          <option [value]="option.value">{{ option.label }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="col-num">
+                      <input class="cell-input num" type="number" step="0.01" min="0" [(ngModel)]="line.unitPrice" [ngModelOptions]="{ standalone: true }" />
+                    </td>
+                    <td class="col-num total">{{ eur(lineTotal(line)) }}</td>
+                    <td class="col-active">
+                      <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" />
+                    </td>
+                    <td class="col-tools">
+                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" title="Nach oben">↑</button>
+                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" title="Nach unten">↓</button>
+                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" title="Position löschen">✕</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <button type="button" class="btn-light add-line" (click)="addLine(section)">+ Position</button>
+          </div>
+        }
+
+        <div class="offer-foot">
+          <button type="button" class="btn-light" (click)="addSection()">+ Gruppe hinzufügen</button>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>Nettobetrag</span><span>{{ eur(netTotal()) }}</span>
+            </div>
+            <div class="total-row">
+              <span>
+                zzgl.
+                <input class="vat-input" type="number" step="0.1" min="0" [(ngModel)]="offer.vatPercent" [ngModelOptions]="{ standalone: true }" />
+                % MwSt.
+              </span>
+              <span>{{ eur(vatAmount()) }}</span>
+            </div>
+            <div class="total-row gross">
+              <span>Gesamtsumme</span><span>{{ eur(grossTotal()) }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</section>

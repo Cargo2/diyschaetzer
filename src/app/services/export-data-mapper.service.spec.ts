@@ -1,6 +1,9 @@
 import { COMMERCIAL_CONFIG, DEFAULT_WHITE_LABEL_CONFIG } from '../config/commercial.config';
 import { DEFAULT_FEATURE_ACCESS } from '../models/commercial.model';
-import { ESTIMATE_EXPORT_LEGAL_NOTICE } from '../models/export-document.model';
+import {
+  ESTIMATE_EXPORT_LEGAL_NOTICE,
+  ExportOfferGroup
+} from '../models/export-document.model';
 import { MaterialListViewModel } from '../models/material-list.model';
 import { createNeutralProductMonetization } from '../models/monetization.model';
 import { CostComparisonViewModel } from './cost-comparison.service';
@@ -163,5 +166,82 @@ describe('ExportDataMapperService', () => {
     expect(result.totals.netTotal).toBe(100);
     expect(result.totals.professionalTotal).toBe(219);
     expect(result.legalNotice).toContain('unverbindliche Kostenschätzung');
+  });
+
+  it('maps a contractor offer into an offer section with grouped positions and totals', () => {
+    const result = service.buildContractorOfferExportData({
+      projectId: 'p1',
+      projectName: 'Sanierung Musterstr.',
+      vatPercent: 19,
+      sections: [
+        {
+          id: 'site_setup',
+          kind: 'site_setup',
+          title: 'Baustelle einrichten',
+          lines: [
+            {
+              id: 'site_setup:site_setup',
+              label: 'Baustelle einrichten',
+              description: '',
+              quantity: 1,
+              unit: 'pauschal',
+              unitPrice: 235,
+              isActive: true,
+              origin: 'generated'
+            }
+          ]
+        },
+        {
+          id: 'r1',
+          kind: 'room',
+          title: 'Bad OG',
+          lines: [
+            {
+              id: 'r1:floor_tiling',
+              label: 'Bodenfliesen verlegen',
+              description: 'ohne Material',
+              quantity: 10,
+              unit: 'm2',
+              unitPrice: 80,
+              isActive: true,
+              origin: 'generated'
+            }
+          ]
+        },
+        {
+          id: 'material',
+          kind: 'material',
+          title: 'Material',
+          lines: [
+            {
+              id: 'material:tiles',
+              label: 'Material (Fliesen)',
+              description: '',
+              quantity: 1,
+              unit: 'pauschal',
+              unitPrice: 1000,
+              isActive: true,
+              origin: 'generated'
+            }
+          ]
+        }
+      ]
+    });
+
+    expect(result.documentType).toBe('contractor_offer');
+    expect(result.subtitle).toBe('Sanierung Musterstr.');
+
+    const offerSection = result.sections.find((section) => section.type === 'offer');
+    const groups = offerSection?.content as ExportOfferGroup[];
+    expect(groups.map((group) => group.positionLabel)).toEqual([null, 'Pos. 1', 'Pos. 2']);
+    // Baustelle/Material ohne Zwischensumme, Raum-Gruppe mit Zwischensumme.
+    expect(groups[0].subtotal).toBeNull();
+    expect(groups[1].subtotal).toBe(800);
+    expect(groups[1].rows[0].number).toBe('1.001');
+
+    // 235 + 800 + 1000 = 2035 netto, 19 % MwSt.
+    expect(result.totals.netTotal).toBe(2035);
+    expect(result.totals.vatAmount).toBe(386.65);
+    expect(result.totals.grossTotal).toBe(2421.65);
   });
 });

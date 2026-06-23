@@ -70,7 +70,10 @@ export class CostComparisonService {
     const professionalMaterialCost = this.getProfessionalMaterialCost(
       materialListViewModel
     );
-    const professionalTotal = offer.grossTotal + professionalMaterialCost;
+    // MwSt. wird – wie im Profi-Angebot (Leistungsverzeichnis) – auf die Summe aus
+    // Leistung UND Material berechnet (nicht nur auf die Leistungspositionen).
+    const professionalNet = offer.netTotal + professionalMaterialCost;
+    const professionalTotal = professionalNet * (1 + offer.vatPercent / 100);
     const diyBufferCost = materialCost * DIY_COST_DEFAULTS.riskBufferPercent / 100;
     const diyTotalCost = materialCost + diyBufferCost;
     const savingsAmount = Math.max(0, professionalTotal - diyTotalCost);

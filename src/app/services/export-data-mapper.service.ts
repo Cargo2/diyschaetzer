@@ -2,8 +2,17 @@ import { Injectable } from '@angular/core';
 import {
   ESTIMATE_EXPORT_LEGAL_NOTICE,
   ExportDocumentData,
-  ExportDocumentSection
+  ExportDocumentSection,
+  ExportOfferGroup
 } from '../models/export-document.model';
+import {
+  ContractorOffer,
+  offerGrossTotal,
+  offerLineTotal,
+  offerNetTotal,
+  offerSectionSubtotal,
+  offerVatAmount
+} from '../models/contractor-offer.model';
 import { BathroomWizardData, ROOM_TYPE_DEFAULT_NAMES } from '../models/bathroom-wizard.model';
 import { MaterialListViewModel } from '../models/material-list.model';
 import { ProjectMaterialListViewModel } from '../models/project-material-list.model';
@@ -219,6 +228,54 @@ export class ExportDataMapperService {
         grossTotal: offer.grossTotal,
         diyTotal: costComparisonViewModel.diy.totalCost,
         professionalTotal: costComparisonViewModel.professional.totalCost
+      }
+    });
+  }
+
+  buildContractorOfferExportData(offer: ContractorOffer): ExportDocumentData {
+    // Positionsnummern: „Baustelle einrichten" ohne „Pos.", übrige Gruppen fortlaufend.
+    let posCounter = 0;
+    const groups: ExportOfferGroup[] = offer.sections.map((section) => {
+      const isSetup = section.kind === 'site_setup';
+      const positionLabel = isSetup ? null : `Pos. ${++posCounter}`;
+      const activeLines = section.lines.filter((line) => line.isActive);
+      const prefix = isSetup ? '' : `${posCounter}.`;
+      return {
+        positionLabel,
+        title: section.title,
+        rows: activeLines.map((line, index) => ({
+          number: isSetup
+            ? String(index + 1).padStart(3, '0')
+            : `${prefix}${String(index + 1).padStart(3, '0')}`,
+          label: line.label,
+          description: line.description,
+          quantity: line.quantity,
+          unit: line.unit,
+          unitPrice: line.unitPrice,
+          total: offerLineTotal(line)
+        })),
+        // Einzelne Sammelpositionen (Baustelle/Material) brauchen keine Zwischensumme.
+        subtotal: isSetup || section.kind === 'material'
+          ? null
+          : offerSectionSubtotal(section)
+      };
+    }).filter((group) => group.rows.length > 0);
+
+    const sections: ExportDocumentSection[] = [
+      { id: 'offer', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
+    ];
+
+    return this.createDocument({
+      documentType: 'contractor_offer',
+      title: 'Angebot / Kostenschätzung',
+      subtitle: offer.projectName,
+      projectName: offer.projectName,
+      sections,
+      totals: {
+        netTotal: offerNetTotal(offer),
+        vatPercent: offer.vatPercent,
+        vatAmount: offerVatAmount(offer),
+        grossTotal: offerGrossTotal(offer)
       }
     });
   }

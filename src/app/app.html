@@ -67,6 +67,9 @@
       @if (authConfigured) {
         @if (isAuthenticated()) {
           @if (isContractor()) {
+            <a routerLink="/angebote" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+              Angebote
+            </a>
             <a routerLink="/profil" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
               Firmenprofil
             </a>

@@ -6,7 +6,8 @@ import type {
 } from 'pdfmake/interfaces';
 import {
   ExportDocumentData,
-  ExportDocumentSection
+  ExportDocumentSection,
+  ExportOfferGroup
 } from '../models/export-document.model';
 
 /**
@@ -183,9 +184,78 @@ export class PdfDocumentBuilderService {
         return this.summaryCardsSection(section);
       case 'line_items':
         return this.lineItemsSection(section);
+      case 'offer':
+        return this.offerSection(section);
       default:
         return [];
     }
+  }
+
+  /** Leistungsverzeichnis: je Gruppe ein Header, eine Positionstabelle und eine Zwischensumme. */
+  private offerSection(section: ExportDocumentSection): Content[] {
+    const groups = Array.isArray(section.content)
+      ? (section.content as ExportOfferGroup[])
+      : [];
+    const content: Content[] = [];
+
+    for (const group of groups) {
+      const heading = group.positionLabel
+        ? `${group.positionLabel}   ${group.title}`
+        : group.title;
+      content.push({ text: heading, style: 'sectionTitle' });
+
+      const body: TableCell[][] = [
+        [
+          { text: 'Pos', style: 'tableHeader' },
+          { text: 'Bezeichnung', style: 'tableHeader' },
+          { text: 'Menge', style: 'tableHeader', alignment: 'right' },
+          { text: 'Einheit', style: 'tableHeader' },
+          { text: 'Einheitspreis', style: 'tableHeader', alignment: 'right' },
+          { text: 'Gesamt', style: 'tableHeader', alignment: 'right' }
+        ],
+        ...group.rows.map((row): TableCell[] => {
+          const labelStack: Content[] = [{ text: row.label, bold: true }];
+          if (row.description) {
+            labelStack.push({ text: row.description, style: 'muted' });
+          }
+          return [
+            { text: row.number },
+            { stack: labelStack },
+            { text: this.amount(row.quantity, null), alignment: 'right' },
+            { text: this.unitLabel(row.unit), alignment: 'left' },
+            { text: this.currency(row.unitPrice), alignment: 'right' },
+            { text: this.currency(row.total), alignment: 'right' }
+          ];
+        })
+      ];
+
+      content.push({
+        table: { headerRows: 1, widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'], body },
+        layout: {
+          hLineWidth: (i: number) => (i === 0 || i === 1 ? 0 : 0.5),
+          vLineWidth: () => 0,
+          hLineColor: () => BORDER_COLOR,
+          paddingTop: () => 4,
+          paddingBottom: () => 4
+        }
+      });
+
+      if (group.subtotal !== null) {
+        content.push({
+          margin: [0, 2, 0, 0],
+          columns: [
+            { text: '', width: '*' },
+            {
+              text: `Summe ${group.title}: ${this.currency(group.subtotal)}`,
+              width: 'auto',
+              bold: true
+            }
+          ]
+        });
+      }
+    }
+
+    return content;
   }
 
   private summaryCardsSection(section: ExportDocumentSection): Content[] {

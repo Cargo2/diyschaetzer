@@ -62,17 +62,18 @@ export class ProjectSessionSyncService {
 
   private async handleNewSession(): Promise<void> {
     try {
-      const dbProject = await this.supabase.loadProject();
-      if (dbProject === null) {
-        // DB leer → lokalen Stand einmalig importieren (nur wenn Räume vorhanden).
-        const local = this.localProject.getProject();
-        if (local.rooms.length > 0) {
-          await this.supabase.saveProject(local);
+      const dbProjects = await this.supabase.listProjects();
+      if (dbProjects.length === 0) {
+        // DB leer → lokale Projekte einmalig importieren (nur die mit Räumen).
+        for (const local of this.localProject.projects()) {
+          if (local.rooms.length > 0) {
+            await this.supabase.saveProject(local);
+          }
         }
         // In-Memory-Stand == lokaler Stand == jetzt DB; nichts weiter nötig.
       } else {
         // DB hat bereits Daten → UI aus der DB übernehmen (ohne Rückschreiben).
-        this.localProject.replaceProject(dbProject);
+        this.localProject.replaceProjects(dbProjects);
       }
     } catch {
       // Import/Sync fehlgeschlagen (z. B. Backend offline): der In-Memory-Stand

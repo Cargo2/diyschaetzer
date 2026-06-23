@@ -15,11 +15,18 @@ import { LocalStorageProjectRepository } from './local-storage-project-repositor
  * reines IO.
  */
 export interface ProjectRepository {
-  /** Lädt den rohen persistierten Projektstand oder `null`, wenn nichts gespeichert ist. */
-  loadProject(): Promise<LocalTileProject | null>;
-  /** Persistiert den vollständigen Projektstand. */
+  /**
+   * Lädt ein Projekt: mit `id` gezielt, ohne `id` das zuletzt geänderte
+   * (Abwärtskompatibilität, z. B. für den Session-Sync). `null`, wenn nichts passt.
+   */
+  loadProject(id?: string): Promise<LocalTileProject | null>;
+  /** Listet alle Projekte des aktuellen Scopes (zuletzt geändert zuerst; leer, wenn keines). */
+  listProjects(): Promise<LocalTileProject[]>;
+  /** Persistiert den vollständigen Projektstand (Upsert über `id`). */
   saveProject(project: LocalTileProject): Promise<void>;
-  /** Entfernt den persistierten Projektstand vollständig. */
+  /** Entfernt ein einzelnes Projekt (inkl. seiner Räume). */
+  deleteProject(id: string): Promise<void>;
+  /** Entfernt den gesamten persistierten Stand des Scopes. */
   clearProject(): Promise<void>;
 }
 

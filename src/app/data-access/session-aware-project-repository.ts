@@ -26,12 +26,20 @@ export class SessionAwareProjectRepository implements ProjectRepository {
     return this.auth.isAuthenticated() ? this.supabase : this.local;
   }
 
-  async loadProject(): Promise<LocalTileProject | null> {
-    return (await this.pick()).loadProject();
+  async loadProject(id?: string): Promise<LocalTileProject | null> {
+    return (await this.pick()).loadProject(id);
+  }
+
+  async listProjects(): Promise<LocalTileProject[]> {
+    return (await this.pick()).listProjects();
   }
 
   async saveProject(project: LocalTileProject): Promise<void> {
     return (await this.pick()).saveProject(project);
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    return (await this.pick()).deleteProject(id);
   }
 
   async clearProject(): Promise<void> {

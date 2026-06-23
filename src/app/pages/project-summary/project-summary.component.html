@@ -5,17 +5,7 @@
       <p>{{ rooms().length }} gespeicherte Räume</p>
     </div>
     <div class="actions">
-      <app-premium-export-button
-        label="Projekt-Materialliste als PDF"
-        hintId="project-pdf-hint"
-        [document]="buildProjectExportDocument"
-      />
-      <app-premium-export-button
-        format="excel"
-        label="Projekt-Materialliste als Excel"
-        hintId="project-excel-hint"
-        [document]="buildProjectExportDocument"
-      />
+      <!-- PDF-/Excel-Export bewusst nur in „Nächste Schritte"; im Dashboard-Kopf ausgeblendet. -->
       <button type="button" (click)="startNewRoom()">Neuen Raum anlegen</button>
     </div>
   </header>
