@@ -9,6 +9,7 @@ import { ExportDataMapperService } from '../../services/export-data-mapper.servi
 import { MaterialListService } from '../../services/material-list.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { LocalProjectService } from '../../services/local-project.service';
+import { RoomLimitService } from '../../services/room-limit.service';
 import { WizardStateService } from '../../services/wizard-state.service';
 
 @Component({
@@ -37,19 +38,28 @@ import { WizardStateService } from '../../services/wizard-state.service';
             <h2>{{ payload().room.roomName }}</h2>
           </div>
           @if (!roomSaved()) {
-            <button type="button" (click)="saveRoom()">
+            @let newRoomBlocked = !editingRoomId() && roomLimitReached();
+            <button type="button" (click)="saveRoom()" [disabled]="newRoomBlocked">
               {{ editingRoomId() ? 'Änderungen speichern' : 'Raum speichern' }}
             </button>
+            @if (newRoomBlocked || roomLimitBlocked()) {
+              <p class="room-limit-hint" role="alert">
+                Maximal erreicht: {{ roomLimitHint() }} Bestehende Räume kannst du weiter bearbeiten.
+              </p>
+            }
           } @else {
             <div class="save-success">
               <strong>
                 {{ savedExistingRoom() ? 'Änderungen wurden gespeichert.' : 'Raum wurde gespeichert.' }}
               </strong>
               <div class="save-actions">
-                <button type="button" (click)="startAnotherRoom()">Weiteren Raum hinzufügen</button>
-                <a routerLink="/gesamtschaetzung">Zur Gesamtschätzung</a>
+                <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">Weiteren Raum hinzufügen</button>
+                <a routerLink="/gesamtschaetzung">Zum Projekt-Dashboard</a>
                 <button type="button" (click)="openSavedRoomMaterialList()">Materialliste dieses Raumes prüfen</button>
               </div>
+              @if (roomLimitReached()) {
+                <p class="room-limit-hint" role="alert">{{ roomLimitHint() }}</p>
+              }
             </div>
           }
         </section>
@@ -170,15 +180,15 @@ import { WizardStateService } from '../../services/wizard-state.service';
                   <h2>{{ formatCurrency(comparison.professional.totalCost) }}</h2>
                   <dl>
                     <div>
-                      <dt>Leistungspositionen brutto</dt>
-                      <dd>{{ formatCurrency(comparison.professional.offer.grossTotal) }}</dd>
+                      <dt>Leistungspositionen netto</dt>
+                      <dd>{{ formatCurrency(comparison.professional.offer.netTotal) }}</dd>
                     </div>
                     <div>
                       <dt>Material laut Auswahl</dt>
                       <dd>{{ formatCurrency(comparison.professional.materialCost) }}</dd>
                     </div>
                     <div class="total-row">
-                      <dt>Gesamt</dt>
+                      <dt>Gesamt inkl. MwSt.</dt>
                       <dd>{{ formatCurrency(comparison.professional.totalCost) }}</dd>
                     </div>
                   </dl>
@@ -252,16 +262,12 @@ import { WizardStateService } from '../../services/wizard-state.service';
                     <dd>{{ formatCurrency(comparison.professional.offer.netTotal) }}</dd>
                   </div>
                   <div>
-                    <dt>zzgl. {{ comparison.professional.offer.vatPercent }} % MwSt.</dt>
-                    <dd>{{ formatCurrency(comparison.professional.offer.vatAmount) }}</dd>
-                  </div>
-                  <div>
-                    <dt>Bruttosumme Leistungspositionen</dt>
-                    <dd>{{ formatCurrency(comparison.professional.offer.grossTotal) }}</dd>
-                  </div>
-                  <div>
                     <dt>Material laut Auswahl</dt>
                     <dd>{{ formatCurrency(comparison.professional.materialCost) }}</dd>
+                  </div>
+                  <div>
+                    <dt>zzgl. {{ comparison.professional.offer.vatPercent }} % MwSt. (Leistung + Material)</dt>
+                    <dd>{{ formatCurrency(comparison.professional.totalCost - comparison.professional.offer.netTotal - comparison.professional.materialCost) }}</dd>
                   </div>
                   <div class="offer-grand-total">
                     <dt>Gesamtschätzung Fliesenleger</dt>
@@ -330,7 +336,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
     } @else {
       <section class="empty-panel">
         <p>Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.</p>
-        <a routerLink="/wizard" class="summary-link">Zum Wizard</a>
+        <a routerLink="/wizard" class="summary-link">Raum anlegen</a>
       </section>
     }
   `,
@@ -439,6 +445,12 @@ import { WizardStateService } from '../../services/wizard-state.service';
 
       .save-success {
         justify-content: flex-end;
+      }
+
+      .room-limit-hint {
+        color: #9a3412;
+        font-size: 0.85rem;
+        margin: 0.5rem 0 0;
       }
 
       .cost-trigger {
@@ -931,7 +943,11 @@ export class SummaryPageComponent {
   private readonly localProject = inject(LocalProjectService);
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly router = inject(Router);
+  private readonly roomLimit = inject(RoomLimitService);
 
+  readonly roomLimitReached = this.roomLimit.limitReached;
+  readonly roomLimitHint = this.roomLimit.hint;
+  readonly roomLimitBlocked = signal(false);
   readonly wizardCompleted = this.wizardState.resultsAvailable;
   readonly payload = this.wizardState.payload;
   readonly costOverviewOpen = signal(true);
@@ -988,7 +1004,14 @@ export class SummaryPageComponent {
   }
 
   saveRoom(): void {
-    this.savedExistingRoom.set(this.localProject.getEditingRoomId() !== null);
+    const editing = this.localProject.getEditingRoomId() !== null;
+    // Heimwerker-Limit: einen NEUEN Raum nur anlegen, solange die Obergrenze nicht erreicht ist.
+    if (!editing && this.roomLimit.limitReached()) {
+      this.roomLimitBlocked.set(true);
+      return;
+    }
+    this.roomLimitBlocked.set(false);
+    this.savedExistingRoom.set(editing);
     const room = this.localProject.saveCurrentRoom(
       this.wizardState.payload(),
       this.materialListState.getState()
@@ -998,6 +1021,10 @@ export class SummaryPageComponent {
   }
 
   startAnotherRoom(): void {
+    if (this.roomLimit.limitReached()) {
+      this.roomLimitBlocked.set(true);
+      return;
+    }
     this.localProject.startNewRoom();
     this.materialListState.resetMaterialOverrides();
     void this.router.navigate(['/wizard']);

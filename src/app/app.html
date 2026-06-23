@@ -21,41 +21,63 @@
         Start
       </a>
       <a routerLink="/wizard" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-        Wizard
+        Raum anlegen
       </a>
 
-      @if (resultsAvailable()) {
-        <a routerLink="/summary" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-          Zusammenfassung
-        </a>
+      @if (isContractor()) {
+        <!-- Profi: keine Zusammenfassung – direkt Materialliste des aktuellen Raums. -->
+        @if (resultsAvailable()) {
+          <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            Materialliste {{ roomName() }}
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="tab-button disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="openResultsPage('/materialliste')"
+          >
+            Materialliste {{ roomName() }}
+          </button>
+        }
       } @else {
-        <button
-          type="button"
-          class="tab-button disabled"
-          title="Bitte schließe zuerst den Wizard ab, damit die Ergebnisse neu berechnet werden können."
-          (click)="openResultsPage('/summary')"
-        >
-          Zusammenfassung
-        </button>
-      }
-
-      @if (resultsAvailable()) {
-        <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-          Materialliste
-        </a>
-      } @else {
-        <button
-          type="button"
-          class="tab-button disabled"
-          title="Bitte schließe zuerst den Wizard ab, damit die Ergebnisse neu berechnet werden können."
-          (click)="openResultsPage('/materialliste')"
-        >
-          Materialliste
-        </button>
+        <!-- Heimwerker: Raumname (Zusammenfassung) mit Materialliste als Dropdown (Hover/Klick). -->
+        <div class="tab-dropdown">
+          @if (resultsAvailable()) {
+            <a routerLink="/summary" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+              {{ roomName() }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="tab-button disabled"
+              title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+              (click)="openResultsPage('/summary')"
+            >
+              {{ roomName() }}
+            </button>
+          }
+          <div class="tab-dropdown-menu">
+            @if (resultsAvailable()) {
+              <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                Materialliste
+              </a>
+            } @else {
+              <button
+                type="button"
+                class="tab-button disabled"
+                title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+                (click)="openResultsPage('/materialliste')"
+              >
+                Materialliste
+              </button>
+            }
+          </div>
+        </div>
       }
 
       <a routerLink="/gesamtschaetzung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-        Gesamtschätzung
+        Projekt-Dashboard
       </a>
 
       <!-- Ratgeber vorerst aus dem Menü ausgeblendet; Route bleibt aktiv.

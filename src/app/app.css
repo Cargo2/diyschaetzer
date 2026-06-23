@@ -253,6 +253,39 @@
   width: 0;
 }
 
+/* Dropdown: Raumname (Zusammenfassung) → Materialliste. Desktop per Hover/Fokus. */
+.tab-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.tab-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 100%;
+  display: none;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.2rem;
+  padding: 0.25rem;
+  background: #fff;
+  border: 1px solid rgba(17, 87, 74, 0.14);
+  border-radius: 0.8rem;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+  z-index: 50;
+}
+
+.tab-dropdown:hover .tab-dropdown-menu,
+.tab-dropdown:focus-within .tab-dropdown-menu {
+  display: flex;
+}
+
+.tab-dropdown-menu .tab-button {
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+
 /* Angemeldete E-Mail in der Kopfzeile (kein Button). */
 .tab-account {
   align-items: center;
@@ -420,6 +453,22 @@
     justify-content: flex-start;
     min-height: 2.9rem;
     padding-inline: 0.9rem;
+  }
+
+  /* Im Hamburger das Dropdown nicht überlagern, sondern eingerückt aufklappen. */
+  .tab-dropdown {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tab-dropdown-menu {
+    position: static;
+    display: flex;
+    margin: 0 0 0 0.8rem;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
   }
 
   .site-footer {

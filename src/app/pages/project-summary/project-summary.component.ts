@@ -12,6 +12,7 @@ import { ExportDataMapperService } from '../../services/export-data-mapper.servi
 import { LocalProjectService } from '../../services/local-project.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { ProjectAggregationService } from '../../services/project-aggregation.service';
+import { RoomLimitService } from '../../services/room-limit.service';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
 
 @Component({
@@ -28,7 +29,10 @@ export class ProjectSummaryComponent implements OnInit {
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly affiliate = inject(AffiliateService);
   private readonly router = inject(Router);
+  private readonly roomLimit = inject(RoomLimitService);
 
+  readonly roomLimitReached = this.roomLimit.limitReached;
+  readonly roomLimitHint = this.roomLimit.hint;
   readonly rooms = this.localProject.rooms;
   readonly result = computed(() => this.aggregationService.aggregateProject(this.rooms()));
 
@@ -69,6 +73,9 @@ export class ProjectSummaryComponent implements OnInit {
   }
 
   duplicateRoom(roomId: string): void {
+    if (this.roomLimit.limitReached()) {
+      return;
+    }
     this.localProject.duplicateRoom(roomId);
   }
 
@@ -79,6 +86,9 @@ export class ProjectSummaryComponent implements OnInit {
   }
 
   startNewRoom(): void {
+    if (this.roomLimit.limitReached()) {
+      return;
+    }
     this.localProject.startNewRoom();
     this.materialListState.resetMaterialOverrides();
     void this.router.navigate(['/wizard']);

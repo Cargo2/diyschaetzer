@@ -6,9 +6,13 @@
     </div>
     <div class="actions">
       <!-- PDF-/Excel-Export bewusst nur in „Nächste Schritte"; im Dashboard-Kopf ausgeblendet. -->
-      <button type="button" (click)="startNewRoom()">Neuen Raum anlegen</button>
+      <button type="button" (click)="startNewRoom()" [disabled]="roomLimitReached()">Neuen Raum anlegen</button>
     </div>
   </header>
+
+  @if (roomLimitReached()) {
+    <p class="room-limit-banner" role="status">{{ roomLimitHint() }} Bestehende Räume kannst du weiter bearbeiten.</p>
+  }
 
   @if (rooms().length === 0) {
     <section class="empty-state dashboard-section">
@@ -92,7 +96,7 @@
             <div class="actions">
               <button type="button" (click)="editRoom(room.roomId)">Bearbeiten</button>
               <button type="button" class="secondary" (click)="openMaterialList(room.roomId)">Materialliste</button>
-              <button type="button" class="secondary" (click)="duplicateRoom(room.roomId)">Duplizieren</button>
+              <button type="button" class="secondary" (click)="duplicateRoom(room.roomId)" [disabled]="roomLimitReached()">Duplizieren</button>
               <button type="button" class="danger" (click)="deleteRoom(room.roomId)">Löschen</button>
             </div>
           </article>
@@ -215,7 +219,7 @@
         <p>Ergänze Räume oder prüfe die projektweiten Materialien und eine Einzelraum-Zusammenfassung.</p>
       </div>
       <div class="actions">
-        <button type="button" (click)="startNewRoom()">Weiteren Raum hinzufügen</button>
+        <button type="button" (click)="startNewRoom()" [disabled]="roomLimitReached()">Weiteren Raum hinzufügen</button>
         <button type="button" class="secondary" (click)="toggleProjectMaterialList()">Projekt-Materialliste prüfen</button>
         <button type="button" class="secondary" (click)="openCurrentRoomSummary(totals.roomSummaries[0].roomId)">Zusammenfassung prüfen</button>
         <app-premium-export-button

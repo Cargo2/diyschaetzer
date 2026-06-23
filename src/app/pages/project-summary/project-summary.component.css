@@ -1,5 +1,15 @@
 :host { display: block; }
 
+.room-limit-banner {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.7rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.9rem;
+}
+
 .project-summary {
   display: grid;
   gap: 1.4rem;

@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.component';
+import { ROOM_TYPE_DEFAULT_NAMES } from './models/bathroom-wizard.model';
 import { WizardStateService } from './services/wizard-state.service';
 import { AuthService } from './services/auth.service';
+import { LocalProjectService } from './services/local-project.service';
 import { ProjectSessionSyncService } from './services/project-session-sync.service';
 import { CatalogService } from './services/catalog.service';
 import { ProfileAssumptionDefaultsService } from './services/profile-assumption-defaults.service';
@@ -18,6 +20,7 @@ export class App {
   private readonly wizardState = inject(WizardStateService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly localProject = inject(LocalProjectService);
   // Beim App-Start instanziieren, damit der Login→DB-Sync (Phase 12, Block 4) aktiv ist.
   private readonly projectSessionSync = inject(ProjectSessionSyncService);
   // Katalog früh laden, damit die DB-Daten vor den Ergebnisseiten bereitstehen.
@@ -26,6 +29,30 @@ export class App {
   private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
+
+  /**
+   * Name des aktuell bearbeiteten/ausgewählten Raums (für den dynamischen Menüpunkt).
+   * Quelle in dieser Reihenfolge: gespeicherter, gerade bearbeiteter Raum →
+   * im Wizard eingegebener Name → Standardname des Raumtyps → „Raum".
+   */
+  readonly roomName = computed(() => {
+    const editingId = this.localProject.editingRoomId();
+    if (editingId) {
+      const editedRoom = this.localProject
+        .rooms()
+        .find((room) => room.id === editingId);
+      const editedName = editedRoom?.roomName?.trim();
+      if (editedName) {
+        return editedName;
+      }
+    }
+    const room = this.wizardState.payload().room;
+    const typed = room.roomName?.trim();
+    if (typed) {
+      return typed;
+    }
+    return room.roomType ? ROOM_TYPE_DEFAULT_NAMES[room.roomType] : 'Raum';
+  });
 
   /** Auth-Zustand für die Kopfzeile. */
   readonly authConfigured = this.auth.isConfigured;
