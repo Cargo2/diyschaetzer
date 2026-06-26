@@ -31,6 +31,26 @@ jobs:
       - name: Abhängigkeiten installieren
         run: npm ci
 
+      - name: Supabase-Konfiguration injizieren
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL" || { echo "::error::SUPABASE_URL fehlt"; exit 1; }
+          test -n "$SUPABASE_ANON_KEY" || { echo "::error::SUPABASE_ANON_KEY fehlt"; exit 1; }
+          cat > src/environments/environment.ts <<EOF
+          import { AppEnvironment } from './environment.model';
+
+          export const environment: AppEnvironment = {
+            production: true,
+            supabase: {
+              url: '${SUPABASE_URL}',
+              anonKey: '${SUPABASE_ANON_KEY}'
+            }
+          };
+          EOF
+
       - name: Angular-Anwendung bauen
         run: npm run build -- --configuration production
 
