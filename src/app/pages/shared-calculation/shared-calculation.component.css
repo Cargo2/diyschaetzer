@@ -1,0 +1,211 @@
+.shared-page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.shared-status {
+  color: #6b7280;
+}
+
+.shared-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: center;
+}
+
+.shared-eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.shared-header h1 {
+  margin: 0.2rem 0;
+  font-size: 1.7rem;
+}
+
+.shared-meta {
+  margin: 0;
+  color: #4b5563;
+}
+
+.shared-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+}
+
+.shared-metrics article {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.shared-metrics span {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.shared-metrics strong {
+  font-size: 1.1rem;
+}
+
+.shared-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.shared-card {
+  border-radius: 1rem;
+  padding: 1.1rem 1.2rem;
+  color: #fff;
+}
+
+.shared-card.diy {
+  background: linear-gradient(145deg, #047857, #059669);
+}
+
+.shared-card.pro {
+  background: linear-gradient(145deg, #1e3a8a, #1d4ed8);
+}
+
+.card-label {
+  margin: 0;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.shared-card h2 {
+  margin: 0.15rem 0 0.6rem;
+  font-size: 1.7rem;
+}
+
+.shared-card dl {
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.shared-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.shared-card dl div.grand {
+  font-weight: 800;
+  font-size: 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.5);
+  margin-top: 0.2rem;
+  padding-top: 0.5rem;
+}
+
+.shared-card dt {
+  opacity: 0.92;
+}
+
+.shared-savings {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #064e3b;
+  border-radius: 1rem;
+  padding: 1rem 1.2rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.shared-savings span {
+  font-weight: 800;
+}
+
+.shared-savings strong {
+  font-size: 1.4rem;
+}
+
+.shared-savings small {
+  color: #047857;
+}
+
+.shared-positions h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.6rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.8rem;
+}
+
+.shared-positions table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.shared-positions th {
+  text-align: left;
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.shared-positions td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.shared-positions td:not(:first-child) {
+  white-space: nowrap;
+}
+
+.shared-positions small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.shared-positions small.optional {
+  display: inline;
+  color: #92400e;
+  margin-left: 0.3rem;
+}
+
+.shared-legal {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #6b7280;
+  margin: 0;
+}
+
+.shared-footer-cta {
+  display: flex;
+  justify-content: center;
+}
+
+.shared-cta {
+  display: inline-block;
+  background: #047857;
+  color: #fff;
+  border-radius: 0.65rem;
+  padding: 0.7rem 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}

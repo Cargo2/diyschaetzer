@@ -1,0 +1,105 @@
+<section class="shared-page">
+  @if (loading()) {
+    <p class="shared-status">Kalkulation wird geladen …</p>
+  } @else if (notFound()) {
+    <div class="shared-empty">
+      <h1>Kalkulation nicht gefunden</h1>
+      <p>Dieser Link ist ungültig oder wurde entfernt.</p>
+      <a routerLink="/" class="shared-cta">Zur Startseite</a>
+    </div>
+  } @else if (calculation(); as calc) {
+    <header class="shared-header">
+      <p class="shared-eyebrow">Geteilte Kostenschätzung · schreibgeschützt</p>
+      <h1>{{ calc.roomName }}</h1>
+      <p class="shared-meta">
+        {{ calc.roomTypeLabel }} · {{ calc.isOutdoor ? 'Außenbereich' : 'Innenbereich' }}
+        @if (formatDate(calc.createdAt)) {
+          · erstellt am {{ formatDate(calc.createdAt) }}
+        }
+      </p>
+    </header>
+
+    <section class="shared-metrics">
+      <article><span>Fliesenfläche</span><strong>{{ formatNumber(calc.tileAreaM2) }} m²</strong></article>
+      <article><span>Inkl. Verschnitt</span><strong>{{ formatNumber(calc.tileAreaWithWasteM2) }} m²</strong></article>
+    </section>
+
+    <div class="shared-cards">
+      <article class="shared-card diy">
+        <p class="card-label">Eigenleistung (DIY)</p>
+        <h2>{{ formatCurrency(calc.diy.totalCost) }}</h2>
+        <dl>
+          <div><dt>Material &amp; Zubehör</dt><dd>{{ formatCurrency(calc.diy.materialCost) }}</dd></div>
+          <div><dt>Puffer ({{ formatNumber(calc.diy.bufferPercent, 0) }} %)</dt>
+            <dd>{{ formatCurrency(calc.diy.totalCost - calc.diy.materialCost) }}</dd></div>
+        </dl>
+      </article>
+
+      <article class="shared-card pro">
+        <p class="card-label">Fliesenleger</p>
+        <h2>{{ formatCurrency(calc.professional.totalCost) }}</h2>
+        <dl>
+          <div><dt>Leistungspositionen netto</dt><dd>{{ formatCurrency(calc.professional.netTotal) }}</dd></div>
+          <div><dt>Material laut Auswahl</dt><dd>{{ formatCurrency(calc.professional.materialCost) }}</dd></div>
+          <div><dt>zzgl. {{ calc.professional.vatPercent }} % MwSt. (Leistung + Material)</dt>
+            <dd>{{ formatCurrency(calc.professional.vatAmount) }}</dd></div>
+          <div class="grand"><dt>Gesamtschätzung Fliesenleger</dt>
+            <dd>{{ formatCurrency(calc.professional.totalCost) }}</dd></div>
+        </dl>
+      </article>
+    </div>
+
+    @if (calc.savings.amount > 0) {
+      <section class="shared-savings">
+        <span>{{ calc.savings.label }}</span>
+        <strong>{{ formatCurrency(calc.savings.amount) }}</strong>
+        @if (calc.savings.percent > 0) {
+          <small>ca. {{ formatNumber(calc.savings.percent, 1) }} % der geschätzten Profi-Kosten</small>
+        }
+      </section>
+    }
+
+    @if (calc.professional.lineItems.length > 0) {
+      <section class="shared-positions">
+        <h2>Profi-Leistungspositionen</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Position</th>
+                <th>Menge</th>
+                <th>Einheit</th>
+                <th>Einheitspreis</th>
+                <th>Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of calc.professional.lineItems; track $index) {
+                <tr>
+                  <td>
+                    <strong>{{ item.label }}</strong>
+                    @if (item.isOptional) { <small class="optional">optional</small> }
+                    @if (item.description) { <small>{{ item.description }}</small> }
+                  </td>
+                  <td>{{ formatNumber(item.quantity, item.unit === 'piece' ? 0 : 2) }}</td>
+                  <td>{{ unitLabel(item.unit) }}</td>
+                  <td>{{ formatCurrency(item.unitPrice) }}</td>
+                  <td>{{ formatCurrency(item.totalPrice) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <p class="shared-legal">
+      Diese Auswertung ist eine unverbindliche Kostenschätzung und ersetzt kein geprüftes
+      Angebot eines Fachbetriebs.
+    </p>
+
+    <div class="shared-footer-cta">
+      <a routerLink="/raum-anlegen" class="shared-cta">Eigene Kalkulation erstellen</a>
+    </div>
+  }
+</section>

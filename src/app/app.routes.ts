@@ -33,6 +33,13 @@ export const routes: Routes = [
   { path: 'wizard', redirectTo: 'raum-anlegen', pathMatch: 'full' },
   { path: 'summary', redirectTo: 'zusammenfassung', pathMatch: 'full' },
   { path: 'gesamtschaetzung', redirectTo: 'projekt-dashboard', pathMatch: 'full' },
+  {
+    path: 'geteilt/:token',
+    loadComponent: () =>
+      import('./pages/shared-calculation/shared-calculation.component').then(
+        (m) => m.SharedCalculationComponent
+      )
+  },
   { path: 'ratgeber', component: GuideComponent },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },

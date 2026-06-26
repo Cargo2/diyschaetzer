@@ -10,6 +10,7 @@ import { MaterialListService } from '../../services/material-list.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
 import { LocalProjectService } from '../../services/local-project.service';
 import { RoomLimitService } from '../../services/room-limit.service';
+import { ShareService } from '../../services/share.service';
 import { WizardStateService } from '../../services/wizard-state.service';
 
 @Component({
@@ -205,6 +206,41 @@ import { WizardStateService } from '../../services/wizard-state.service';
                   <small>
                     Das entspricht ca. {{ formatNumber(comparison.savings.percent, 1) }} % der
                     geschätzten Profi-Kosten.
+                  </small>
+                }
+              </section>
+
+              <section class="share-box">
+                <div class="share-head">
+                  <div>
+                    <p class="share-eyebrow">Kalkulation teilen</p>
+                    <h2>Read-only-Link erzeugen</h2>
+                  </div>
+                  @if (canShare()) {
+                    <button type="button" (click)="share()" [disabled]="sharing()">
+                      {{ sharing() ? 'Link wird erstellt …' : 'Teilen-Link erzeugen' }}
+                    </button>
+                  }
+                </div>
+                @if (!canShare()) {
+                  <p class="share-hint">
+                    Zum Teilen bitte <a routerLink="/login">anmelden</a> – ein geteilter Link
+                    speichert eine eingefrorene Momentaufnahme dieser Kalkulation.
+                  </p>
+                }
+                @if (shareError()) {
+                  <p class="share-error" role="alert">{{ shareError() }}</p>
+                }
+                @if (shareUrl()) {
+                  <div class="share-result">
+                    <input type="text" readonly [value]="shareUrl()" #shareInput (focus)="shareInput.select()" />
+                    <button type="button" (click)="copyShareUrl()">
+                      {{ copied() ? 'Kopiert ✓' : 'Kopieren' }}
+                    </button>
+                  </div>
+                  <small class="share-note">
+                    Jeder mit diesem Link sieht eine schreibgeschützte Ansicht – ohne deine
+                    übrigen Projektdaten.
                   </small>
                 }
               </section>
@@ -705,6 +741,64 @@ import { WizardStateService } from '../../services/wizard-state.service';
         padding: 1rem 1.2rem;
       }
 
+      .share-box {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 1rem 1.2rem;
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .share-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .share-head h2 {
+        margin: 0.1rem 0 0;
+        font-size: 1.05rem;
+      }
+
+      .share-eyebrow {
+        margin: 0;
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #6b7280;
+      }
+
+      .share-hint,
+      .share-note {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+
+      .share-error {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #b91c1c;
+      }
+
+      .share-result {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .share-result input {
+        flex: 1 1 18rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.55rem;
+        background: #f9fafb;
+        font: inherit;
+      }
+
       .savings-box span {
         font-weight: 800;
       }
@@ -944,10 +1038,16 @@ export class SummaryPageComponent {
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
+  private readonly shareService = inject(ShareService);
 
   readonly roomLimitReached = this.roomLimit.limitReached;
   readonly roomLimitHint = this.roomLimit.hint;
   readonly roomLimitBlocked = signal(false);
+  readonly canShare = this.shareService.canShare;
+  readonly sharing = signal(false);
+  readonly shareUrl = signal<string | null>(null);
+  readonly shareError = signal<string | null>(null);
+  readonly copied = signal(false);
   readonly wizardCompleted = this.wizardState.resultsAvailable;
   readonly payload = this.wizardState.payload;
   readonly costOverviewOpen = signal(true);
@@ -1001,6 +1101,42 @@ export class SummaryPageComponent {
       piece: 'Stück',
       hour: 'Std.'
     }[value] ?? value;
+  }
+
+  async share(): Promise<void> {
+    if (!this.canShare() || this.sharing()) {
+      return;
+    }
+    this.shareError.set(null);
+    this.shareUrl.set(null);
+    this.copied.set(false);
+    this.sharing.set(true);
+    try {
+      const snapshot = this.shareService.buildSnapshot(
+        this.payload(),
+        this.materialList(),
+        this.costComparison()
+      );
+      const token = await this.shareService.createShare(snapshot);
+      this.shareUrl.set(this.shareService.shareUrl(token));
+    } catch {
+      this.shareError.set('Der Teilen-Link konnte nicht erstellt werden. Bitte erneut versuchen.');
+    } finally {
+      this.sharing.set(false);
+    }
+  }
+
+  async copyShareUrl(): Promise<void> {
+    const url = this.shareUrl();
+    if (!url) {
+      return;
+    }
+    try {
+      await globalThis.navigator?.clipboard?.writeText(url);
+      this.copied.set(true);
+    } catch {
+      // Clipboard nicht verfügbar: der Nutzer kann den markierten Link manuell kopieren.
+    }
   }
 
   saveRoom(): void {
