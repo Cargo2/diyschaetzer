@@ -3,7 +3,7 @@
 Sicherheits-Checkliste, bezogen auf **diesen** Stand (diyschaetzer / Phase 12).
 Lebendes Dokument – bei jeder Backend-/Auth-Änderung mitpflegen.
 
-**Stand:** 2026-06-23 (Phase 13: Firmenprofil, Profil-Defaults, Export-Branding, Profi-Angebotsmodul)
+**Stand:** 2026-06-23 (Phase 13 abgeschlossen ohne Mailversand; Phase 14: Teilen-Link)
 
 Legende:
 **✅ OK** – im Code/Schema verifiziert ·
@@ -50,7 +50,7 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 |---|---|---|---|
 | 1 | Exposed DB credentials | ⚠️ | `service_role`-Key ist **nirgends** im Baum oder in der History. Der in [environment.development.ts](src/environments/environment.development.ts) committete `anonKey` ist der **publishable/anon-Key – per Design öffentlich** (RLS schützt), kein echtes Geheimnis. Inkonsistenz zur Policy in [environment.ts](src/environments/environment.ts) („nicht einchecken"). Optional rausnehmen; echte Secrets (service_role) **nie** ins Frontend. |
 | 2 | `.env` aktuell | ➖/⚠️ | Projekt nutzt Angular-`environment.*.ts`, kein `.env`. `supabase/.env` ist gitignored. **Prod** baut mit `environment.ts` (leer) → Supabase-Werte müssen beim Deploy injiziert werden (Hosting-Env / File-Replacement). Vor Livegang dokumentieren. |
-| 3 | Fremde Nutzerdaten lesbar | ✅ | RLS auf `profiles`/`projects`/`rooms` scoped alles auf `auth.uid()`; Räume erben Zugriff über Projekt-Eigentum. Phase 13 ergänzt owner-scoped Tabellen `company_profiles` (0006), `company_profiles.assumption_defaults` (0007) und **`contractor_offers`** (0008, RLS über `owner_id`). Prüfen, dass alle Migrationen in der **Live-DB** angewandt sind. |
+| 3 | Fremde Nutzerdaten lesbar | ✅ | RLS auf `profiles`/`projects`/`rooms` scoped alles auf `auth.uid()`; Räume erben Zugriff über Projekt-Eigentum. Phase 13 ergänzt owner-scoped Tabellen `company_profiles` (0006), `company_profiles.assumption_defaults` (0007) und **`contractor_offers`** (0008, RLS über `owner_id`). Phase 14: **`shared_calculations`** (0009) – owner-scoped Insert/Select/Delete; öffentliches Lesen nur über die SECURITY-DEFINER-Funktion (s. Pkt. 12). Prüfen, dass alle Migrationen in der **Live-DB** angewandt sind. |
 | 4 | Offene Read/Write-Rechte | ✅ | RLS auf allen Tabellen aktiv (inkl. `contractor_offers`: select/insert/update/delete nur `auth.uid() = owner_id`), keine permissiven Policies → default-deny. In der Live-DB verifizieren. |
 | 5 | Ungeschützte Admin-Routen | ➖/🔲 | Es gibt **noch keine** `/admin`-Route (Phase 15). Beim Hinzufügen: lazy-Modul + Route-Guard auf Rolle `admin` (Roadmap-Entscheidung) – und serverseitig per RLS absichern, nicht nur im Guard. |
 | 6 | Build-Logs leaken | ✅ | Prod-Build-Log zeigt nur Bundle-Größen/Warnungen, keine Secrets (Prod-Env leer). |
@@ -59,7 +59,7 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 | 9 | Secrets im Frontend-JS | ✅ | Nur der anon-Key (öffentlich by design) erreicht den Client. Kein service_role. |
 | 10 | Nur clientseitige Security-Checks | ⚠️ | **Datenzugriff** ist serverseitig per RLS erzwungen (gut). **Feature-Gating** ([FeatureAccessService](src/app/services/feature-access.service.ts)) ist rein Frontend → ok für UX, **nicht** als Schutz bezahlter Serveraktionen. Ab Phase 13 (PDF-Versand etc.) serverseitig erzwingen. |
 | 11 | Fehlende Input-Validierung | ⚠️ | DB-`CHECK`-Constraints validieren `role`/`plan`/`status` serverseitig. `wizard_data`/`material_list_user_state` sowie das Profi-Angebot `contractor_offers.offer_data` sind vertrauenswürdige `jsonb`-Blobs des eigenen Nutzers (RLS-scoped), **strukturell nicht** serverseitig validiert. Beim Teilen-Link (Phase 14) Größe/Struktur begrenzen. |
-| 12 | SQL-Injection | ✅ | Aller DB-Zugriff über den supabase-js Query-Builder (parametrisiert), keine String-Konkatenation. `SECURITY DEFINER`-Funktion mit fixem `search_path`. |
+| 12 | SQL-Injection | ✅ | Aller DB-Zugriff über den supabase-js Query-Builder (parametrisiert), keine String-Konkatenation. Phase-14-`SECURITY DEFINER`-Funktion `get_shared_calculation(uuid)`: fixer `search_path = public`, `stable`, reine **Punktabfrage per Token** (`where id = p_token`) – kein Listing/Enumeration; `revoke from public` + gezielter `grant execute` an `anon`/`authenticated`. Gibt nur die `data`-Spalte zurück. |
 | 13 | NoSQL-Injection | ➖ | N/A (PostgreSQL). |
 | 14 | XSS / CSS-Injection | ✅ | Angular-Default-Escaping; **kein** `innerHTML`/`bypassSecurityTrust`/`document.write` im Code. |
 | 15 | CSRF | ✅ | Supabase-Auth nutzt **Bearer-Token im `Authorization`-Header**, keine Session-Cookies → CSRF nicht anwendbar. |
@@ -85,9 +85,9 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 ## Vor öffentlichem Livegang (Kurzliste)
 
 1. ~~**Pkt. 23**: Migration 0003 anwenden + verifizieren~~ – ✅ erledigt (2026-06-22).
-2. Migrationen in der Live-DB anwenden und **RLS aktiv** bestätigen (Pkt. 3/4) – inkl. `0006`–`0008`
-   (Firmenprofil, Profil-Defaults, `contractor_offers`). **Stand 2026-06-23: `0008` ist lokal angelegt,
-   aber noch nicht auf die Live-DB gepusht** (`npx supabase db push`).
+2. Migrationen in der Live-DB anwenden und **RLS aktiv** bestätigen (Pkt. 3/4) – inkl. `0006`–`0009`
+   (Firmenprofil, Profil-Defaults, `contractor_offers`, `shared_calculations`). `0008` ist gepusht;
+   **`0009` (Teilen-Link) ist lokal angelegt, aber noch nicht auf die Live-DB gepusht** (`npx supabase db push`).
 3. Supabase-Dashboard: Auth-Redirect-URLs/CORS einschränken, Passwort-Reset-Flow, E-Mail-Bestätigung (Pkt. 18/19).
 4. Hosting: Security-Header setzen (Pkt. 28); Prod-Supabase-Werte sicher injizieren (Pkt. 2).
 5. Repo-Sichtbarkeit prüfen (Pkt. 8).
