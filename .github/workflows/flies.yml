@@ -1,4 +1,4 @@
-name: Build and deploy Angular to netcup
+name: FliesenRun
 
 on:
   push:
