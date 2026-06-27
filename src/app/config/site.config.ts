@@ -6,7 +6,7 @@
  * und die generierte sitemap.xml. Eine falsche Domain schadet dem SEO mehr als
  * gar keine – daher hier bewusst als Platzhalter markiert.
  */
-export const SITE_URL = 'https://www.fliesenprojekt.example'; // [Platzhalter: echte Domain eintragen]
+export const SITE_URL = 'https://fliesen-kosten.de';
 
 /** Marken-/Seitenname für <title>-Suffix und og:site_name. */
 export const SITE_NAME = 'Fliesenprojekt';
