@@ -37,10 +37,16 @@ Projekt mit Gesamtschätzung.
 
 ```bash
 ng serve                              # Dev-Server http://localhost:4200
-ng build                              # Prod-Build (dist/)
+ng build                              # Prod-Build (dist/) – prerendert Inhaltsseiten (SSG)
 ng build --configuration development  # Dev-Build (ohne Budgets) – zum Fehler-Check
 ng test                               # Vitest, einmalig: ng test --watch=false
+npm run generate:ratgeber             # Ratgeber-Beiträge (.md) + sitemap.xml neu generieren
 ```
+
+- **`prebuild`** läuft automatisch vor jedem `npm run build` (auch in CI) und erzeugt aus
+  `src/content/ratgeber/*.md` das Modul `src/app/content/ratgeber-articles.ts` **und**
+  `public/sitemap.xml`. Beim Hinzufügen/Ändern eines Beitrags muss man nichts extra tun;
+  nur `ng serve`/`ng test` triggern den Generator nicht (das committete Modul reicht dort).
 
 - Tests laufen mit **Vitest** (nicht Karma). Headless ohne Browser-Flags: `ng test --watch=false`.
 - Im Preview/Verifikations-Workflow die `preview_*`-Tools nutzen, nicht Bash für den Dev-Server.
@@ -105,9 +111,28 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - **pdfmake** wird in `PdfExportService` **dynamisch** importiert (Lazy-Chunk, bleibt aus dem
   Initial-Bundle). vfs_fonts 0.2.x exportiert das VFS als Default-Export (`module.exports = vfs`).
   In `angular.json` als `allowedCommonJsDependencies` eingetragen.
-- `angular.json`-Budgets: `anyComponentStyle` auf 12 kB/16 kB angehoben (Tailwind-Projekt).
-  Initial-Bundle ~660 kB → nur Warnung (unter dem 1-MB-Error-Limit).
+- `angular.json`-Budgets: `anyComponentStyle` auf 12 kB/16 kB; `initial` auf 1 MB/1.5 MB
+  angehoben (die Hydration-Runtime schob das ~968-kB-Bundle knapp über 1 MB).
 - Styling über **Tailwind v4** (PostCSS) plus Komponenten-CSS.
+
+### Prerendering / SSG (Phase 16)
+- **`@angular/ssr` als STATISCHER Output** (`outputMode: "static"`, **kein** Node-Server) –
+  passt zum statischen netcup-Hosting. `src/server.ts` (Express) wurde entfernt; es bleiben
+  `main.server.ts` + `app.config.server.ts` (für die Build-Zeit-Prerender).
+- `app/app.routes.server.ts` setzt die Render-Modi: **Prerender** für die Inhaltsseiten
+  (`/`, `/ratgeber`, `/ratgeber/:slug` via `getPrerenderParams`, `/impressum`,
+  `/datenschutz`, `/kontakt`), **`RenderMode.Client`** für alles Übrige (Rechner, Admin,
+  Login, `/geteilt/:token`, Redirects) – die brauchen kein SEO und laufen client-seitig.
+- **Prerender-Sicherheit:** `SUPABASE_CLIENT` liefert auf dem Server (`!isPlatformBrowser`)
+  `null` → die App nutzt beim Prerender den anonymen Offline-Fallback (gebündelter Katalog),
+  keine Auth-/WebSocket-/Netzwerk-Calls im Build. (Sonst bricht der Prerender u. a. unter
+  Node 20 mit „ohne native WebSocket support".) **Neue eager Bootstrap-Side-Effects, die
+  Browser/`window`/Supabase anfassen, müssen ebenso guarded werden.**
+- **SPA-Fallback:** `public/.htaccess` leitet jetzt auf **`index.csr.html`** (Client-Shell),
+  da `index.html` die prerenderte Startseite ist. Prerenderte Seiten/Assets werden direkt
+  ausgeliefert. Greift nur auf Apache (siehe Passenger-Hinweis unten).
+- **SEO je Route:** `SeoService` setzt Title/Description/Canonical/OpenGraph/Twitter +
+  JSON-LD; `config/site.config.ts` hält `SITE_URL` (= Ziel-Domain) und den Marken-/Default-Text.
 
 ## Schlüsseldateien
 
@@ -130,6 +155,9 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Rechtstexte/Cookie (Phase 11) | `pages/legal/` (Impressum/Datenschutz/Kontakt + `legal.css`), `components/cookie-notice/`, Routen in `app.routes.ts` |
 | Commercial/Feature-Gates | `models/commercial.model.ts`, `services/feature-access.service.ts`, `config/commercial.config.ts` |
 | Affiliate (Phase 8) | `models/affiliate.model.ts`, `config/affiliate.config.ts`, `data/product-offers.ts`, `services/affiliate.service.ts`, `services/affiliate-settings.service.ts` |
+| Admin-UI (Phase 15) | `pages/admin/` (lazy `admin.routes.ts`, Shell + Material-Liste/-Editor + Nutzerübersicht), `guards/admin.guard.ts`, `pages/admin/data-access/admin-*-repository.ts` (+ `supabase-…`), Migrationen `0010`–`0013` (`is_admin()`, Write-RLS, `admin_list_users()`) |
+| Ratgeber + SEO (Phase 16) | Beiträge `src/content/ratgeber/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/ratgeber-articles.ts` (+ `public/sitemap.xml`); `models/ratgeber.model.ts`, `services/ratgeber.service.ts`, `pages/guide/` (Übersicht + `ratgeber-article.component.ts`); `services/seo.service.ts`, `config/site.config.ts`, `public/robots.txt` |
+| Prerendering/SSG (Phase 16) | `app/app.routes.server.ts`, `app/app.config.server.ts`, `src/main.server.ts`, `outputMode: static` in `angular.json`; Prerender-Guard in `data-access/supabase-client.ts` |
 
 ## Roadmap
 
@@ -169,6 +197,18 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   `CatalogService` lädt **einmal** und cached – die **synchrone** Berechnungs-Pipeline bleibt
   unangetastet. Der TS-Katalog ist jetzt nur noch **Seed + Offline-Fallback**; die **DB ist
   Laufzeitquelle**, wenn Supabase konfiguriert ist. Katalog-Pflege/Admin-UI folgt in Phase 15.
+- **Phase 15 – Admin-UI & Katalogpflege**: abgekapseltes lazy `/admin` (Guard Rolle `admin`).
+  Materialkatalog ansehen/suchen, **bearbeiten** (inkl. Reichweite je Gebinde + Affiliate-Links je
+  Händler), **duplizieren** (= anlegen mit gültiger Konfig) und **löschen**; **Nutzer-/Rollen­
+  übersicht** (read-only). DB-Schreibpfade gated über `is_admin()` (Migrationen `0010`–`0013`);
+  Rollen­vergabe bleibt serverseitig. Eigene Write-Repo-Schicht unter `pages/admin/data-access/`.
+- **Reichweite je Gebinde**: optionales `coverageM2PerPackage` am Material; `MaterialQuantityService`
+  rechnet `ceil(Fläche / Reichweite)` statt der festen 20-m²-Pauschale, sofern gepflegt.
+- **Affiliate aktiviert** (`COMMERCIAL_CONFIG.affiliateEnabled = true`); Anzeige nur für Händler mit
+  hinterlegtem Affiliate-Link (Filter auf `affiliateUrl`), keine generierten Such-Links mehr.
+- **Phase 16 – Ratgeber + SEO + Prerendering**: Ratgeber wieder im Menü, Markdown-Beiträge (Codegen),
+  per-Route-SEO (`SeoService`: Title/Description/Canonical/OG/JSON-LD), `sitemap.xml` + `robots.txt`,
+  und **statisches Prerendering (SSG)** der Inhaltsseiten. Details unter „TypeScript / Build-Eigenheiten".
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -187,7 +227,8 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   Amazon-Preisregel-konform). Interner Schätzpreis bleibt der einzige angezeigte Preis.
 - **Rollen-Mapping**: Hobby = `customer`, Profi = `contractor`, dazu `admin`. Profi schaltet
   später Plan `pro` frei → PDF/Branding über das vorhandene Feature-Gate.
-- Affiliate global **standardmäßig aus** (`COMMERCIAL_CONFIG.affiliateEnabled = false`).
+- Affiliate war anfangs **standardmäßig aus**; seit Phase 15/16 **aktiv**
+  (`COMMERCIAL_CONFIG.affiliateEnabled = true`).
 
 ### Kommende Phasen
 - **Phase 13 – Profi-Modus** (in Arbeit).
@@ -231,18 +272,16 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
     - **PDF**: `ExportDataMapperService.buildContractorOfferExportData` + neuer `offer`-Sektionstyp im
       `PdfDocumentBuilderService` (Leistungsverzeichnis: Gruppen, Zwischensummen, Netto/MwSt./Brutto).
       Download über `PremiumExportButton`; Firmenname-Branding automatisch via `ContractorBrandingService`.
-  - **Noch offen in Phase 13**: gebrandetes Schätzungs-PDF **versenden** (Edge Function + Mailversand).
-    Gate via Feature-Access.
-- **Phase 14 – Teilen-Link**: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen teilbaren
-  Link auf eine read-only Ansicht der Kalkulation. Setzt das Backend voraus (gespeicherte Kalkulation
-  + öffentlicher Lese-Token via RLS); reine localStorage-Stände sind nicht teilbar.
-- **Phase 15 – Admin-UI & Produktkatalogpflege**: eigene, **abgekapselte Admin-UI** (lazy-geladenes
-  Feature-Modul unter `/admin`, Route-Guard auf Rolle `admin`, eigene Service-/State-Grenze, keine
-  Kopplung an Endkunden-/Profi-Flows → später eigenständig, ggf. separat deploybar, weiterentwickelbar).
-  Inhalt minimal halten: Merchants/Offers/Produkte pflegen, eigene/Partner-Produkte, ggf. Nutzer-/
-  Rollenübersicht. Bewusst klein (Ziel: wenig pflegen).
+  - **Noch offen in Phase 13 – ZURÜCKGESTELLT** (Nutzerentscheidung): gebrandetes Schätzungs-PDF
+    **versenden** (Edge Function + Mailversand). Vorerst nicht weiterverfolgt.
+- **Phase 14 – Teilen-Link** *(erledigt)*: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen
+  teilbaren Link auf eine read-only Ansicht der Kalkulation. Backend-Tabelle `shared_calculations`
+  (Migration `0009`), öffentlicher Lese-Token via SECURITY-DEFINER-Funktion. localStorage-Stände
+  sind nicht teilbar.
+
+### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
-  (`WhiteLabelConfig` ist vorbereitet).
+  (`WhiteLabelConfig` vorbereitet). **Bewusst zurückgestellt** – nur bei konkretem Partner-/B2B-Bedarf.
 
 ### Offen vor öffentlichem Livegang
 - **Rechtstext-Platzhalter füllen**: alle `[Platzhalter: …]` in `pages/legal/` (Impressum,
@@ -260,8 +299,16 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   Hinweise (z. B. Amazon-Partnerprogramm) erweitern.
 
 ## Bekannte Altlasten / Hinweise
-- Prod-Build endet mit einer Warnung zum Initial-Bundle (~660 kB) – kein Fehler.
+- Prod-Build endet mit einer Warnung zum Initial-Bundle (~1 MB, Budget-Warnung 1 MB) – kein Fehler.
 - Der TS-Materialkatalog (`material-catalog-with-prices.ts`, `product-offers.ts`) ist seit Phase 12
   nur noch **Seed + Offline-Fallback**; Laufzeitquelle ist die DB (über `CatalogService`). Bei
   Katalog-Änderungen `tools/generate-catalog-seed.mts` neu laufen lassen und Migration anwenden.
 - Gespeicherte Alträume im localStorage werden beim Laden normalisiert (fehlende Felder ergänzt).
+- **Deploy-Domain:** aktuell **bouletten-contest.de**; **fliesen-kosten.de** ist die Ziel-Domain und
+  steht bereits als `SITE_URL` (Canonical/OG/Sitemap zeigen dorthin – Vorlauf). Sitemap erst in der
+  Search Console einreichen, wenn auf fliesen-kosten.de deployt wird.
+- **netcup/Plesk-Passenger-Falle:** Ist für die Domain die **Plesk-Node.js-Erweiterung (Passenger)**
+  aktiv, liefert der Server auf alle Unterpfade HTTP 500 „Web application could not be started" (nur
+  `/` kommt durch). Der statische, prerenderte Build braucht **kein** Node → in Plesk **Node.js
+  deaktivieren**, dann bedient Apache statisch + liest die `.htaccess`.
+- **DB-Migrationen werden NICHT vom CI deployt** – nach neuen Migrationen manuell `npx supabase db push`.
