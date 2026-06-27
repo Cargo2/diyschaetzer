@@ -8,6 +8,7 @@ import { CATALOG_REPOSITORY, CatalogRepository } from './data-access/catalog-rep
 import { LocalCatalogRepository } from './data-access/local-catalog-repository';
 import { SupabaseCatalogRepository } from './data-access/supabase-catalog-repository';
 import { SUPABASE_CLIENT } from './data-access/supabase-client';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,9 +23,8 @@ export const appConfig: ApplicationConfig = {
     {
       provide: CATALOG_REPOSITORY,
       useFactory: (): CatalogRepository =>
-        inject(SUPABASE_CLIENT)
-          ? inject(SupabaseCatalogRepository)
-          : new LocalCatalogRepository()
-    }
-  ]
+        inject(SUPABASE_CLIENT) ? inject(SupabaseCatalogRepository) : new LocalCatalogRepository(),
+    },
+    provideClientHydration(withEventReplay()),
+  ],
 };

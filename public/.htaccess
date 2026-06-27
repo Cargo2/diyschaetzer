@@ -1,15 +1,21 @@
 # SPA-Fallback für die Angular-App (netcup/Apache).
-# Direktaufrufe von Client-Routen (z. B. /zusammenfassung, /geteilt/<token>) und
-# Hard-Reloads (F5) müssen auf index.html zeigen, sonst liefert Apache 404.
+#
+# Seit Phase 16 wird statisch prerendert (outputMode: static): Inhaltsseiten
+# (/, /ratgeber, /ratgeber/<slug>, /impressum, /datenschutz, /kontakt) liegen als
+# echte HTML-Dateien/Verzeichnisse vor und werden direkt ausgeliefert. Alle übrigen,
+# clientseitig gerenderten Routen (Rechner, Admin, Login, /geteilt/<token>, F5 darauf)
+# fallen auf den CSR-Shell index.csr.html zurück – NICHT auf index.html, das jetzt die
+# prerenderte Startseite ist.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # Bestehende Dateien und Verzeichnisse unverändert ausliefern (JS/CSS/Assets).
+  # Bestehende Dateien und Verzeichnisse unverändert ausliefern
+  # (prerenderte Seiten, JS/CSS/Assets).
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Alles andere an die SPA übergeben.
-  RewriteRule ^ index.html [L]
+  # Alles andere an den Client-Shell übergeben.
+  RewriteRule ^ index.csr.html [L]
 </IfModule>
