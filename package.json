@@ -4,9 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "tsx tools/generate-ratgeber.mts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "generate:ratgeber": "tsx tools/generate-ratgeber.mts"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
@@ -30,9 +32,11 @@
     "@tailwindcss/postcss": "^4.1.12",
     "@types/pdfmake": "^0.2.13",
     "jsdom": "^28.0.0",
+    "marked": "^18.0.5",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.12",
+    "tsx": "^4.22.4",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }

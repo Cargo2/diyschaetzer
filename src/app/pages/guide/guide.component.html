@@ -1,30 +1,32 @@
 <section class="guide-page">
   <div class="guide-hero">
     <p class="eyebrow">Ratgeber</p>
-    <h1>Ratgeber folgt</h1>
+    <h1>Ratgeber rund ums Fliesen</h1>
     <p>
-      Hier sammeln wir als Nächstes Hilfen zu Eigenleistung, typischen Fehlerquellen,
-      Materialauswahl und sinnvollen Profi-Leistungen bei der Badrenovierung.
+      Verständliche Hilfen zu Material, Eigenleistung, typischen Fehlerquellen und
+      Kostenplanung – damit dein Fliesenprojekt gelingt.
     </p>
   </div>
 
-  <div class="guide-grid">
+  @if (articles.length > 0) {
+    <div class="guide-grid">
+      @for (article of articles; track article.slug) {
+        <a class="guide-card guide-card-link" [routerLink]="['/ratgeber', article.slug]">
+          <p class="article-meta">
+            <time [attr.datetime]="article.date">{{ formatDate(article.date) }}</time>
+            <span aria-hidden="true">·</span>
+            <span>{{ article.readingMinutes }} Min. Lesezeit</span>
+          </p>
+          <h2>{{ article.title }}</h2>
+          <p>{{ article.description }}</p>
+          <span class="article-more">Weiterlesen →</span>
+        </a>
+      }
+    </div>
+  } @else {
     <article class="guide-card">
-      <h2>Geplante Themen</h2>
-      <ul>
-        <li>Welche Arbeiten sich für Eigenleistung eignen</li>
-        <li>Wann Abdichtung und Anschlüsse in Profi-Hände gehören</li>
-        <li>Wie du Angebote besser vergleichen kannst</li>
-      </ul>
+      <h2>Bald geht es los</h2>
+      <p>Die ersten Beiträge sind in Arbeit. Schau bald wieder vorbei.</p>
     </article>
-
-    <article class="guide-card">
-      <h2>Nächster Schritt</h2>
-      <p>Wenn du dein Projekt schon grob kennst, kannst du direkt einen Raum anlegen.</p>
-      <div class="guide-actions">
-        <a routerLink="/raum-anlegen" class="primary-action">Raum anlegen</a>
-        <a routerLink="/zusammenfassung" class="secondary-action">Zur Zusammenfassung</a>
-      </div>
-    </article>
-  </div>
+  }
 </section>

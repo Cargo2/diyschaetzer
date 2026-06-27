@@ -47,6 +47,13 @@ export const routes: Routes = [
       )
   },
   { path: 'ratgeber', component: GuideComponent },
+  {
+    path: 'ratgeber/:slug',
+    loadComponent: () =>
+      import('./pages/guide/ratgeber-article.component').then(
+        (m) => m.RatgeberArticleComponent
+      )
+  },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },
   { path: 'kontakt', component: KontaktComponent },
