@@ -34,7 +34,14 @@ export class AffiliateService {
 
     const productName = this.productName(materialId);
     return offers
-      .filter((offer) => offer.active && this.settings.isMerchantEnabled(offer.merchantId))
+      .filter(
+        (offer) =>
+          offer.active &&
+          // Nur Händler mit hinterlegtem Affiliate-Link anzeigen (kein generierter
+          // Such-Link mehr): ein Icon erscheint genau dann, wenn ein Link gepflegt ist.
+          !!offer.affiliateUrl &&
+          this.settings.isMerchantEnabled(offer.merchantId)
+      )
       .map((offer) => this.resolve(offer, productName))
       .filter((offer): offer is ResolvedOffer => offer !== null);
   }

@@ -15,6 +15,11 @@ export const ADMIN_ROUTES: Routes = [
         path: 'material',
         loadComponent: () =>
           import('./admin-materials.component').then((m) => m.AdminMaterialsComponent)
+      },
+      {
+        path: 'material/:id',
+        loadComponent: () =>
+          import('./admin-material-edit.component').then((m) => m.AdminMaterialEditComponent)
       }
     ]
   }

@@ -30,6 +30,14 @@ export class CatalogService {
   /** Auflösbar, sobald der Katalog (aus DB oder Fallback) geladen ist. */
   readonly ready: Promise<void> = this.hydrate();
 
+  /**
+   * Lädt den Katalog erneut aus der DB. Wird nach Admin-Bearbeitungen aufgerufen,
+   * damit die Änderung app-weit (auch in der laufenden Berechnung) sichtbar wird.
+   */
+  reload(): Promise<void> {
+    return this.hydrate();
+  }
+
   /** Alle Katalogartikel. */
   materials(): MaterialCatalogItem[] {
     return this.materialsSig();

@@ -16,8 +16,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         <p class="admin-eyebrow">Administration</p>
         <h1>Katalog &amp; Pflege</h1>
         <p class="admin-note">
-          Interner Bereich – nur für Admins. Die Ansichten sind aktuell
-          <strong>schreibgeschützt</strong>; Bearbeitung folgt in einem nächsten Block.
+          Interner Bereich – nur für Admins. Änderungen am Materialkatalog wirken
+          sofort app-weit; bitte mit Bedacht bearbeiten.
         </p>
       </header>
 
@@ -33,9 +33,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   styles: [
     `
       .admin-shell {
-        max-width: 72rem;
-        margin: 0 auto;
-        padding: 1.5rem 1rem 3rem;
+        /* Breite kommt vom überschriebenen .content-stage (10 % je Seite, app.css). */
+        width: 100%;
+        padding: 1.5rem 0 3rem;
         display: flex;
         flex-direction: column;
         gap: 1.25rem;

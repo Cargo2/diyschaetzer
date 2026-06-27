@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ArticleType } from '../../data/material-catalog-with-prices';
 import { CatalogService } from '../../services/catalog.service';
 
@@ -20,6 +21,7 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
 @Component({
   selector: 'app-admin-materials',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <div class="materials">
       <div class="materials-bar">
@@ -44,6 +46,7 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
               <th class="num">Richtpreis</th>
               <th>DIY</th>
               <th>Profi</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -56,10 +59,13 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
                 <td class="num">{{ formatPrice(item.price.amount) }}</td>
                 <td>{{ item.includeInDiy ? '✓' : '–' }}</td>
                 <td>{{ item.includeInProfessional ? '✓' : '–' }}</td>
+                <td class="action">
+                  <a [routerLink]="['/admin/material', item.id]">Bearbeiten</a>
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="empty">Keine Artikel gefunden.</td>
+                <td colspan="8" class="empty">Keine Artikel gefunden.</td>
               </tr>
             }
           </tbody>
@@ -135,6 +141,16 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
       .materials-table .mono {
         font-family: ui-monospace, monospace;
         color: #64748b;
+      }
+
+      .materials-table .action a {
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .materials-table .action a:hover {
+        text-decoration: underline;
       }
 
       .materials-table td.empty {
