@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { wizardCompletedGuard } from './guards/wizard-completed.guard';
 import { contractorGuard } from './guards/contractor.guard';
+import { adminGuard } from './guards/admin.guard';
 import { GuideComponent } from './pages/guide/guide.component';
 import { HomeComponent } from './pages/home/home.component';
 import { MaterialListComponent } from './pages/material-list/material-list.component';
@@ -24,6 +25,11 @@ export const routes: Routes = [
       import('./pages/contractor-offers/contractor-offers.component').then(
         (m) => m.ContractorOffersComponent
       )
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.ADMIN_ROUTES)
   },
   { path: 'raum-anlegen', component: WizardPageComponent },
   { path: 'materialliste', component: MaterialListComponent, canActivate: [wizardCompletedGuard] },

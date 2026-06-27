@@ -60,6 +60,8 @@ export class App {
   readonly userEmail = this.auth.userEmail;
   /** Firmenprofil-Link nur für angemeldete Profis. */
   readonly isContractor = computed(() => this.auth.profile()?.role === 'contractor');
+  /** Admin-Link nur für angemeldete Admins. */
+  readonly isAdmin = computed(() => this.auth.profile()?.role === 'admin');
 
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger). Auf Desktop ohne Wirkung. */
   readonly menuOpen = signal(false);

@@ -96,6 +96,11 @@
               Firmenprofil
             </a>
           }
+          @if (isAdmin()) {
+            <a routerLink="/admin" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+              Admin
+            </a>
+          }
           <span class="tab-account" title="Angemeldet als {{ userEmail() }}">{{ userEmail() }}</span>
           <button type="button" class="tab-button" (click)="logout()">Abmelden</button>
         } @else {
