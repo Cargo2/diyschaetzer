@@ -1,4 +1,5 @@
-import { InjectionToken } from '@angular/core';
+import { inject, InjectionToken, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
@@ -23,5 +24,15 @@ export function createSupabaseClient(): SupabaseClient | null {
 
 export const SUPABASE_CLIENT = new InjectionToken<SupabaseClient | null>('SUPABASE_CLIENT', {
   providedIn: 'root',
-  factory: createSupabaseClient
+  factory: () => {
+    // Beim Prerendering (Server/Node) keinen Supabase-Client erzeugen. Sonst würde
+    // der Bootstrap (AuthService, Katalog) Auth-/WebSocket-/Netzwerkaufrufe im Build
+    // auslösen – das scheitert u. a. unter Node 20 ("ohne native WebSocket support").
+    // Mit null läuft die App im anonymen Offline-Modus (gebündelter Katalog); die
+    // prerenderten Inhaltsseiten brauchen weder DB noch Auth.
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) {
+      return null;
+    }
+    return createSupabaseClient();
+  }
 });
