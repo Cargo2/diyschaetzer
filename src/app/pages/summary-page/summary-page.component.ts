@@ -1119,7 +1119,8 @@ export class SummaryPageComponent {
       );
       const token = await this.shareService.createShare(snapshot);
       this.shareUrl.set(this.shareService.shareUrl(token));
-    } catch {
+    } catch (error) {
+      console.error('Teilen-Link konnte nicht erstellt werden:', error);
       this.shareError.set('Der Teilen-Link konnte nicht erstellt werden. Bitte erneut versuchen.');
     } finally {
       this.sharing.set(false);

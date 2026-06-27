@@ -1,0 +1,15 @@
+# SPA-Fallback für die Angular-App (netcup/Apache).
+# Direktaufrufe von Client-Routen (z. B. /zusammenfassung, /geteilt/<token>) und
+# Hard-Reloads (F5) müssen auf index.html zeigen, sonst liefert Apache 404.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Bestehende Dateien und Verzeichnisse unverändert ausliefern (JS/CSS/Assets).
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Alles andere an die SPA übergeben.
+  RewriteRule ^ index.html [L]
+</IfModule>

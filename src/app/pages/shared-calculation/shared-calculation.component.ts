@@ -36,7 +36,8 @@ export class SharedCalculationComponent implements OnInit {
       } else {
         this.notFound.set(true);
       }
-    } catch {
+    } catch (error) {
+      console.error('Geteilte Kalkulation konnte nicht geladen werden:', error);
       this.notFound.set(true);
     } finally {
       this.loading.set(false);
