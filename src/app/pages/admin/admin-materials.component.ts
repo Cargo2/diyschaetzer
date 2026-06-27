@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ArticleType } from '../../data/material-catalog-with-prices';
+import { Router, RouterLink } from '@angular/router';
+import { ArticleType, MaterialCatalogItem } from '../../data/material-catalog-with-prices';
 import { CatalogService } from '../../services/catalog.service';
+import { ADMIN_CATALOG_REPOSITORY } from './data-access/admin-catalog-repository';
 
 const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
   main_material: 'Hauptmaterial',
@@ -35,6 +36,10 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
         <span class="materials-count">{{ filtered().length }} / {{ total() }} Artikel</span>
       </div>
 
+      @if (error()) {
+        <p class="materials-error" role="alert">{{ error() }}</p>
+      }
+
       <div class="materials-scroll">
         <table class="materials-table">
           <thead>
@@ -61,6 +66,9 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
                 <td>{{ item.includeInProfessional ? '✓' : '–' }}</td>
                 <td class="action">
                   <a [routerLink]="['/admin/material', item.id]">Bearbeiten</a>
+                  <button type="button" (click)="duplicate(item)" [disabled]="working()">
+                    Duplizieren
+                  </button>
                 </td>
               </tr>
             } @empty {
@@ -143,6 +151,12 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
         color: #64748b;
       }
 
+      .materials-table .action {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
       .materials-table .action a {
         color: #4f46e5;
         text-decoration: none;
@@ -151,6 +165,32 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
 
       .materials-table .action a:hover {
         text-decoration: underline;
+      }
+
+      .materials-table .action button {
+        background: none;
+        border: none;
+        padding: 0;
+        color: #4f46e5;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .materials-table .action button:hover {
+        text-decoration: underline;
+      }
+
+      .materials-table .action button:disabled {
+        opacity: 0.5;
+        cursor: default;
+        text-decoration: none;
+      }
+
+      .materials-error {
+        margin: 0;
+        color: #b91c1c;
+        font-size: 0.85rem;
       }
 
       .materials-table td.empty {
@@ -163,8 +203,12 @@ const ARTICLE_TYPE_LABELS: Record<ArticleType, string> = {
 })
 export class AdminMaterialsComponent {
   private readonly catalog = inject(CatalogService);
+  private readonly repository = inject(ADMIN_CATALOG_REPOSITORY);
+  private readonly router = inject(Router);
 
   readonly filter = signal('');
+  readonly working = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly total = computed(() => this.catalog.materials().length);
 
@@ -181,6 +225,41 @@ export class AdminMaterialsComponent {
         .includes(term)
     );
   });
+
+  /**
+   * Legt einen neuen Artikel als Duplikat eines bestehenden an (gültige
+   * Berechnungs-/Bedingungskonfiguration als Startpunkt) und öffnet ihn im Editor.
+   * Affiliate-Angebote werden bewusst nicht mitkopiert (neue id ohne Offers).
+   */
+  async duplicate(item: MaterialCatalogItem): Promise<void> {
+    if (this.working()) {
+      return;
+    }
+    this.error.set(null);
+    this.working.set(true);
+    try {
+      const newId = this.uniqueId(item.id);
+      const clone: MaterialCatalogItem = { ...item, id: newId, name: `${item.name} (Kopie)` };
+      await this.repository.createMaterial(clone);
+      await this.catalog.reload();
+      void this.router.navigate(['/admin/material', newId]);
+    } catch (err) {
+      console.error('Material konnte nicht dupliziert werden:', err);
+      this.error.set('Duplizieren fehlgeschlagen. Bitte erneut versuchen.');
+    } finally {
+      this.working.set(false);
+    }
+  }
+
+  private uniqueId(baseId: string): string {
+    const existing = new Set(this.catalog.materials().map((material) => material.id));
+    let candidate = `${baseId}-kopie`;
+    let n = 2;
+    while (existing.has(candidate)) {
+      candidate = `${baseId}-kopie-${n++}`;
+    }
+    return candidate;
+  }
 
   articleTypeLabel(type: ArticleType): string {
     return ARTICLE_TYPE_LABELS[type];

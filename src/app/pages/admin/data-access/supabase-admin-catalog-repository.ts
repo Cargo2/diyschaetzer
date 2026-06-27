@@ -20,6 +20,24 @@ export class SupabaseAdminCatalogRepository implements AdminCatalogRepository {
     return this.client;
   }
 
+  async createMaterial(item: MaterialCatalogItem): Promise<void> {
+    const client = this.requireClient();
+    const { error } = await client
+      .from('materials')
+      .insert({ id: item.id, data: item });
+    if (error) {
+      throw error;
+    }
+  }
+
+  async deleteMaterial(materialId: string): Promise<void> {
+    const client = this.requireClient();
+    const { error } = await client.from('materials').delete().eq('id', materialId);
+    if (error) {
+      throw error;
+    }
+  }
+
   async updateMaterial(item: MaterialCatalogItem): Promise<void> {
     const client = this.requireClient();
     const { error } = await client

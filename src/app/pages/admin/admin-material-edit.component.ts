@@ -137,10 +137,18 @@ import {
         }
 
         <div class="edit-actions">
-          <button type="submit" [disabled]="saving()">
+          <button type="submit" [disabled]="saving() || deleting()">
             {{ saving() ? 'Speichert …' : 'Speichern' }}
           </button>
           <a routerLink="/admin/material" class="edit-cancel">Abbrechen</a>
+          <button
+            type="button"
+            class="edit-delete"
+            (click)="remove()"
+            [disabled]="saving() || deleting()"
+          >
+            {{ deleting() ? 'Löscht …' : 'Löschen' }}
+          </button>
         </div>
       </form>
     }
@@ -290,6 +298,17 @@ import {
         cursor: default;
       }
 
+      .edit-actions .edit-delete {
+        margin-left: auto;
+        background: none;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+      }
+
+      .edit-actions .edit-delete:hover:not(:disabled) {
+        background: #fef2f2;
+      }
+
       .edit-missing {
         display: flex;
         flex-direction: column;
@@ -332,6 +351,7 @@ export class AdminMaterialEditComponent {
 
   readonly saving = signal(false);
   readonly saved = signal(false);
+  readonly deleting = signal(false);
   readonly error = signal<string | null>(null);
 
   constructor() {
@@ -420,6 +440,31 @@ export class AdminMaterialEditComponent {
       this.error.set('Speichern fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  async remove(): Promise<void> {
+    if (!this.original || this.deleting()) {
+      return;
+    }
+    const confirmed = globalThis.confirm(
+      `Material „${this.original.name}" wirklich löschen? Zugehörige Affiliate-Angebote ` +
+        `werden mit entfernt. Das lässt sich nicht rückgängig machen.`
+    );
+    if (!confirmed) {
+      return;
+    }
+    this.error.set(null);
+    this.deleting.set(true);
+    try {
+      await this.repository.deleteMaterial(this.original.id);
+      await this.catalog.reload();
+      void this.router.navigate(['/admin/material']);
+    } catch (err) {
+      console.error('Material konnte nicht gelöscht werden:', err);
+      this.error.set('Löschen fehlgeschlagen. Bitte erneut versuchen.');
+    } finally {
+      this.deleting.set(false);
     }
   }
 

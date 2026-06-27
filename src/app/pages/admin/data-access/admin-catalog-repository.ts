@@ -15,6 +15,10 @@ export interface AdminMaterialOffer {
  * eigener, abgekapselter Pfad (eigene RLS via is_admin(), eigene Service-Grenze).
  */
 export interface AdminCatalogRepository {
+  /** Legt einen neuen Materialartikel an (volles Item als jsonb-Blob, id muss frei sein). */
+  createMaterial(item: MaterialCatalogItem): Promise<void>;
+  /** Löscht einen Materialartikel; zugehörige Angebote cascaden über den FK. */
+  deleteMaterial(materialId: string): Promise<void>;
   /** Aktualisiert einen bestehenden Materialartikel (volles Item als jsonb-Blob). */
   updateMaterial(item: MaterialCatalogItem): Promise<void>;
   /**
