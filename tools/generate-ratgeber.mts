@@ -13,10 +13,15 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 import type { RatgeberArticle } from '../src/app/models/ratgeber.model';
+import { absoluteUrl, SITE_URL } from '../src/app/config/site.config';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const contentDir = resolve(here, '../src/content/ratgeber');
 const outPath = resolve(here, '../src/app/content/ratgeber-articles.ts');
+const sitemapPath = resolve(here, '../public/sitemap.xml');
+
+/** Statische, indexierbare Inhaltsseiten (ohne Rechner/Admin/Login/Login-pflichtige). */
+const STATIC_PATHS = ['/', '/ratgeber', '/impressum', '/datenschutz', '/kontakt'];
 
 /** Minimaler Frontmatter-Parser für unsere eigenen, einfachen Felder. */
 function parseFrontmatter(raw: string): { meta: Record<string, string>; body: string } {
@@ -92,3 +97,25 @@ export const RATGEBER_ARTICLES: RatgeberArticle[] = ${JSON.stringify(articles, n
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, out, 'utf8');
 console.log(`Ratgeber: ${articles.length} Beitrag/Beiträge → ${outPath}`);
+
+// --- sitemap.xml -----------------------------------------------------------
+const urls: { loc: string; lastmod?: string }[] = [
+  ...STATIC_PATHS.map((path) => ({ loc: absoluteUrl(path) })),
+  ...articles.map((article) => ({
+    loc: absoluteUrl(`/ratgeber/${article.slug}`),
+    lastmod: article.date || undefined
+  }))
+];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (u) =>
+      `  <url>\n    <loc>${u.loc}</loc>${u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : ''}\n  </url>`
+  )
+  .join('\n')}
+</urlset>
+`;
+mkdirSync(dirname(sitemapPath), { recursive: true });
+writeFileSync(sitemapPath, sitemap, 'utf8');
+console.log(`Sitemap: ${urls.length} URLs → ${sitemapPath} (Basis: ${SITE_URL})`);
