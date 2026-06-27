@@ -60,7 +60,10 @@ function readingMinutes(html: string): number {
 }
 
 const files = readdirSync(contentDir)
-  .filter((name) => name.endsWith('.md'))
+  // `.md` einlesen, aber `_`-präfixierte Dateien (Vorlagen `_TEMPLATE.md`, Entwürfe)
+  // und README.md überspringen: so kann man an einem Beitrag schreiben, ohne dass er
+  // schon veröffentlicht/prerendert wird.
+  .filter((name) => name.endsWith('.md') && !name.startsWith('_') && name !== 'README.md')
   .sort();
 
 const articles: RatgeberArticle[] = files.map((file) => {
