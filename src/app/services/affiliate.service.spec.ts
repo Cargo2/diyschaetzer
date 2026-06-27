@@ -18,14 +18,15 @@ describe('AffiliateService', () => {
     expect(service.getOffersForMaterial('flexible_tile_adhesive')).toEqual([]);
   });
 
-  it('returns multiple resolved offers for a product when enabled', () => {
+  it('returns resolved offers only for merchants with a maintained affiliate link', () => {
     settings.setGlobalEnabled(true);
     const offers = service.getOffersForMaterial('flexible_tile_adhesive');
+    const merchantIds = offers.map((offer) => offer.merchantId);
 
-    expect(offers.length).toBeGreaterThan(1);
-    expect(offers.map((offer) => offer.merchantId)).toEqual(
-      expect.arrayContaining(['obi', 'toom', 'amazon'])
-    );
+    // obi + toom haben hinterlegte Deeplinks; amazon ist nur ein Such-Angebot
+    // ohne Link → es erscheint bewusst kein Icon mehr.
+    expect(merchantIds).toEqual(expect.arrayContaining(['obi', 'toom']));
+    expect(merchantIds).not.toContain('amazon');
     for (const offer of offers) {
       expect(offer.rel).toContain('nofollow');
       expect(offer.rel).toContain('sponsored');
@@ -45,15 +46,11 @@ describe('AffiliateService', () => {
     expect(merchants).toContain('obi');
   });
 
-  it('generates a search link from the product name for search offers', () => {
+  it('omits merchants without a maintained affiliate link (no generated search links)', () => {
     settings.setGlobalEnabled(true);
-    // sanitary_silicone hat nur ein Amazon-Such-Angebot ohne Deeplink.
-    const offers = service.getOffersForMaterial('sanitary_silicone');
-
-    expect(offers).toHaveLength(1);
-    expect(offers[0].type).toBe('search');
-    expect(offers[0].url).toContain('amazon.de/s?k=');
-    expect(offers[0].url).toContain('tag=');
+    // sanitary_silicone hat nur ein Amazon-Such-Angebot ohne Deeplink → kein Icon,
+    // es wird kein Such-Link mehr generiert.
+    expect(service.getOffersForMaterial('sanitary_silicone')).toEqual([]);
   });
 
   it('returns an empty list for materials without offers', () => {

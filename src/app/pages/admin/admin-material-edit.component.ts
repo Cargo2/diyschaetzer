@@ -65,6 +65,22 @@ import {
           </label>
         </div>
 
+        <label class="field">
+          <span>Reichweite je Gebinde (m²)</span>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            [value]="coverage()"
+            (input)="coverage.set($any($event.target).value)"
+            placeholder="leer = generische 20-m²-Pauschale"
+          />
+          <small class="field-hint">
+            Nur für flächenbasierte Verbrauchsmaterialien (z. B. Vlies, Grundierung). Bestimmt
+            „ein Gebinde je angefangene X m²". Leer = bisherige 20-m²-Pauschale.
+          </small>
+        </label>
+
         <div class="field-row">
           <label class="check">
             <input type="checkbox" [checked]="includeInDiy()" (change)="includeInDiy.set($any($event.target).checked)" />
@@ -195,6 +211,11 @@ import {
         font: inherit;
       }
 
+      .field-hint {
+        color: #6b7280;
+        font-size: 0.78rem;
+      }
+
       .field-row {
         display: flex;
         gap: 1rem;
@@ -303,6 +324,7 @@ export class AdminMaterialEditComponent {
   readonly description = signal('');
   readonly unit = signal('');
   readonly priceAmount = signal('');
+  readonly coverage = signal('');
   readonly includeInDiy = signal(false);
   readonly includeInProfessional = signal(false);
   readonly affiliateEligible = signal(false);
@@ -326,6 +348,9 @@ export class AdminMaterialEditComponent {
     this.description.set(item.description);
     this.unit.set(item.unit);
     this.priceAmount.set(item.price.amount === null ? '' : String(item.price.amount));
+    this.coverage.set(
+      typeof item.coverageM2PerPackage === 'number' ? String(item.coverageM2PerPackage) : ''
+    );
     this.includeInDiy.set(item.includeInDiy);
     this.includeInProfessional.set(item.includeInProfessional);
     this.affiliateEligible.set(item.affiliateEligible);
@@ -358,6 +383,12 @@ export class AdminMaterialEditComponent {
       return;
     }
 
+    const coverage = this.parseCoverage(this.coverage());
+    if (coverage === undefined) {
+      this.error.set('Bitte eine gültige Reichweite (Zahl > 0) oder leer eingeben.');
+      return;
+    }
+
     const offers = this.collectOffers();
     if (offers === undefined) {
       this.error.set('Affiliate-Links müssen mit http:// oder https:// beginnen.');
@@ -370,6 +401,7 @@ export class AdminMaterialEditComponent {
       description: this.description().trim(),
       unit: this.unit().trim(),
       price: { ...this.original.price, amount },
+      coverageM2PerPackage: coverage,
       includeInDiy: this.includeInDiy(),
       includeInProfessional: this.includeInProfessional(),
       affiliateEligible: this.affiliateEligible(),
@@ -419,6 +451,19 @@ export class AdminMaterialEditComponent {
     }
     const value = Number(trimmed);
     if (!Number.isFinite(value) || value < 0) {
+      return undefined;
+    }
+    return value;
+  }
+
+  /** Leer → null (Pauschale greift); ungültig oder ≤ 0 → undefined (Fehler). */
+  private parseCoverage(raw: string): number | null | undefined {
+    const trimmed = raw.trim();
+    if (trimmed === '') {
+      return null;
+    }
+    const value = Number(trimmed);
+    if (!Number.isFinite(value) || value <= 0) {
       return undefined;
     }
     return value;

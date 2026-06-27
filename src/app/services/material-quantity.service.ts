@@ -112,9 +112,17 @@ export class MaterialQuantityService {
       material.calculation.type === 'per_tile_area_m2' ||
       material.calculation.type === 'per_work_area'
     ) {
-      // Ohne Produkt-Reichweite wird grob ein Gebinde je angefangene 20 m² angesetzt,
-      // statt unabhängig von der Fläche nur einen Gebindepreis auszuweisen.
-      const packages = Math.max(1, Math.ceil(tileResult.baseTileAreaM2 / GENERIC_PACKAGE_COVERAGE_M2));
+      // Reichweite je Gebinde: gepflegter Produktwert, sonst generische 20-m²-Pauschale.
+      const hasCoverage =
+        typeof material.coverageM2PerPackage === 'number' && material.coverageM2PerPackage > 0;
+      const coverageM2 = hasCoverage
+        ? (material.coverageM2PerPackage as number)
+        : GENERIC_PACKAGE_COVERAGE_M2;
+      const packages = Math.max(1, Math.ceil(tileResult.baseTileAreaM2 / coverageM2));
+      const note = hasCoverage
+        ? `Reichweite ${coverageM2} m² je Gebinde (Produktangabe); ein Gebinde je angefangene ${coverageM2} m².`
+        : (material.calculation.defaultConsumption ??
+            `Richtwert: ein Gebinde je angefangene ${GENERIC_PACKAGE_COVERAGE_M2} m²; Reichweite des Produkts prüfen.`);
       return this.result(
         material,
         tileResult.baseTileAreaM2,
@@ -123,8 +131,7 @@ export class MaterialQuantityService {
         'Gebinde',
         null,
         price === null ? null : packages * price,
-        material.calculation.defaultConsumption ??
-          `Richtwert: ein Gebinde je angefangene ${GENERIC_PACKAGE_COVERAGE_M2} m²; Reichweite des Produkts prüfen.`,
+        note,
         source
       );
     }

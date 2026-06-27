@@ -111,6 +111,12 @@ export interface MaterialCatalogItem {
   workStepIds: WorkStepId[];
   description: string;
   unit: string;
+  /**
+   * Reichweite eines Gebindes/Packs in m² (für flächenbasierte Verbrauchsmaterialien:
+   * per_m2, per_tile_area_m2, per_work_area). Leer/null = generische 20-m²-Pauschale.
+   * Über die Admin-UI je Produkt pflegbar.
+   */
+  coverageM2PerPackage?: number | null;
   calculation: MaterialCalculationConfig;
   /** Bedingungen aus Wizard/State, bei denen der Artikel benötigt wird. */
   requiredWhen: string[];

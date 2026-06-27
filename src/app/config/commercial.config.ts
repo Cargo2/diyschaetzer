@@ -5,7 +5,7 @@ import {
 
 export const COMMERCIAL_CONFIG = {
   monetizationEnabled: false,
-  affiliateEnabled: false,
+  affiliateEnabled: true,
   pdfExportEnabled: false,
   excelExportEnabled: false,
   ownProductCatalogEnabled: false,
