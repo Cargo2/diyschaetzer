@@ -54,6 +54,11 @@ export const routes: Routes = [
         (m) => m.RatgeberArticleComponent
       )
   },
+  {
+    path: 'kosten/:slug',
+    loadComponent: () =>
+      import('./pages/cost/cost-page.component').then((m) => m.CostPageComponent)
+  },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },
   { path: 'kontakt', component: KontaktComponent },

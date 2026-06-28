@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WizardComponent } from '../../components/wizard/wizard.component';
+import { ROOM_TYPE_DEFAULT_NAMES, RoomType } from '../../models/bathroom-wizard.model';
 import { WizardStateService } from '../../services/wizard-state.service';
 
 @Component({
@@ -35,13 +36,23 @@ import { WizardStateService } from '../../services/wizard-state.service';
     `
   ]
 })
-export class WizardPageComponent {
+export class WizardPageComponent implements OnInit {
   private readonly wizardState = inject(WizardStateService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   readonly showResultsNotice = () =>
     this.route.snapshot.queryParamMap.get('resultsLocked') === '1';
+
+  ngOnInit(): void {
+    // Aus einer SEO-Kostenseite kommend (CTA `/raum-anlegen?raum=<roomType>`) den
+    // Raumtyp vorbelegen. Nicht-destruktiv: setRoomType ändert nur Typ + abhängige
+    // Felder, vorhandene Maße bleiben erhalten. Unbekannte Werte werden ignoriert.
+    const raum = this.route.snapshot.queryParamMap.get('raum');
+    if (raum && raum in ROOM_TYPE_DEFAULT_NAMES) {
+      this.wizardState.setRoomType(raum as RoomType);
+    }
+  }
 
   updateWizardProgress(progress: { current: number; total: number; percent: number }): void {
     this.wizardState.setCurrentStepIndex(progress.current - 1);

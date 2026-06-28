@@ -158,6 +158,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Admin-UI (Phase 15) | `pages/admin/` (lazy `admin.routes.ts`, Shell + Material-Liste/-Editor + Nutzerübersicht), `guards/admin.guard.ts`, `pages/admin/data-access/admin-*-repository.ts` (+ `supabase-…`), Migrationen `0010`–`0013` (`is_admin()`, Write-RLS, `admin_list_users()`) |
 | Ratgeber + SEO (Phase 16) | Beiträge `src/content/ratgeber/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/ratgeber-articles.ts` (+ `public/sitemap.xml`); `models/ratgeber.model.ts`, `services/ratgeber.service.ts`, `pages/guide/` (Übersicht + `ratgeber-article.component.ts`); `services/seo.service.ts`, `config/site.config.ts`, `public/robots.txt` |
 | Prerendering/SSG (Phase 16) | `app/app.routes.server.ts`, `app/app.config.server.ts`, `src/main.server.ts`, `outputMode: static` in `angular.json`; Prerender-Guard in `data-access/supabase-client.ts` |
+| SEO-Kostenseiten (Phase 17) | Markdown `src/content/kosten/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/cost-pages.ts` (+ Sitemap); `models/cost-page.model.ts`, `services/cost-page.service.ts`, `pages/cost/cost-page.component.ts`; Route `/kosten/:slug` (prerendert); CTA-Deep-Link `/raum-anlegen?raum=<roomType>` (gelesen in `wizard-page.component.ts`) |
 
 ## Roadmap
 
@@ -278,6 +279,24 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   teilbaren Link auf eine read-only Ansicht der Kalkulation. Backend-Tabelle `shared_calculations`
   (Migration `0009`), öffentlicher Lese-Token via SECURITY-DEFINER-Funktion. localStorage-Stände
   sind nicht teilbar.
+- **Phase 17 – Sichtbarkeit / Marketing & SEO-Ausbau** *(geplant)*. Zwei getrennte Funnel:
+  **Heimwerker** organisch (billig, skaliert), **Profis** gezielt bezahlt (echter LTV). Reihenfolge:
+  1. **Live auf `fliesen-kosten.de`** deployen, dann **Search Console** + Sitemap einreichen
+     (ohne Live-Domain läuft kein SEO an; vgl. Hinweis bei „Deploy-Domain").
+  2. **SEO-Themen-Kostenseiten** *(begonnen)*: prerenderte Landingpages je Suchabsicht unter
+     `/kosten/:slug` (Markdown + Codegen, Details s. Schlüsseldateien). **Strategie experience-getrieben**
+     statt rein programmatisch: jede Seite basiert auf einem **echten, anonymisierten Angebot** +
+     persönlicher Erfahrung (E-E-A-T), antwort-zuerst, FAQPage-JSON-LD, CTA mit vorbelegtem `RoomType`.
+     Erste Seite live: `badezimmer-fliesen-kosten` (reales Hamburger Angebot). Skaliert nur so weit wie
+     echte Projekte/Angebote vorliegen. Offen: Küche/Terrasse/„pro qm", optionaler Angebots-Screenshot.
+  3. **Strukturierte Daten** ausbauen: `FAQPage`-/`HowTo`-JSON-LD auf Kostenseiten/Ratgeber (über
+     `SeoService`), interne Verlinkung Ratgeber ↔ Kostenseiten ↔ Rechner.
+  4. **Conversion-Tracking** (GA4 + Ads): Events Rechner-Start, Rechner-Abschluss, Affiliate-Klick,
+     Profi-Registrierung. **Voraussetzung für jeden Ads-Test** – braucht zusätzlich einen vollwertigen
+     Cookie-Consent (siehe „Offen vor Affiliate-Livegang", GA4/Ads sind nicht-essentielle Cookies).
+  5. **Google-Ads-Tests** (klein, getaktet, mit Kill-Kriterien): DIY nur als **300-€-Lerntest** auf
+     Tool-Intent-Keywords (erwartet negativer ROI → dann SEO statt Paid); **Profi** 300–600 € auf B2B-
+     Keywords (`fliesenleger software`, `angebot schreiben`, `aufmaß app`), Erfolg = Profi-Registrierungen.
 
 ### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant

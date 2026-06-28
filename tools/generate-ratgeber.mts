@@ -1,23 +1,29 @@
 /**
- * Generiert aus den Markdown-Beiträgen in src/content/ratgeber/*.md das TS-Modul
- * src/app/content/ratgeber-articles.ts (Frontmatter + gerendertes HTML).
+ * Generiert aus den Markdown-Inhalten die TS-Module:
+ *   - src/content/ratgeber/*.md  → src/app/content/ratgeber-articles.ts
+ *   - src/content/kosten/*.md    → src/app/content/cost-pages.ts
+ * und schreibt public/sitemap.xml (Startseite, Ratgeber, Kostenseiten, Rechtstexte).
  *
  * Ausführen:  npm run generate:ratgeber   (bzw. npx tsx tools/generate-ratgeber.mts)
  *
- * Neuen Beitrag anlegen = neue .md-Datei + dieses Skript laufen lassen. Angulars
- * esbuild-Build kann Markdown nicht direkt globben, daher dieser Codegen-Schritt
- * (analog tools/generate-catalog-seed.mts).
+ * Neuen Beitrag/Kostenseite anlegen = neue .md-Datei + dieses Skript laufen lassen.
+ * Angulars esbuild-Build kann Markdown nicht direkt globben, daher dieser Codegen-
+ * Schritt (analog tools/generate-catalog-seed.mts).
  */
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
+import type { Tokens } from 'marked';
 import type { RatgeberArticle } from '../src/app/models/ratgeber.model';
+import type { CostPage, CostPageFaqItem } from '../src/app/models/cost-page.model';
 import { absoluteUrl, SITE_URL } from '../src/app/config/site.config';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const contentDir = resolve(here, '../src/content/ratgeber');
-const outPath = resolve(here, '../src/app/content/ratgeber-articles.ts');
+const ratgeberDir = resolve(here, '../src/content/ratgeber');
+const kostenDir = resolve(here, '../src/content/kosten');
+const ratgeberOutPath = resolve(here, '../src/app/content/ratgeber-articles.ts');
+const kostenOutPath = resolve(here, '../src/app/content/cost-pages.ts');
 const sitemapPath = resolve(here, '../public/sitemap.xml');
 
 /** Statische, indexierbare Inhaltsseiten (ohne Rechner/Admin/Login/Login-pflichtige). */
@@ -59,15 +65,59 @@ function readingMinutes(html: string): number {
   return Math.max(1, Math.round(words / 200));
 }
 
-const files = readdirSync(contentDir)
-  // `.md` einlesen, aber `_`-präfixierte Dateien (Vorlagen `_TEMPLATE.md`, Entwürfe)
-  // und README.md überspringen: so kann man an einem Beitrag schreiben, ohne dass er
-  // schon veröffentlicht/prerendert wird.
-  .filter((name) => name.endsWith('.md') && !name.startsWith('_') && name !== 'README.md')
-  .sort();
+/** Inline-Markdown grob zu reinem Text (für JSON-LD-Antworten). */
+function stripInlineMarkdown(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // Links → Linktext
+    .replace(/[*_`]/g, '') // Emphase/Code
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-const articles: RatgeberArticle[] = files.map((file) => {
-  const raw = readFileSync(resolve(contentDir, file), 'utf8');
+/**
+ * Extrahiert die FAQ aus dem Body: ab der ersten `## …Häufige Fragen…`-Überschrift
+ * jede `### Frage` mit dem folgenden Absatztext als Antwort, bis zur nächsten
+ * H2-Überschrift. So bleibt die FAQ EINMAL im Markdown (sichtbar + JSON-LD).
+ */
+function extractFaq(body: string): CostPageFaqItem[] {
+  const tokens = marked.lexer(body);
+  const faq: CostPageFaqItem[] = [];
+  let inFaq = false;
+  let current: CostPageFaqItem | null = null;
+  for (const token of tokens) {
+    if (token.type === 'heading') {
+      const heading = token as Tokens.Heading;
+      if (heading.depth <= 2) {
+        if (inFaq) {
+          break; // Ende des FAQ-Abschnitts
+        }
+        inFaq = /häufige fragen|faq/i.test(heading.text);
+        continue;
+      }
+      if (inFaq && heading.depth === 3) {
+        current = { question: stripInlineMarkdown(heading.text), answer: '' };
+        faq.push(current);
+      }
+    } else if (inFaq && current && token.type === 'paragraph') {
+      const paragraph = token as Tokens.Paragraph;
+      const text = stripInlineMarkdown(paragraph.text);
+      current.answer = current.answer ? `${current.answer} ${text}` : text;
+    }
+  }
+  return faq.filter((item) => item.question && item.answer);
+}
+
+/** Liest .md-Dateien eines Verzeichnisses; überspringt `_`-Präfix und README.md. */
+function readContentFiles(dir: string): string[] {
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.md') && !name.startsWith('_') && name !== 'README.md')
+    .sort();
+}
+
+// --- Ratgeber --------------------------------------------------------------
+const ratgeberFiles = readContentFiles(ratgeberDir);
+const articles: RatgeberArticle[] = ratgeberFiles.map((file) => {
+  const raw = readFileSync(resolve(ratgeberDir, file), 'utf8');
   const { meta, body } = parseFrontmatter(raw);
   const slug = file.replace(/\.md$/, '');
   const title = unquote(meta['title'] ?? '');
@@ -86,24 +136,55 @@ const articles: RatgeberArticle[] = files.map((file) => {
     readingMinutes: readingMinutes(html)
   };
 });
-
-// Neueste zuerst (für die Übersicht).
 articles.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.title.localeCompare(b.title, 'de')));
 
-const out = `// AUTO-GENERIERT von tools/generate-ratgeber.mts – NICHT von Hand bearbeiten.
+const ratgeberOut = `// AUTO-GENERIERT von tools/generate-ratgeber.mts – NICHT von Hand bearbeiten.
 // Quelle: src/content/ratgeber/*.md  ·  Neu generieren: npm run generate:ratgeber
 import type { RatgeberArticle } from '../models/ratgeber.model';
 
 export const RATGEBER_ARTICLES: RatgeberArticle[] = ${JSON.stringify(articles, null, 2)};
 `;
+mkdirSync(dirname(ratgeberOutPath), { recursive: true });
+writeFileSync(ratgeberOutPath, ratgeberOut, 'utf8');
+console.log(`Ratgeber: ${articles.length} Beitrag/Beiträge → ${ratgeberOutPath}`);
 
-mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, out, 'utf8');
-console.log(`Ratgeber: ${articles.length} Beitrag/Beiträge → ${outPath}`);
+// --- Kostenseiten ----------------------------------------------------------
+const kostenFiles = readContentFiles(kostenDir);
+const costPages: CostPage[] = kostenFiles.map((file) => {
+  const raw = readFileSync(resolve(kostenDir, file), 'utf8');
+  const { meta, body } = parseFrontmatter(raw);
+  const slug = file.replace(/\.md$/, '');
+  const title = unquote(meta['title'] ?? '');
+  const description = unquote(meta['description'] ?? '');
+  if (!title || !description) {
+    throw new Error(`${file}: title und description sind im Frontmatter Pflicht.`);
+  }
+  const roomTypeRaw = unquote(meta['roomType'] ?? '');
+  return {
+    slug,
+    roomType: roomTypeRaw && roomTypeRaw !== 'none' ? (roomTypeRaw as CostPage['roomType']) : null,
+    title,
+    description,
+    html: marked.parse(body, { async: false }) as string,
+    faq: extractFaq(body),
+    ctaLabel: unquote(meta['ctaLabel'] ?? '') || 'Kosten jetzt berechnen'
+  };
+});
+costPages.sort((a, b) => a.title.localeCompare(b.title, 'de'));
+
+const kostenOut = `// AUTO-GENERIERT von tools/generate-ratgeber.mts – NICHT von Hand bearbeiten.
+// Quelle: src/content/kosten/*.md  ·  Neu generieren: npm run generate:ratgeber
+import type { CostPage } from '../models/cost-page.model';
+
+export const COST_PAGES: CostPage[] = ${JSON.stringify(costPages, null, 2)};
+`;
+writeFileSync(kostenOutPath, kostenOut, 'utf8');
+console.log(`Kostenseiten: ${costPages.length} Seite(n) → ${kostenOutPath}`);
 
 // --- sitemap.xml -----------------------------------------------------------
 const urls: { loc: string; lastmod?: string }[] = [
   ...STATIC_PATHS.map((path) => ({ loc: absoluteUrl(path) })),
+  ...costPages.map((page) => ({ loc: absoluteUrl(`/kosten/${page.slug}`) })),
   ...articles.map((article) => ({
     loc: absoluteUrl(`/ratgeber/${article.slug}`),
     lastmod: article.date || undefined

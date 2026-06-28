@@ -1,5 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 import { RATGEBER_ARTICLES } from './content/ratgeber-articles';
+import { COST_PAGES } from './content/cost-pages';
 
 /**
  * Render-Modi je Route (Phase 16, Prerendering). Nur die statischen Inhaltsseiten
@@ -14,6 +15,11 @@ export const serverRoutes: ServerRoute[] = [
     path: 'ratgeber/:slug',
     renderMode: RenderMode.Prerender,
     getPrerenderParams: async () => RATGEBER_ARTICLES.map((article) => ({ slug: article.slug }))
+  },
+  {
+    path: 'kosten/:slug',
+    renderMode: RenderMode.Prerender,
+    getPrerenderParams: async () => COST_PAGES.map((page) => ({ slug: page.slug }))
   },
   { path: 'impressum', renderMode: RenderMode.Prerender },
   { path: 'datenschutz', renderMode: RenderMode.Prerender },
