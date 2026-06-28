@@ -9,20 +9,49 @@
         späteren Vergleich zwischen Eigenleistung und Fachbetrieb.
       </p>
 
-      <div class="hero-actions">
-        <a routerLink="/raum-anlegen" class="primary-action">Fliesenprojekt starten</a>
-        <a href="#vergleich" class="secondary-action">Mehr erfahren</a>
+      <div class="hero-paths">
+        <div class="hero-path">
+          <p class="hero-path-label">Heimwerker</p>
+          <p class="hero-path-text">
+            Plane dein Fliesenprojekt selbst – Flächen, Material und DIY-Kosten Schritt für Schritt.
+          </p>
+          <a routerLink="/raum-anlegen" class="primary-action">Fliesenprojekt selber planen</a>
+          <p class="hero-path-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Keine Registrierung notwendig
+          </p>
+        </div>
+        <div class="hero-path">
+          <p class="hero-path-label">Profi?</p>
+          <p class="hero-path-text">
+            Erstelle aus deinen eigenen Daten in Sekunden ein Angebot als Leistungsverzeichnis.
+          </p>
+          <a routerLink="/angebote" class="secondary-action">Angebot erstellen</a>
+        </div>
       </div>
+
+      <a href="#vergleich" class="hero-more">Mehr erfahren ↓</a>
     </div>
 
-    <aside class="hero-card">
-      <p>Beispiel-Projekt</p>
-      <ul>
-        <li>Badgröße: 8,5 m²</li>
-        <li>Fliesenqualität: Mittel</li>
-        <li>Optionen: Dusche, WC, Waschtisch</li>
-        <li>Vergleich: DIY vs. Profi vorbereiten</li>
-      </ul>
+    <aside class="hero-previews">
+      <figure class="hero-preview hero-preview-result">
+        <img
+          src="/hero-ergebnis-preview.svg"
+          alt="Beispiel-Ergebnis des Kostenschätzers: Vergleich von Eigenleistung und Profi-Kosten"
+          width="480"
+          height="360"
+        />
+        <figcaption>Dein Ergebnis als Heimwerker</figcaption>
+      </figure>
+      <figure class="hero-preview hero-preview-offer">
+        <img
+          src="/hero-angebot-preview.svg"
+          alt="Beispiel eines Profi-Angebots als Leistungsverzeichnis mit Netto, MwSt. und Gesamtsumme"
+          width="480"
+          height="360"
+        />
+        <figcaption>Angebot für Profis – in Sekunden</figcaption>
+      </figure>
     </aside>
   </section>
 
@@ -311,6 +340,18 @@
     </div>
   </section>
   -->
+
+  <section class="content-band cost-examples">
+    <div>
+      <p class="eyebrow">Kostenbeispiel</p>
+      <h2>Was kostet ein Bad wirklich?</h2>
+      <p>
+        Ein echtes Handwerker-Angebot fürs Bad, ehrlich aufgeschlüsselt – inklusive Kosten pro m²
+        und dem Unterschied zwischen reiner Verlegung und Komplettleistung.
+      </p>
+    </div>
+    <a routerLink="/kosten/badezimmer-fliesen-kosten" class="secondary-cta">Kostenbeispiel ansehen</a>
+  </section>
 
   <section class="content-band final-cta">
     <div>
