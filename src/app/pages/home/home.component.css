@@ -305,6 +305,10 @@
   text-wrap: balance;
 }
 
+.cost-examples-intro {
+  flex: 1 1 22rem;
+}
+
 .cost-examples p:not(.eyebrow) {
   color: var(--ink-soft);
   line-height: 1.7;
@@ -312,9 +316,39 @@
   max-width: 50ch;
 }
 
-.cost-examples .secondary-cta {
-  margin-top: 0;
+.cost-examples-links {
+  display: grid;
+  gap: 0.7rem;
   flex: 0 0 auto;
+}
+
+.cost-example-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  min-width: 18rem;
+  padding: 0.85rem 1.2rem;
+  border: 1px solid rgba(19, 23, 17, 0.12);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #fffefb, #faf7ef);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition:
+    border-color 220ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cost-example-link:hover {
+  border-color: rgba(17, 87, 74, 0.35);
+  transform: translateX(3px);
+}
+
+.cost-example-arrow {
+  color: var(--copper);
+  font-weight: 800;
 }
 
 /* ── Hero: zwei Vorschau-Bilder (Ergebnis ↔ Angebot) ─────────── */
@@ -355,7 +389,6 @@
   color: #cfe6d4;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.01em;
 }
 
 .hero-preview-result {

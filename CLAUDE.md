@@ -287,10 +287,17 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
      `/kosten/:slug` (Markdown + Codegen, Details s. Schlüsseldateien). **Strategie experience-getrieben**
      statt rein programmatisch: jede Seite basiert auf einem **echten, anonymisierten Angebot** +
      persönlicher Erfahrung (E-E-A-T), antwort-zuerst, FAQPage-JSON-LD, CTA mit vorbelegtem `RoomType`.
-     Erste Seite live: `badezimmer-fliesen-kosten` (reales Hamburger Angebot). Skaliert nur so weit wie
-     echte Projekte/Angebote vorliegen. Offen: Küche/Terrasse/„pro qm", optionaler Angebots-Screenshot.
+     Erste Seite live: `badezimmer-fliesen-kosten` (reales Hamburger Angebot), von der Startseite aus
+     verlinkt (dezenter Kostenbeispiel-Block im Hero; Zwei-Pfad-Hero Heimwerker/Profi mit Vorschau-
+     Bildern). Skaliert nur so weit wie echte Projekte/Angebote vorliegen.
   3. **Strukturierte Daten** ausbauen: `FAQPage`-/`HowTo`-JSON-LD auf Kostenseiten/Ratgeber (über
      `SeoService`), interne Verlinkung Ratgeber ↔ Kostenseiten ↔ Rechner.
+
+  **→ NÄCHSTER SCHRITT:** Kostenseiten skalieren – zweite Seite anlegen (`kueche-fliesen-kosten`
+  oder `terrasse-fliesen-kosten`, je nach vorliegendem echtem Angebot; sonst raumneutral
+  „fliesen verlegen kosten pro qm" mit `roomType: none`). Muster steht (`src/content/kosten/_TEMPLATE.md`).
+  Dann interne Verlinkung vervollständigen: aus dem passenden Ratgeber-Beitrag auf die Kostenseite
+  verlinken (Schritt 3) und Kostenseiten ggf. untereinander.
   4. **Conversion-Tracking** (GA4 + Ads): Events Rechner-Start, Rechner-Abschluss, Affiliate-Klick,
      Profi-Registrierung. **Voraussetzung für jeden Ads-Test** – braucht zusätzlich einen vollwertigen
      Cookie-Consent (siehe „Offen vor Affiliate-Livegang", GA4/Ads sind nicht-essentielle Cookies).
