@@ -15,8 +15,9 @@ import { RouterLink } from '@angular/router';
     @if (visible()) {
       <div class="cookie-notice" role="dialog" aria-label="Hinweis zur lokalen Speicherung">
         <p class="cookie-text">
-          Diese Anwendung speichert deine Eingaben nur lokal in deinem Browser
-          (technisch notwendig). Es werden keine Tracking-Cookies gesetzt. Mehr dazu in der
+          Diese Website nutzt nur technisch notwendige Speicherung – für deine Eingaben (lokal im
+          Browser) und, falls du dich anmeldest, für deine Sitzung. Es werden keine Tracking- oder
+          Werbe-Cookies gesetzt. Mehr dazu in der
           <a routerLink="/datenschutz">Datenschutzerklärung</a>.
         </p>
         <button type="button" class="cookie-accept" (click)="acknowledge()">Verstanden</button>
@@ -112,7 +113,8 @@ import { RouterLink } from '@angular/router';
   `]
 })
 export class CookieNoticeComponent {
-  private readonly storageKey = 'badprojekt:cookie-notice-ack';
+  // Versions-Suffix: bei inhaltlicher Änderung des Hinweises erhöhen, damit er erneut erscheint.
+  private readonly storageKey = 'badprojekt:cookie-notice-ack-v2';
   readonly visible = signal(!this.alreadyAcknowledged());
 
   acknowledge(): void {

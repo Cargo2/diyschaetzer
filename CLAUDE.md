@@ -309,11 +309,6 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
   (`WhiteLabelConfig` vorbereitet). **Bewusst zurückgestellt** – nur bei konkretem Partner-/B2B-Bedarf.
 
-### Offen vor öffentlichem Livegang
-- **Rechtstext-Platzhalter füllen**: alle `[Platzhalter: …]` in `pages/legal/` (Impressum,
-  Datenschutz, Kontakt) mit den tatsächlichen Anbieterdaten ersetzen und rechtlich prüfen lassen.
-  Der `mailto:[platzhalter@example.com]`-Link in Kontakt/Impressum/Datenschutz ist ebenfalls Platzhalter.
-
 ### Offen vor Affiliate-Livegang
 - Echte Affiliate-URLs statt der `PLACEHOLDER`-Links in `data/product-offers.ts`.
 - Amazon-Partner-Tag (`tag=REPLACE-21` in `config/affiliate.config.ts`) ersetzen.

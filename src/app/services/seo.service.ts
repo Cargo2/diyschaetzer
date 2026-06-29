@@ -15,6 +15,8 @@ export interface SeoPage {
   path: string;
   /** og:type, Standard 'website'; Artikel = 'article'. */
   type?: 'website' | 'article';
+  /** true → <meta name="robots" content="noindex, follow"> (z. B. Rechtstexte). */
+  noindex?: boolean;
   /** Optionales JSON-LD (wird als ld+json in den <head> gelegt). */
   jsonLd?: Record<string, unknown>;
 }
@@ -41,6 +43,13 @@ export class SeoService {
     this.meta.updateTag({ name: 'description', content: description });
 
     this.setCanonical(url);
+
+    if (page.noindex) {
+      this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
+    } else {
+      // Sicherstellen, dass kein noindex einer vorherigen Route hängen bleibt.
+      this.meta.removeTag('name="robots"');
+    }
 
     // Open Graph / Twitter
     this.meta.updateTag({ property: 'og:title', content: page.title });

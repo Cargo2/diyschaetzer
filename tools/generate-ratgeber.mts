@@ -26,8 +26,12 @@ const ratgeberOutPath = resolve(here, '../src/app/content/ratgeber-articles.ts')
 const kostenOutPath = resolve(here, '../src/app/content/cost-pages.ts');
 const sitemapPath = resolve(here, '../public/sitemap.xml');
 
-/** Statische, indexierbare Inhaltsseiten (ohne Rechner/Admin/Login/Login-pflichtige). */
-const STATIC_PATHS = ['/', '/ratgeber', '/impressum', '/datenschutz', '/kontakt'];
+/**
+ * Statische, indexierbare Inhaltsseiten (ohne Rechner/Admin/Login/Login-pflichtige).
+ * Impressum und Datenschutz bewusst NICHT enthalten – sie sind auf `noindex` gesetzt
+ * (siehe SeoService-Aufrufe), gehören also nicht in die Sitemap.
+ */
+const STATIC_PATHS = ['/', '/ratgeber', '/kontakt'];
 
 /** Minimaler Frontmatter-Parser für unsere eigenen, einfachen Felder. */
 function parseFrontmatter(raw: string): { meta: Record<string, string>; body: string } {
