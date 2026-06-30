@@ -145,6 +145,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Firmenprofil (Phase 13) | `pages/profile/`, `services/company-profile.service.ts`, `data-access/company-profile-repository.ts` (+ `supabase-…`), `guards/contractor.guard.ts`, Migration `0006` |
 | Profil-Standardannahmen (Phase 13) | `config/profile-price-fields.ts`, `services/profile-assumption-defaults.service.ts`, `data-access/profile-assumption-defaults-repository.ts` (+ `supabase-…`), Overlay in `services/assumption.service.ts`, Migration `0007` |
 | Profi-Angebotsmodul (Phase 13) | `pages/contractor-offers/`, `services/contractor-offer.service.ts`, `models/contractor-offer.model.ts`, `data-access/contractor-offer-repository.ts` (+ `supabase-…`), Migration `0008`; PDF in `services/export-data-mapper.service.ts` + `pdf-document-builder.service.ts` (`offer`-Sektion) |
+| Profi-Feedback (Phase 13) | `pages/feedback/feedback-page.component.ts`, `models/feedback.model.ts`, `data-access/feedback-repository.ts` (+ `supabase-…`); Admin: `pages/admin/admin-feedback.component.ts`, `pages/admin/data-access/admin-feedback-repository.ts` (+ `supabase-…`), Migration `0014` (`contractor_feedback`, `admin_list_feedback()`, `admin_set_feedback_status()`) |
 | Export-Branding (Firmenname) | `services/contractor-branding.service.ts` (Cache), Anwendung in `pdf-export.service.ts`/`excel-export.service.ts` |
 | Mehrere Projekte (aktives Projekt) | `services/local-project.service.ts`, `data-access/project-repository.ts` (+ `supabase-`/`local-storage-`/`session-aware-`) |
 | Berechnungs-Defaults | `data/material-calculation-defaults.ts`, `config/professional-offer-defaults.ts`, `config/diy-cost-defaults.ts` |
@@ -273,6 +274,13 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
     - **PDF**: `ExportDataMapperService.buildContractorOfferExportData` + neuer `offer`-Sektionstyp im
       `PdfDocumentBuilderService` (Leistungsverzeichnis: Gruppen, Zwischensummen, Netto/MwSt./Brutto).
       Download über `PremiumExportButton`; Firmenname-Branding automatisch via `ContractorBrandingService`.
+  - **Block erledigt: Profi-Feedback (`/feedback`)** – contractor-only Seite, auf der Profis
+    Verbesserungsvorschläge (Kategorie + Freitext) senden. Persistenz in `contractor_feedback`
+    (Migration `0014`): **Insert nur eigene Zeile durch Profis** (RLS `owner_id = auth.uid()` +
+    `exists`-Rollencheck), **kein** Lesepfad für Endnutzer. Admin sieht/markiert sie in der Admin-UI
+    (neuer Tab **Feedback**, `/admin/feedback`) über SECURITY-DEFINER-Funktionen `admin_list_feedback()` /
+    `admin_set_feedback_status()` (beide `is_admin()`-gated, Status `new`/`read`). Abgekapselt über
+    `FeedbackRepository`/`Supabase…` (Eingabe) und `AdminFeedbackRepository`/`Supabase…` (Admin).
   - **Noch offen in Phase 13 – ZURÜCKGESTELLT** (Nutzerentscheidung): gebrandetes Schätzungs-PDF
     **versenden** (Edge Function + Mailversand). Vorerst nicht weiterverfolgt.
 - **Phase 14 – Teilen-Link** *(erledigt)*: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen

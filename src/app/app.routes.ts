@@ -19,6 +19,12 @@ export const routes: Routes = [
   { path: 'login', component: AuthPageComponent },
   { path: 'profil', component: ProfilePageComponent, canActivate: [contractorGuard] },
   {
+    path: 'feedback',
+    canActivate: [contractorGuard],
+    loadComponent: () =>
+      import('./pages/feedback/feedback-page.component').then((m) => m.FeedbackPageComponent)
+  },
+  {
     path: 'angebote',
     canActivate: [contractorGuard],
     loadComponent: () =>

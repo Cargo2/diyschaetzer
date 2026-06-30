@@ -24,6 +24,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       <nav class="admin-tabs" aria-label="Admin-Navigation">
         <a routerLink="material" routerLinkActive="active" class="admin-tab">Materialkatalog</a>
         <a routerLink="nutzer" routerLinkActive="active" class="admin-tab">Nutzer</a>
+        <a routerLink="feedback" routerLinkActive="active" class="admin-tab">Feedback</a>
       </nav>
 
       <section class="admin-body">

@@ -25,6 +25,11 @@ export const ADMIN_ROUTES: Routes = [
         path: 'nutzer',
         loadComponent: () =>
           import('./admin-users.component').then((m) => m.AdminUsersComponent)
+      },
+      {
+        path: 'feedback',
+        loadComponent: () =>
+          import('./admin-feedback.component').then((m) => m.AdminFeedbackComponent)
       }
     ]
   }
