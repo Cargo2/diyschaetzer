@@ -37,6 +37,8 @@ export class AuthService {
   readonly initializing = this.initializingSig.asReadonly();
   readonly isAuthenticated = computed(() => this.sessionSig() !== null);
   readonly userEmail = computed(() => this.sessionSig()?.user.email ?? null);
+  /** `true`, wenn ein angemeldeter Nutzer die Rolle Profi (`contractor`) hat. */
+  readonly isContractor = computed(() => this.profileSig()?.role === 'contractor');
   /** `true`, wenn überhaupt ein Supabase-Backend konfiguriert ist. */
   readonly isConfigured = this.client !== null;
   /** Auflösbar, sobald die initiale Session-/Profilprüfung abgeschlossen ist. */

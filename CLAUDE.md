@@ -298,6 +298,19 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   „fliesen verlegen kosten pro qm" mit `roomType: none`). Muster steht (`src/content/kosten/_TEMPLATE.md`).
   Dann interne Verlinkung vervollständigen: aus dem passenden Ratgeber-Beitrag auf die Kostenseite
   verlinken (Schritt 3) und Kostenseiten ggf. untereinander.
+
+  **→ ERLEDIGT:** Separate Landingpage für den **„fliesen verlegen rechner"** (`/kosten/fliesen-verlegen-rechner`,
+  Markdown wie die anderen Kostenseiten) liegt vor: erklärt die Wizard-Kalkulation (Flächen, Verschnitt,
+  Nettofläche, Gebinde) und die Handwerker-Einheiten (m²/lfm/Stück/Pauschal), bewusst **ohne**
+  Preis-pro-qm-Wiederholung, mit Deep-Link zu `/raum-anlegen`. Ebenfalls als eigene Heimwerker-Vorlage
+  live: `/vorlage/fliesen-verlegen-material-werkzeug` (Material-/Werkzeug-Checkliste, eigene prerenderte
+  Komponente analog zur Profi-Vorlage).
+
+  **→ OFFEN bei der Profi-Vorlage** (`/vorlage/angebot-fliesen-muster`): Es fehlt noch ein
+  **Screencast-Video** (Raum anlegen + Angebot erstellen) und ein **eigenes Bild** (Hero, z. B.
+  Screenshot des fertigen Leistungsverzeichnisses). Beide sind als Platzhalter vorbereitet – Datei
+  nach `public/vorlage/` legen und in `pages/templates/offer-template.component.ts` `videoSrc`
+  bzw. `imageSrc` setzen. Video bewusst selbst gehostet (MP4), kein YouTube.
   4. **Conversion-Tracking** (GA4 + Ads): Events Rechner-Start, Rechner-Abschluss, Affiliate-Klick,
      Profi-Registrierung. **Voraussetzung für jeden Ads-Test** – braucht zusätzlich einen vollwertigen
      Cookie-Consent (siehe „Offen vor Affiliate-Livegang", GA4/Ads sind nicht-essentielle Cookies).

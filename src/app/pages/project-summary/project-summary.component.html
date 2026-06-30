@@ -26,12 +26,16 @@
 
     <section class="totals-grid" aria-label="Projektkosten">
       <article><span>Gesamtfläche</span><strong>{{ formatNumber(totals.totalTileAreaM2) }} m²</strong></article>
-      <article><span>DIY-Kosten</span><strong>{{ formatCurrency(totals.totalDiyCost) }}</strong></article>
+      @if (!isContractor()) {
+        <article><span>DIY-Kosten</span><strong>{{ formatCurrency(totals.totalDiyCost) }}</strong></article>
+      }
       <article><span>Fliesenleger-Kosten</span><strong>{{ formatCurrency(totals.totalProfessionalCost) }}</strong></article>
-      <article><span>Mögliche Ersparnis</span><strong>{{ formatCurrency(totals.totalSavings) }}</strong></article>
+      @if (!isContractor()) {
+        <article><span>Mögliche Ersparnis</span><strong>{{ formatCurrency(totals.totalSavings) }}</strong></article>
+      }
       <article class="secondary-total"><span>Materialkosten</span><strong>{{ formatCurrency(totals.totalMaterialCost) }}</strong></article>
       <article class="secondary-total"><span>Werkzeugkosten einmalig</span><strong>{{ formatCurrency(totals.totalToolCostDeduplicated) }}</strong></article>
-      @if (totals.deduplicationSavings > 0) {
+      @if (!isContractor() && totals.deduplicationSavings > 0) {
         <article class="secondary-total">
           <span>Summe Einzelräume</span>
           <strong>{{ formatCurrency(totals.roomDiyCostSum) }}</strong>
@@ -90,7 +94,9 @@
             <dl>
               <div><dt>Fläche</dt><dd>{{ formatNumber(room.tileAreaM2) }} m²</dd></div>
               <div><dt>Inkl. Verschnitt</dt><dd>{{ formatNumber(room.tileAreaWithWasteM2) }} m²</dd></div>
-              <div><dt>DIY-Kosten</dt><dd>{{ formatCurrency(room.diyCost) }}</dd></div>
+              @if (!isContractor()) {
+                <div><dt>DIY-Kosten</dt><dd>{{ formatCurrency(room.diyCost) }}</dd></div>
+              }
               <div><dt>Fliesenleger</dt><dd>{{ formatCurrency(room.professionalCost) }}</dd></div>
             </dl>
             <div class="actions">

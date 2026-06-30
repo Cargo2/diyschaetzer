@@ -1,0 +1,170 @@
+<article class="tmpl-page">
+  <header class="tmpl-hero">
+    <p class="eyebrow">Vorlage für Profis</p>
+    <h1>Angebot Fliesenleger schreiben: Muster, Positionen &amp; Kalkulation</h1>
+    <p class="tmpl-lead">
+      Ein gutes Fliesenleger-Angebot ist ein sauber gegliedertes Leistungsverzeichnis: jede Position
+      mit Menge, Einheit und Einheitspreis, damit nichts vergessen und nichts verschenkt wird. Die
+      häufigsten Margenfresser sind übersehene Positionen wie Verschnitt, Untergrundvorbereitung oder
+      Anfahrt. Hier zeigen wir den Aufbau, ein Muster und wie der Fliesen-Kostenschätzer das
+      Leistungsverzeichnis in Sekunden erzeugt.
+    </p>
+
+    <figure class="tmpl-media tmpl-hero-media">
+      @if (imageSrc) {
+        <img [src]="imageSrc" alt="Beispiel eines mit dem Schätzer erstellten Fliesenleger-Angebots" />
+      } @else {
+        <div class="tmpl-media-placeholder" role="img" aria-label="Platzhalter für ein eigenes Bild des Angebots">
+          <span class="tmpl-media-icon" aria-hidden="true">🖼</span>
+          <strong>Bild folgt</strong>
+          <span>Eigenes Bild, zum Beispiel ein Screenshot des fertigen Leistungsverzeichnisses.</span>
+        </div>
+      }
+    </figure>
+  </header>
+
+  <section class="tmpl-card tmpl-keyfacts">
+    <h2>Das Wichtigste auf einen Blick</h2>
+    <ul>
+      <li>Ein Angebot besteht aus <strong>Kopf</strong> (Firma, Kunde, Nummer, Datum), <strong>Leistungsverzeichnis</strong> und <strong>Summen</strong> (netto, MwSt., brutto).</li>
+      <li>Positionen werden <strong>nach Bereich oder Raum gruppiert</strong>; jede Position nennt Leistung, Menge, Einheit und Einheitspreis.</li>
+      <li><strong>Baustelleneinrichtung und Anfahrt</strong> sind eigene Positionen und sollten nie unbemerkt mitlaufen.</li>
+      <li><strong>Verschnitt</strong> gehört in die Materialmenge, nicht in den Verlegepreis.</li>
+      <li>Kalkuliert wird über <strong>Einheitspreise</strong>, nicht über geschätzte Stunden.</li>
+    </ul>
+  </section>
+
+  <section class="tmpl-card">
+    <h2>Wie ein Fliesenleger-Angebot aufgebaut ist</h2>
+    <p>Ein professionelles Angebot folgt immer demselben Grundgerüst:</p>
+    <ul>
+      <li><strong>Kopf:</strong> Firmendaten, Kundenanschrift, Angebotsnummer, Datum und Gültigkeitsdauer.</li>
+      <li><strong>Leistungsverzeichnis:</strong> nummerierte Positionen, nach Bereich oder Raum gruppiert (zum Beispiel „Pos. 1: Bad"). Jede Position enthält eine eindeutige Leistungsbeschreibung, Menge, Einheit (m², lfm, Stk., pauschal), Einheitspreis und Gesamtpreis.</li>
+      <li><strong>Baustelle und Anfahrt:</strong> Einrichten, Flächen schützen, Material einbringen, Reste entsorgen sowie Fahrtkosten, projektweit einmal.</li>
+      <li><strong>Material:</strong> entweder je Position oder, wie im Schätzer, als eine kompakte Sammelposition, damit die Leistung im Vordergrund steht.</li>
+      <li><strong>Summen:</strong> Zwischensummen je Gruppe, dann Nettobetrag, Mehrwertsteuer und Bruttosumme.</li>
+      <li><strong>Fußteil:</strong> Zahlungsbedingungen, Gültigkeit und Hinweise (etwa zu Verschnitt und bauseitigen Leistungen).</li>
+    </ul>
+
+    <h3>Beispiel-Positionsliste (Muster)</h3>
+    <p>So sieht ein Leistungsverzeichnis nach der Logik des Schätzers aus: Baustelle einmal, je Raum eine Gruppe, Material als Sammelposition.</p>
+    <div class="tmpl-table-wrap">
+      <table>
+        <thead>
+          <tr><th>Pos.</th><th>Leistung</th><th>Menge</th><th>Einheitspreis</th><th>Gesamt</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="5">Baustelle und Anfahrt</td></tr>
+          <tr><td>0.001</td><td>Baustelle einrichten, Flächen schützen, Verpackung entsorgen</td><td>1 Pauschal</td><td>150,00 €</td><td>150,00 €</td></tr>
+          <tr><td>0.002</td><td>Anfahrt und Fahrtkosten</td><td>1 Pauschal</td><td>60,00 €</td><td>60,00 €</td></tr>
+          <tr class="grp"><td colspan="5">Pos. 1: Bad (Beispielraum)</td></tr>
+          <tr><td>1.001</td><td>Verbundabdichtung im Nassbereich</td><td>6 m²</td><td>40,00 €</td><td>240,00 €</td></tr>
+          <tr><td>1.002</td><td>Wandfliesen im Dünnbett verlegen und verfugen</td><td>20 m²</td><td>55,00 €</td><td>1.100,00 €</td></tr>
+          <tr><td>1.003</td><td>Bodenfliesen im Dünnbett verlegen und verfugen</td><td>8 m²</td><td>60,00 €</td><td>480,00 €</td></tr>
+          <tr><td>1.004</td><td>Elastische Silikon-Anschlussfugen</td><td>18 lfm</td><td>8,00 €</td><td>144,00 €</td></tr>
+          <tr><td>1.005</td><td>Material (Fliesen, Kleber, Fugenmasse, Abdichtung)</td><td>1 Pauschal</td><td>1.300,00 €</td><td>1.300,00 €</td></tr>
+          <tr class="sum"><td colspan="4">Nettobetrag</td><td>3.474,00 €</td></tr>
+          <tr class="sum"><td colspan="4">zzgl. 19 % MwSt.</td><td>660,06 €</td></tr>
+          <tr class="sum total"><td colspan="4">Gesamtsumme</td><td>4.134,06 €</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tmpl-note">Beispielwerte zur Veranschaulichung. Deine Einheitspreise hinterlegst du selbst.</p>
+
+    <div class="tmpl-cta-center">
+      <a routerLink="/angebote" class="tmpl-cta">Angebot mit dem Schätzer erstellen</a>
+    </div>
+
+    <h3>Formulierungsbeispiel für eine Position</h3>
+    <blockquote>
+      „Bodenfliesen aus Feinsteinzeug, Format bis ca. 60 × 60 cm, im Dünnbett auf vorbereiteten,
+      verlegereifen Untergrund verlegen, ausrichten und grau verfugen. Fliesen bauseits."
+    </blockquote>
+  </section>
+
+  <section class="tmpl-card">
+    <h2>Was in jedes Angebot gehört</h2>
+    <p>Diese Positionen werden am häufigsten vergessen und kosten dann Marge:</p>
+    <ul>
+      <li><strong>Untergrundvorbereitung:</strong> Grundierung, Spachteln, Ausgleichsmasse (gerade bei Großformat).</li>
+      <li><strong>Abdichtung im Nassbereich:</strong> Verbundabdichtung samt Zubehör (Dichtbänder, Ecken, Manschetten).</li>
+      <li><strong>Verlegung Wand und Boden</strong> getrennt, weil Aufwände und Formate unterschiedlich sind.</li>
+      <li><strong>Verschnitt</strong> in der Materialmenge (rund 10 %, bei Großformat oder Diagonalverlegung eher 15 %).</li>
+      <li><strong>Sockel, Profile und Bohrungen</strong> für saubere Abschlüsse und Installationen.</li>
+      <li><strong>Silikon- und Dehnfugen</strong> als dauerelastische Wartungsfugen.</li>
+      <li><strong>Baustelleneinrichtung und Anfahrt.</strong></li>
+      <li><strong>Zusatzleistungen</strong> wie Rückbau alter Beläge oder Entsorgung.</li>
+      <li><strong>Zahlungsbedingungen und Gültigkeit</strong> im Fußteil.</li>
+    </ul>
+  </section>
+
+  <section class="tmpl-card">
+    <h2>Häufige Kalkulationsfehler</h2>
+    <ul>
+      <li><strong>Verschnitt unterschätzt:</strong> zu wenig Material kalkuliert, die Nachbestellung kostet Zeit und Marge.</li>
+      <li><strong>Untergrund vernachlässigt:</strong> Vorbereitung und Abdichtung nicht eingepreist.</li>
+      <li><strong>Anfahrt und Baustelle vergessen:</strong> Fahrt, Schutz und Entsorgung laufen „kostenlos" mit.</li>
+      <li><strong>Material zu grob:</strong> Pauschalen statt Mengen aus dem Aufmaß.</li>
+    </ul>
+  </section>
+
+  <section class="tmpl-card">
+    <h2>Profitabel kalkulieren mit Einheitspreisen</h2>
+    <p>
+      Im Handwerk wird nicht über geschätzte Stunden, sondern über <strong>Mengen × Einheitspreise</strong>
+      kalkuliert, so wie im Leistungsverzeichnis:
+    </p>
+    <p class="tmpl-formula">Angebotssumme = Summe aller (Menge × Einheitspreis)</p>
+    <ul>
+      <li>Hinterlege deine <strong>eigenen Einheitspreise</strong>, darin steckt deine Erfahrung.</li>
+      <li>Rechne <strong>nach tatsächlichem Umfang</strong>: nur Positionen, die wirklich anfallen (Untergrundzustand, Rückbau, Nassbereich).</li>
+      <li>Halte den <strong>Verschnitt im Material</strong>, nicht im Verlegepreis, sonst verzerrt er den Quadratmeterpreis.</li>
+    </ul>
+  </section>
+
+  <section class="tmpl-card tmpl-tool">
+    <h2>In Sekunden zum Angebot mit dem Fliesen-Kostenschätzer</h2>
+    <p>
+      Genau dieses Leistungsverzeichnis erzeugt der Schätzer automatisch: Du erfasst die Räume per
+      Aufmaß, der Rechner leitet daraus das Mengengerüst ab und baut ein editierbares Angebot.
+    </p>
+    <ul>
+      <li><strong>Mengengerüst aus dem Aufmaß:</strong> Flächen, Fliesen inkl. Verschnitt, Verbrauchsmaterial.</li>
+      <li><strong>Positionsgruppen je Raum</strong> plus Baustelleneinrichtung projektweit einmal.</li>
+      <li><strong>Material als kompakte Sammelposition</strong>, sodass die Leistung im Vordergrund bleibt.</li>
+      <li><strong>Editierbares Leistungsverzeichnis:</strong> Preise, Mengen und Texte anpassen, Positionen ergänzen.</li>
+      <li><strong>Gebrandetes PDF</strong> mit deinem Firmennamen.</li>
+    </ul>
+
+    <figure class="tmpl-media">
+      @if (videoSrc) {
+        <video controls preload="none" [attr.poster]="videoPoster">
+          <source [src]="videoSrc" type="video/mp4" />
+          Dein Browser unterstützt keine eingebetteten Videos.
+        </video>
+      } @else {
+        <div class="tmpl-media-placeholder" role="img" aria-label="Platzhalter für ein kurzes Video der Angebotserstellung">
+          <span class="tmpl-media-icon" aria-hidden="true">▶</span>
+          <strong>Video folgt</strong>
+          <span>Kurzes Screencast: Raum anlegen und Angebot erstellen als Profi.</span>
+        </div>
+      }
+      <figcaption>So entsteht aus dem Aufmaß ein fertiges Angebot.</figcaption>
+    </figure>
+
+    <a routerLink="/angebote" class="tmpl-cta">Jetzt Angebot erstellen</a>
+    <p class="tmpl-note">Für die Angebotserstellung ist ein kostenloses Profi-Konto nötig.</p>
+  </section>
+
+  <section class="tmpl-card">
+    <h2>Häufige Fragen</h2>
+    <div class="tmpl-faq">
+      @for (item of faq; track item.question) {
+        <div class="tmpl-faq-item">
+          <h3>{{ item.question }}</h3>
+          <p>{{ item.answer }}</p>
+        </div>
+      }
+    </div>
+  </section>
+</article>

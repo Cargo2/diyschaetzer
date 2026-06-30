@@ -8,6 +8,7 @@ import {
 import { ResolvedOffer } from '../../models/affiliate.model';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { AffiliateService } from '../../services/affiliate.service';
+import { AuthService } from '../../services/auth.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { LocalProjectService } from '../../services/local-project.service';
 import { MaterialListStateService } from '../../services/material-list-state.service';
@@ -30,6 +31,10 @@ export class ProjectSummaryComponent implements OnInit {
   private readonly affiliate = inject(AffiliateService);
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
+  private readonly auth = inject(AuthService);
+
+  /** Bei eingeloggtem Profi DIY-Kosten und Ersparnis ausblenden (Anzeige, keine Berechnung). */
+  readonly isContractor = this.auth.isContractor;
 
   readonly roomLimitReached = this.roomLimit.limitReached;
   readonly roomLimitHint = this.roomLimit.hint;

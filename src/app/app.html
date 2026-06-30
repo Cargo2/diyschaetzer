@@ -80,9 +80,11 @@
         Projekt-Dashboard
       </a>
 
-      <a routerLink="/ratgeber" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-        Ratgeber
-      </a>
+      @if (!isContractor()) {
+        <a routerLink="/ratgeber" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+          Ratgeber
+        </a>
+      }
 
       @if (authConfigured) {
         @if (isAuthenticated()) {

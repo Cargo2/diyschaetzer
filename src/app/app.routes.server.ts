@@ -21,6 +21,8 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender,
     getPrerenderParams: async () => COST_PAGES.map((page) => ({ slug: page.slug }))
   },
+  { path: 'vorlage/angebot-fliesen-muster', renderMode: RenderMode.Prerender },
+  { path: 'vorlage/fliesen-verlegen-material-werkzeug', renderMode: RenderMode.Prerender },
   { path: 'impressum', renderMode: RenderMode.Prerender },
   { path: 'datenschutz', renderMode: RenderMode.Prerender },
   { path: 'kontakt', renderMode: RenderMode.Prerender },

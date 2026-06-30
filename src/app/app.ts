@@ -59,7 +59,7 @@ export class App {
   readonly isAuthenticated = this.auth.isAuthenticated;
   readonly userEmail = this.auth.userEmail;
   /** Firmenprofil-Link nur für angemeldete Profis. */
-  readonly isContractor = computed(() => this.auth.profile()?.role === 'contractor');
+  readonly isContractor = this.auth.isContractor;
   /** Admin-Link nur für angemeldete Admins. */
   readonly isAdmin = computed(() => this.auth.profile()?.role === 'admin');
 

@@ -1,0 +1,253 @@
+:host {
+  display: block;
+}
+
+.tmpl-page {
+  max-width: 48rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.4rem;
+}
+
+.tmpl-hero {
+  background:
+    radial-gradient(44rem 26rem at 110% -30%, rgba(194, 112, 61, 0.26), transparent 55%),
+    linear-gradient(150deg, #0a352f, #07241f);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  color: #e9f2ec;
+  padding: clamp(1.8rem, 5vw, 3rem);
+}
+
+.eyebrow {
+  color: var(--copper-soft);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  margin: 0 0 0.7rem;
+  text-transform: uppercase;
+}
+
+.tmpl-hero h1 {
+  color: #f7faf6;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.12;
+  margin: 0 0 0.9rem;
+  text-wrap: balance;
+}
+
+.tmpl-lead {
+  color: #b7cdc2;
+  line-height: 1.75;
+  margin: 0 0 1.4rem;
+}
+
+.tmpl-card {
+  background: var(--card);
+  border: 1px solid rgba(19, 23, 17, 0.07);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.tmpl-card h2 {
+  color: var(--ink);
+  font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+  margin: 0 0 0.8rem;
+  text-wrap: balance;
+}
+
+.tmpl-card h3 {
+  color: var(--ink);
+  font-size: 1.1rem;
+  margin: 1.6rem 0 0.5rem;
+}
+
+.tmpl-card p,
+.tmpl-card li {
+  color: var(--ink-soft);
+  line-height: 1.75;
+}
+
+.tmpl-card p {
+  margin: 0 0 0.9rem;
+}
+
+.tmpl-card ul {
+  margin: 0 0 0.4rem;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.tmpl-card strong {
+  color: var(--ink);
+}
+
+.tmpl-keyfacts {
+  border-left: 4px solid var(--copper);
+}
+
+.tmpl-table-wrap {
+  overflow-x: auto;
+  margin: 0.6rem 0 0.4rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 34rem;
+}
+
+th,
+td {
+  border: 1px solid rgba(19, 23, 17, 0.12);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: rgba(17, 87, 74, 0.08);
+  color: var(--ink);
+}
+
+td {
+  color: var(--ink-soft);
+}
+
+tr.grp td {
+  background: rgba(194, 112, 61, 0.08);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+tr.sum td {
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+}
+
+tr.sum td:last-child {
+  text-align: right;
+}
+
+tr.total td {
+  background: rgba(17, 87, 74, 0.1);
+  font-size: 1rem;
+}
+
+.tmpl-note {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: 0.4rem;
+}
+
+blockquote {
+  margin: 0.6rem 0;
+  padding: 0.8rem 1.1rem;
+  border-left: 3px solid var(--copper);
+  background: rgba(194, 112, 61, 0.06);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.tmpl-formula {
+  background: rgba(17, 87, 74, 0.06);
+  border: 1px solid rgba(17, 87, 74, 0.18);
+  border-radius: 0.7rem;
+  color: var(--ink);
+  font-weight: 700;
+  padding: 0.9rem 1.1rem;
+  text-align: center;
+}
+
+.tmpl-media {
+  margin: 1.4rem 0 0;
+}
+
+.tmpl-media video,
+.tmpl-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(19, 23, 17, 0.1);
+}
+
+.tmpl-media-placeholder {
+  display: grid;
+  place-items: center;
+  gap: 0.4rem;
+  text-align: center;
+  aspect-ratio: 16 / 9;
+  border: 2px dashed rgba(17, 87, 74, 0.3);
+  border-radius: 0.9rem;
+  background: linear-gradient(160deg, #fbfaf5, #f1ede2);
+  color: var(--ink-soft);
+  padding: 1rem;
+}
+
+.tmpl-media-placeholder strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.tmpl-media-icon {
+  font-size: 1.8rem;
+}
+
+.tmpl-media figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  opacity: 0.85;
+  text-align: center;
+}
+
+.tmpl-faq {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.tmpl-faq-item h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.tmpl-faq-item p {
+  margin: 0;
+}
+
+.tmpl-cta {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--copper), #a9582c);
+  color: #fff5ec;
+  font-weight: 800;
+  padding: 0.85rem 1.6rem;
+  text-decoration: none;
+  margin-top: 0.4rem;
+}
+
+.tmpl-cta-center {
+  display: flex;
+  justify-content: center;
+  margin: 1.8rem 0 0.4rem;
+}
+
+.tmpl-hero-media {
+  margin-top: 1.6rem;
+}
+
+.tmpl-hero-media .tmpl-media-placeholder {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.tmpl-tool {
+  border: 1px solid rgba(17, 87, 74, 0.18);
+}

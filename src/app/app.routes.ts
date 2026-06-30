@@ -59,6 +59,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/cost/cost-page.component').then((m) => m.CostPageComponent)
   },
+  {
+    path: 'vorlage/angebot-fliesen-muster',
+    loadComponent: () =>
+      import('./pages/templates/offer-template.component').then((m) => m.OfferTemplateComponent)
+  },
+  {
+    path: 'vorlage/fliesen-verlegen-material-werkzeug',
+    loadComponent: () =>
+      import('./pages/templates/material-template.component').then((m) => m.MaterialTemplateComponent)
+  },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },
   { path: 'kontakt', component: KontaktComponent },
