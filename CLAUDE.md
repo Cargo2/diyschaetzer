@@ -299,13 +299,29 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
      verlinkt (dezenter Kostenbeispiel-Block im Hero; Zwei-Pfad-Hero Heimwerker/Profi mit Vorschau-
      Bildern). Skaliert nur so weit wie echte Projekte/Angebote vorliegen.
   3. **Strukturierte Daten** ausbauen: `FAQPage`-/`HowTo`-JSON-LD auf Kostenseiten/Ratgeber (über
-     `SeoService`), interne Verlinkung Ratgeber ↔ Kostenseiten ↔ Rechner.
+     `SeoService`), interne Verlinkung Ratgeber ↔ Kostenseiten ↔ Rechner. *(Teilweise erledigt:
+     Kostenseiten liefern bereits FAQPage-JSON-LD; Ratgeber-Beiträge liefern seit `Häufige Fragen`-
+     Extraktion im Codegen jetzt **Article + FAQPage** als `@graph`. Bild-Support in Ratgeber- und
+     Kostenseiten-Markdown vorhanden, `HowTo`-JSON-LD noch offen.)*
 
-  **→ NÄCHSTER SCHRITT:** Kostenseiten skalieren – zweite Seite anlegen (`kueche-fliesen-kosten`
-  oder `terrasse-fliesen-kosten`, je nach vorliegendem echtem Angebot; sonst raumneutral
-  „fliesen verlegen kosten pro qm" mit `roomType: none`). Muster steht (`src/content/kosten/_TEMPLATE.md`).
-  Dann interne Verlinkung vervollständigen: aus dem passenden Ratgeber-Beitrag auf die Kostenseite
-  verlinken (Schritt 3) und Kostenseiten ggf. untereinander.
+  **→ ERLEDIGT (Kostenseiten skaliert):** `kueche-fliesen-kosten` (echtes Angebot) liegt vor;
+  Kostenseiten insgesamt: `badezimmer-fliesen-kosten`, `kueche-fliesen-kosten`, `fliesen-pro-m2`,
+  `fliesen-verlegen-rechner`. Muster steht (`src/content/kosten/_TEMPLATE.md`).
+
+  **→ ERLEDIGT (Ratgeber ausgebaut):** Neue Beiträge `fliesen-nivelliersystem` (Systemvergleich
+  toom/OBI + Amazon Raimondi/RUBI/Lantelme, klickbare Amazon-Affiliate-Bilder als Platzhalter mit
+  `tag=REPLACE-21`, eigene Baumarkt-Fotos als Platzhalter-SVG) und `fliesen-beige` (Beige-Optiken
+  Uni/Beton/Holz/Marmor/Naturstein, klickbare Produktbilder als Affiliate-Platzhalter). Beide mit
+  FAQ, `Meine Erfahrung`-Block und interner Verlinkung zueinander + zu Rechner/Kostenseiten.
+  **Offen:** echte Amazon-Produktbilder + Affiliate-Links (ASIN) einsetzen und die Baumarkt-
+  Platzhalter-SVGs (`public/img/ratgeber/nivelliersystem-*.svg`, `fliese-beige-*.svg`) durch
+  eigene Fotos ersetzen. Hinweis: Markdown-Links tragen (noch) **kein** `rel="sponsored nofollow"`
+  – vor Affiliate-Livegang klären (marked-Renderer erweitern oder Links als HTML pflegen).
+
+  **→ NÄCHSTER SCHRITT:** Weitere Kostenseite je vorliegendem echtem Angebot (z. B.
+  `terrasse-fliesen-kosten`; sonst raumneutral „fliesen verlegen kosten pro qm" mit
+  `roomType: none`) **und** `HowTo`-JSON-LD auf passenden Ratgeber-/Kostenseiten (Schritt 3)
+  ergänzen; interne Verlinkung Ratgeber ↔ Kostenseiten ↔ Rechner weiter verdichten.
 
   **→ ERLEDIGT:** Separate Landingpage für den **„fliesen verlegen rechner"** (`/kosten/fliesen-verlegen-rechner`,
   Markdown wie die anderen Kostenseiten) liegt vor: erklärt die Wizard-Kalkulation (Flächen, Verschnitt,
