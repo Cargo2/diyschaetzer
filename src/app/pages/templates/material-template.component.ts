@@ -32,8 +32,8 @@ export class MaterialTemplateComponent implements OnInit {
 
   /** Sobald vorhanden auf z. B. '/vorlage/material-hero.jpg' setzen (Datei nach public/vorlage/). */
   readonly imageSrc: string | null = null;
-  /** Sobald vorhanden auf z. B. '/vorlage/material-checkliste.mp4' setzen (Datei nach public/vorlage/). */
-  readonly videoSrc: string | null = null;
+  /** Selbst gehostetes Screencast; per `preload="none"` erst beim Start geladen. */
+  readonly videoSrc: string | null = '/vorlage/materialliste.mp4';
   /** Optionales Vorschaubild (Poster) fürs Video. */
   readonly videoPoster: string | null = null;
 

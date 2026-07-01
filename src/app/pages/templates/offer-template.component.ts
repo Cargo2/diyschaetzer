@@ -30,8 +30,8 @@ export class OfferTemplateComponent implements OnInit {
 
   /** Sobald vorhanden auf z. B. '/vorlage/angebot-muster.png' setzen (Datei nach public/vorlage/). */
   readonly imageSrc: string | null = null;
-  /** Sobald vorhanden auf z. B. '/vorlage/angebot-erstellen.mp4' setzen (Datei nach public/vorlage/). */
-  readonly videoSrc: string | null = null;
+  /** Selbst gehostetes Screencast; per `preload="none"` erst beim Start geladen. */
+  readonly videoSrc: string | null = '/vorlage/angebot.mp4';
   /** Optionales Vorschaubild (Poster) fürs Video. */
   readonly videoPoster: string | null = null;
 
