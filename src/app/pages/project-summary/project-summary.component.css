@@ -268,6 +268,7 @@ button.warning-badge:hover {
   max-height: 20rem;
   overflow: auto;
   padding: 1rem;
+  pointer-events: none;
   position: absolute;
   right: 0;
   top: calc(100% + 0.5rem);
@@ -286,6 +287,13 @@ button.warning-badge:hover {
 .warning-tooltip-wrap:hover .warning-tooltip,
 .warning-tooltip-wrap:focus-within .warning-tooltip {
   display: block;
+}
+
+/* Nur die bewusst per Klick geöffnete Tooltip fängt Klicks/Scroll ab; die
+   reine Hover-/Focus-Vorschau bleibt klickdurchlässig, damit sie nicht die
+   darunterliegenden Aktionsbuttons (z. B. „Materialliste") blockiert. */
+.warning-tooltip.open {
+  pointer-events: auto;
 }
 
 .material-metrics {
