@@ -19,6 +19,25 @@ import type { RatgeberArticle } from '../src/app/models/ratgeber.model';
 import type { CostPage, CostPageFaqItem } from '../src/app/models/cost-page.model';
 import { absoluteUrl, SITE_URL } from '../src/app/config/site.config';
 
+/**
+ * Externe Links (http/https) bekommen automatisch `rel="sponsored nofollow noopener"`
+ * und `target="_blank"` – wichtig für Affiliate-/Shop-Links (Amazon-Partnerprogramm,
+ * SEO). Interne Links (`/…`) bleiben unverändert. `rel`/`target` überleben Angulars
+ * `[innerHTML]`-Sanitizer (beide in dessen Attribut-Allowlist).
+ */
+marked.use({
+  renderer: {
+    link(token) {
+      const href = token.href ?? '';
+      const title = token.title ? ` title="${token.title}"` : '';
+      const inner = this.parser.parseInline(token.tokens);
+      const external = /^https?:\/\//i.test(href);
+      const attrs = external ? ' target="_blank" rel="sponsored nofollow noopener"' : '';
+      return `<a href="${href}"${title}${attrs}>${inner}</a>`;
+    }
+  }
+});
+
 const here = dirname(fileURLToPath(import.meta.url));
 const ratgeberDir = resolve(here, '../src/content/ratgeber');
 const kostenDir = resolve(here, '../src/content/kosten');
