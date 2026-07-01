@@ -40,6 +40,14 @@ export const routes: Routes = [
   { path: 'raum-anlegen', component: WizardPageComponent },
   { path: 'materialliste', component: MaterialListComponent, canActivate: [wizardCompletedGuard] },
   { path: 'zusammenfassung', component: SummaryPageComponent, canActivate: [wizardCompletedGuard] },
+  {
+    path: 'zusammenfassung_raum',
+    canActivate: [wizardCompletedGuard],
+    loadComponent: () =>
+      import('./pages/room-summary-contractor/room-summary-contractor.component').then(
+        (m) => m.RoomSummaryContractorComponent
+      )
+  },
   { path: 'projekt-dashboard', component: ProjectSummaryComponent },
   // Alte Pfade (SEO/Bookmarks) dauerhaft auf die neuen umleiten.
   { path: 'wizard', redirectTo: 'raum-anlegen', pathMatch: 'full' },

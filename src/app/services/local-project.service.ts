@@ -87,8 +87,15 @@ export class LocalProjectService {
     this.editingRoomIdSignal.set(null);
   }
 
-  /** Legt ein neues, leeres Projekt an, macht es aktiv und persistiert es. */
-  createProject(name?: string): LocalTileProject {
+  /**
+   * Legt ein neues, leeres Projekt an, macht es aktiv und persistiert es.
+   *
+   * `resetWizard` (Default `true`): setzt Wizard/Ergebnisse zurück (frischer Start).
+   * Auf `false`, wenn der aktuelle Wizard-Raum anschließend in dieses neue Projekt
+   * gespeichert werden soll (z. B. „+ Neues Angebot" in der Profi-Zusammenfassung) –
+   * sonst würde der noch nicht gespeicherte Raum verloren gehen.
+   */
+  createProject(name?: string, resetWizard = true): LocalTileProject {
     const now = new Date().toISOString();
     const project: LocalTileProject = {
       id: this.createId(),
@@ -102,9 +109,11 @@ export class LocalProjectService {
     this.projectsSignal.update((list) => [...list, project]);
     this.activeIdSignal.set(project.id);
     this.editingRoomIdSignal.set(null);
-    // Neues Projekt = frischer Start: Wizard/Ergebnisse (Zusammenfassung, Materialliste)
-    // zurücksetzen, damit der Wizard für das neue Projekt neu durchlaufen wird.
-    this.wizardState.startNewRoom();
+    if (resetWizard) {
+      // Neues Projekt = frischer Start: Wizard/Ergebnisse (Zusammenfassung, Materialliste)
+      // zurücksetzen, damit der Wizard für das neue Projekt neu durchlaufen wird.
+      this.wizardState.startNewRoom();
+    }
     this.persist(project);
     return project;
   }

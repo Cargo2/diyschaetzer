@@ -74,7 +74,7 @@ export class App {
     this.menuOpen.set(false);
   }
 
-  openResultsPage(path: '/materialliste' | '/zusammenfassung'): void {
+  openResultsPage(path: '/materialliste' | '/zusammenfassung' | '/zusammenfassung_raum'): void {
     this.closeMenu();
 
     if (this.resultsAvailable()) {

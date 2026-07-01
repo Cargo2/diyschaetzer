@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WizardComponent } from '../../components/wizard/wizard.component';
 import { ROOM_TYPE_DEFAULT_NAMES, RoomType } from '../../models/bathroom-wizard.model';
+import { AuthService } from '../../services/auth.service';
 import { WizardStateService } from '../../services/wizard-state.service';
 
 @Component({
@@ -38,6 +39,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
 })
 export class WizardPageComponent implements OnInit {
   private readonly wizardState = inject(WizardStateService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -60,6 +62,9 @@ export class WizardPageComponent implements OnInit {
 
   completeWizard(): void {
     this.wizardState.markWizardCompleted();
-    void this.router.navigate(['/zusammenfassung']);
+    // Profis bekommen die reduzierte Raum-Zusammenfassung (nur Leistungspositionen,
+    // kein DIY-Vergleich/Materialübersicht); Heimwerker die normale Zusammenfassung.
+    const target = this.auth.isContractor() ? '/zusammenfassung_raum' : '/zusammenfassung';
+    void this.router.navigate([target]);
   }
 }

@@ -25,7 +25,21 @@
       </a>
 
       @if (isContractor()) {
-        <!-- Profi: keine Zusammenfassung – direkt Materialliste des aktuellen Raums. -->
+        <!-- Profi: Zusammenfassung (Leistungspositionen) + Materialliste des aktuellen Raums. -->
+        @if (resultsAvailable()) {
+          <a routerLink="/zusammenfassung_raum" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            Zusammenfassung
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="tab-button disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="openResultsPage('/zusammenfassung_raum')"
+          >
+            Zusammenfassung
+          </button>
+        }
         @if (resultsAvailable()) {
           <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
             Materialliste {{ roomName() }}
