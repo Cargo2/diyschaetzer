@@ -37,6 +37,6 @@ export const MERCHANTS: Merchant[] = [
     rel: AFFILIATE_LINK_REL,
     enabled: true,
     sponsored: true,
-    searchUrlTemplate: 'https://www.amazon.de/s?k={q}&tag=REPLACE-21'
+    searchUrlTemplate: 'https://www.amazon.de/s?k={q}&tag=alkoholvergle-21'
   }
 ];

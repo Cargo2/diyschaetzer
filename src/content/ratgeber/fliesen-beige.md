@@ -35,48 +35,42 @@ achten musst.
 
 ## Beige Fliesen nach Optik (mit Beispielen)
 
-Die Bilder sind klickbar – die Links führen (nach dem Einsetzen der echten Produktlinks)
-zum jeweiligen Angebot bei Amazon, OBI oder toom.
-
-> *Amazon-Links sind Affiliate-Links: Als Amazon-Partner verdiene ich an qualifizierten
-> Verkäufen. Für dich ändert sich am Preis nichts.*
-
 ### Beige Feinsteinzeug, matt (Uni)
 
-<!-- Produktbild einfügen: fliese-beige-feinsteinzeug.svg ersetzen. Shop-/Affiliate-Link unten eintragen. -->
-[![Beige Feinsteinzeug-Fliese, matt, im Format 60x60 cm](/img/ratgeber/fliese-beige-feinsteinzeug.svg)](https://www.amazon.de/s?k=fliesen+beige+feinsteinzeug+matt&tag=REPLACE-21)
+<!-- Produktbild einfügen: fliese-beige-feinsteinzeug.svg ersetzen. -->
+[![Beige Feinsteinzeug-Fliese, matt, im Format 60x60 cm](/img/ratgeber/fliese-beige-feinsteinzeug.svg)](https://www.obi.de/search/bodenfliesen%20beige/)
 
 Der Allrounder: matte Uni-Fliese in 60×60 oder 30×60 cm. Ruhig, unauffällig, pflegeleicht.
 Ideal als durchgängiger Bodenbelag über mehrere Räume.
 
 ### Beige in Betonoptik
 
-<!-- Produktbild einfügen: fliese-beige-betonoptik.svg ersetzen. Shop-/Affiliate-Link unten eintragen. -->
-[![Beige Fliese in Betonoptik mit feiner Struktur](/img/ratgeber/fliese-beige-betonoptik.svg)](https://www.amazon.de/s?k=fliesen+beige+betonoptik&tag=REPLACE-21)
+<!-- Produktbild einfügen: fliese-beige-betonoptik.svg ersetzen. -->
+[![Beige Fliese in Betonoptik mit feiner Struktur](/img/ratgeber/fliese-beige-betonoptik.svg)](https://www.amazon.de/s?k=fliesen+betonoptik+bad+boden&crid=2HAOLY0OHRBLT&sprefix=fliese+beton%2Caps%2C112&linkCode=ll2&tag=alkoholvergle-21&linkId=84bccb9e28a1d442eb4133966fb489c5&ref_=as_li_ss_tl)
 
 Leicht wolkige, moderne Struktur ohne die Kühle von echtem Grau-Beton. Passt zu
 minimalistischen Bädern und offenen Wohnküchen.
 
 ### Beige in Holzoptik
 
-<!-- Produktbild einfügen: fliese-beige-holzoptik.svg ersetzen. Shop-/Affiliate-Link unten eintragen. -->
-[![Beige Fliese in heller Holzoptik im Langformat](/img/ratgeber/fliese-beige-holzoptik.svg)](https://www.amazon.de/s?k=fliesen+beige+holzoptik&tag=REPLACE-21)
+<!-- Produktbild einfügen: fliese-beige-holzoptik.svg ersetzen. -->
+[![Beige Fliese in heller Holzoptik im Langformat](/img/ratgeber/fliese-beige-holzoptik.svg)](https://www.obi.de/search/fliesen%20holzoptik/)
 
 Helle Dielenoptik (z. B. 20×120 cm) – die Wärme von Holz mit der Robustheit der Fliese.
 Beliebt im Bad und für Fußbodenheizung, wo echtes Holz problematisch wäre.
 
 ### Beige in Marmoroptik
 
-<!-- Produktbild einfügen: fliese-beige-marmoroptik.svg ersetzen. Shop-/Affiliate-Link unten eintragen. -->
-[![Beige Fliese in Marmoroptik mit feiner Äderung](/img/ratgeber/fliese-beige-marmoroptik.svg)](https://www.amazon.de/s?k=fliesen+beige+marmoroptik&tag=REPLACE-21)
+<!-- Produktbild einfügen: fliese-beige-marmoroptik.svg ersetzen. -->
+[![Beige Fliese in Marmoroptik mit feiner Äderung](/img/ratgeber/fliese-beige-marmoroptik.svg)](https://www.obi.de/search/fliesen%20marmoroptik/)
 
 Edle Äderung in Creme-Beige – der Luxus-Look ohne die Empfindlichkeit von echtem Marmor.
 Als polierte Variante besonders hochwertig, matt dafür rutschsicherer.
 
 ### Sand- und Travertinoptik (Naturstein)
 
-<!-- Produktbild einfügen: fliese-beige-natursteinoptik.svg ersetzen. Shop-/Affiliate-Link unten eintragen. -->
-[![Beige Fliese in Naturstein-/Travertinoptik in Sandtönen](/img/ratgeber/fliese-beige-natursteinoptik.svg)](https://www.amazon.de/s?k=fliesen+beige+travertin+optik&tag=REPLACE-21)
+<!-- Produktbild einfügen: fliese-beige-natursteinoptik.svg ersetzen. -->
+[![Beige Fliese in Naturstein-/Travertinoptik in Sandtönen](/img/ratgeber/fliese-beige-natursteinoptik.svg)](https://amzn.to/4eDnMyt)
 
 Warme, sandige Naturstein-Anmutung – ideal für mediterrane Bäder und Terrassen. Als
 frostfeste Variante auch für draußen geeignet.
