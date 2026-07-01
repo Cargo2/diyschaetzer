@@ -91,6 +91,15 @@ import { SeoService } from '../../services/seo.service';
         font-weight: 600;
       }
 
+      .cost-body ::ng-deep img {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 1.2rem 0;
+        border: 1px solid rgba(19, 23, 17, 0.1);
+        border-radius: var(--radius-lg);
+      }
+
       .cost-body ::ng-deep blockquote {
         margin: 1.2rem 0;
         padding: 0.6rem 1rem;

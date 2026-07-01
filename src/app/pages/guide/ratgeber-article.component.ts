@@ -126,6 +126,15 @@ import { SeoService } from '../../services/seo.service';
         font-weight: 600;
       }
 
+      .article-body ::ng-deep img {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 1.2rem 0;
+        border: 1px solid rgba(19, 23, 17, 0.1);
+        border-radius: var(--radius-lg);
+      }
+
       .article-body ::ng-deep blockquote {
         margin: 1.2rem 0;
         padding: 0.6rem 1rem;
@@ -198,22 +207,40 @@ export class RatgeberArticleComponent implements OnInit {
       });
       return;
     }
+    const articleLd = {
+      '@type': 'Article',
+      headline: article.title,
+      description: article.description,
+      datePublished: article.date,
+      inLanguage: 'de-DE',
+      author: { '@type': 'Organization', name: SITE_NAME },
+      publisher: { '@type': 'Organization', name: SITE_NAME },
+      mainEntityOfPage: absoluteUrl(`/ratgeber/${article.slug}`)
+    };
+    // Bei vorhandener FAQ Article + FAQPage in einem @graph ausliefern (Rich Results).
+    const jsonLd =
+      article.faq.length > 0
+        ? {
+            '@context': 'https://schema.org',
+            '@graph': [
+              articleLd,
+              {
+                '@type': 'FAQPage',
+                mainEntity: article.faq.map((item) => ({
+                  '@type': 'Question',
+                  name: item.question,
+                  acceptedAnswer: { '@type': 'Answer', text: item.answer }
+                }))
+              }
+            ]
+          }
+        : { '@context': 'https://schema.org', ...articleLd };
     this.seo.setPage({
       title: article.title,
       description: article.description,
       path: `/ratgeber/${article.slug}`,
       type: 'article',
-      jsonLd: {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: article.title,
-        description: article.description,
-        datePublished: article.date,
-        inLanguage: 'de-DE',
-        author: { '@type': 'Organization', name: SITE_NAME },
-        publisher: { '@type': 'Organization', name: SITE_NAME },
-        mainEntityOfPage: absoluteUrl(`/ratgeber/${article.slug}`)
-      }
+      jsonLd
     });
   }
 

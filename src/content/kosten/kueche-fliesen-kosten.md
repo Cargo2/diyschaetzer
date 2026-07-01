@@ -14,6 +14,12 @@ und Edelstahl-Abschlussprofilen. Verlegt wurden rund **8,5 m² Boden und 2,2 m²
 Boden entspricht das grob **226 €/m²** – deutlich mehr als reine Verlege-Spannen, weil hier das Material
 und das anspruchsvolle Großformat enthalten sind.
 
+<!-- Platzhalter-Bild: eigenes Foto nach public/img/kosten/kueche-fliesen-kosten.svg legen
+     (oder als .jpg ablegen und den Pfad in der Bildzeile anpassen). Möglich sind ein Foto der
+     fertig gefliesten Küche ODER ein Screenshot des anonymisierten Leistungsverzeichnisses –
+     bei Letzterem vorher Firmenname, Logo, Adresse, Angebotsnummer und Kontaktdaten schwärzen. -->
+![Fertig geflieste Küche – Beispielprojekt zum echten Angebot](/img/kosten/kueche-fliesen-kosten.svg)
+
 ## Kostenübersicht (Küche, echtes Angebot)
 
 | Pos. | Menge | Leistung | Einheitspreis | Gesamt |

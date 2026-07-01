@@ -15,9 +15,11 @@ bauseits, stecken also **nicht** in dieser Summe. Weil Badgröße, Abdichtungsfl
 Fliesenformat und Untergrund den Preis bestimmen, ist diese Zahl ein ehrlicher Anhaltspunkt
 und kein pauschaler Quadratmeterpreis.
 
-<!-- [OPTIONAL: ANONYMISIERTES ANGEBOT EINFÜGEN] – Screenshot des Leistungsverzeichnisses
-     nach public/ legen und hier als Bild verlinken. Vorher Firmenname, Logo, Adresse,
-     Angebotsnummer und alle Kontaktdaten schwärzen. -->
+<!-- Platzhalter-Bild: eigenes Foto nach public/img/kosten/badezimmer-fliesen-kosten.svg legen
+     (oder als .jpg ablegen und den Pfad in der Bildzeile anpassen). Möglich sind ein Foto des
+     fertig gefliesten Bads ODER ein Screenshot des anonymisierten Leistungsverzeichnisses –
+     bei Letzterem vorher Firmenname, Logo, Adresse, Angebotsnummer und Kontaktdaten schwärzen. -->
+![Fertig gefliestes Badezimmer – Beispielprojekt zum echten Angebot](/img/kosten/badezimmer-fliesen-kosten.svg)
 
 ## Kostenübersicht (Bad, echtes Angebot)
 

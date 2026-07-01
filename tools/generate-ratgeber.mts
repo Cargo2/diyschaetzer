@@ -143,7 +143,8 @@ const articles: RatgeberArticle[] = ratgeberFiles.map((file) => {
     date: unquote(meta['date'] ?? ''),
     tags: parseTags(meta['tags']),
     html,
-    readingMinutes: readingMinutes(html)
+    readingMinutes: readingMinutes(html),
+    faq: extractFaq(body)
   };
 });
 articles.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.title.localeCompare(b.title, 'de')));
