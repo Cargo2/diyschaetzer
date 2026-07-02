@@ -196,4 +196,7 @@ durch das Sackgewicht. Beispiel: 12 m² × 4,5 kg/m² = 54 kg ≈ **3–4 Säcke
 Den genauen **Klebebedarf, die Fliesenmenge inkl. Verschnitt und eine grobe
 Kostenschätzung** rechnet dir der [kostenlose Fliesenrechner](/raum-anlegen) direkt aus
 deinen Raummaßen aus. Was das Fliesen insgesamt kostet, zeigt die Übersicht
-[Fliesen verlegen: Kosten pro m²](/kosten/fliesen-pro-m2).
+[Fliesen verlegen: Kosten pro m²](/kosten/fliesen-pro-m2). Passend zum Kleber:
+[Fugenmasse – Verbrauch pro m²](/ratgeber/fugenmasse-verbrauch-pro-qm),
+[Fliesenbedarf & Verschnitt berechnen](/ratgeber/fliesen-berechnen-verschnitt) und – beim
+Renovieren – [Fliesen auf Fliesen verlegen](/ratgeber/fliesen-auf-fliesen-verlegen).

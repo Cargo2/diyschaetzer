@@ -166,4 +166,6 @@ Gewährleistung für Flächen, an denen sie nur teilweise mitgearbeitet haben.
 Wie viel du in deinem Bad mit Eigenleistung sparen könntest – und wo die Profi-Kosten
 liegen – zeigt der [kostenlose Kostenschätzer](/raum-anlegen) für genau deinen Raum,
 inklusive Materialliste. Details zu den Preisen findest du unter
-[Badezimmer fliesen Kosten](/kosten/badezimmer-fliesen-kosten).
+[Badezimmer fliesen Kosten](/kosten/badezimmer-fliesen-kosten). Den heikelsten Schritt im
+Nassbereich erklärt Schritt für Schritt der Ratgeber
+[Dusche abdichten: Verbundabdichtung](/ratgeber/dusche-abdichten-verbundabdichtung).
