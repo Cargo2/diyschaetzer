@@ -24,6 +24,7 @@ function doc(): ExportDocumentData {
 function setup(opts: {
   profile: UserProfile | null;
   companyName?: string;
+  companyProfile?: Partial<ReturnType<typeof emptyCompanyProfile>>;
 }): ContractorBrandingService {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -37,7 +38,8 @@ function setup(opts: {
         useValue: {
           load: async () => ({
             ...emptyCompanyProfile(),
-            companyName: opts.companyName ?? ''
+            companyName: opts.companyName ?? '',
+            ...opts.companyProfile
           })
         }
       }
@@ -68,9 +70,30 @@ describe('ContractorBrandingService', () => {
       brandName: 'Fliesen Müller',
       logoUrl: null,
       primaryColor: null,
-      supportEmail: null
+      supportEmail: null,
+      contactLine: null
     });
     expect(service.applyTo(doc()).branding?.brandName).toBe('Fliesen Müller');
+  });
+
+  it('builds a compact contact line from the company profile', async () => {
+    const service = setup({
+      profile: contractor,
+      companyName: 'Fliesen Müller',
+      companyProfile: {
+        street: 'Musterweg 1',
+        postalCode: '20095',
+        city: 'Hamburg',
+        phone: '040 123',
+        email: 'info@mueller.de',
+        vatId: 'DE123'
+      }
+    });
+    await service.ready;
+
+    expect(service.current()?.contactLine).toBe(
+      'Musterweg 1, 20095 Hamburg  ·  Tel. 040 123  ·  info@mueller.de  ·  USt-IdNr. DE123'
+    );
   });
 
   it('leaves the export unbranded for a hobby user (customer)', async () => {

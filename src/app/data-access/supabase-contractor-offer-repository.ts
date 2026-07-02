@@ -6,9 +6,13 @@ import { SUPABASE_CLIENT } from './supabase-client';
 
 /** Rohform einer `contractor_offers`-Zeile. */
 interface ContractorOfferRow {
+  id: string;
   project_id: string;
   owner_id: string;
   offer_data: ContractorOffer;
+  version: number;
+  status: string;
+  label: string;
 }
 
 /**
@@ -32,21 +36,21 @@ export class SupabaseContractorOfferRepository implements ContractorOfferReposit
     return data.user?.id ?? null;
   }
 
-  async load(projectId: string): Promise<ContractorOffer | null> {
+  async listByProject(projectId: string): Promise<ContractorOffer[]> {
     const client = this.requireClient();
     const userId = await this.currentUserId();
     if (!userId) {
-      return null;
+      return [];
     }
     const { data, error } = await client
       .from('contractor_offers')
       .select('*')
       .eq('project_id', projectId)
-      .maybeSingle();
+      .order('version', { ascending: true });
     if (error) {
       throw error;
     }
-    return data ? (data as ContractorOfferRow).offer_data : null;
+    return ((data as ContractorOfferRow[]) ?? []).map((row) => this.map(row));
   }
 
   async save(offer: ContractorOffer): Promise<void> {
@@ -56,12 +60,40 @@ export class SupabaseContractorOfferRepository implements ContractorOfferReposit
       throw new Error('Speichern nicht möglich: keine angemeldete Session.');
     }
     const { error } = await client.from('contractor_offers').upsert({
+      id: offer.id,
       project_id: offer.projectId,
       owner_id: userId,
-      offer_data: offer
+      offer_data: offer,
+      version: offer.version ?? 1,
+      status: offer.status ?? 'draft',
+      label: offer.label ?? ''
     });
     if (error) {
       throw error;
     }
+  }
+
+  async delete(offerId: string): Promise<void> {
+    const client = this.requireClient();
+    const userId = await this.currentUserId();
+    if (!userId) {
+      throw new Error('Löschen nicht möglich: keine angemeldete Session.');
+    }
+    const { error } = await client.from('contractor_offers').delete().eq('id', offerId);
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** DB-Zeile → Angebot; Spalten (id/version/status/label) sind maßgeblich. */
+  private map(row: ContractorOfferRow): ContractorOffer {
+    return {
+      ...row.offer_data,
+      id: row.id,
+      projectId: row.project_id,
+      version: row.version,
+      status: row.status as ContractorOffer['status'],
+      label: row.label
+    };
   }
 }

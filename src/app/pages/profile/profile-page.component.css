@@ -52,10 +52,27 @@
   font-size: 0.95rem;
 }
 
-.field input:focus {
+.field textarea {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.subhead {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
 }
 
 .profile-message {

@@ -16,5 +16,9 @@ export const contractorGuard: CanActivateFn = async () => {
   if (auth.isAuthenticated() && auth.profile()?.role === 'contractor') {
     return true;
   }
+  // Bereits angemeldet, aber kein Profi → auf die Startseite (nicht erneut zum Login).
+  if (auth.isAuthenticated()) {
+    return router.createUrlTree(['/']);
+  }
   return router.createUrlTree(['/login']);
 };

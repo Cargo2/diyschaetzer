@@ -113,6 +113,10 @@ import { SeoService } from '../../services/seo.service';
         border-collapse: collapse;
         margin: 1.2rem 0;
         font-size: 0.92rem;
+        /* Auf schmalen Screens horizontal scrollbar statt Layout-Überlauf. */
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .cost-body ::ng-deep th,

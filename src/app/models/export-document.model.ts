@@ -9,6 +9,12 @@ export type ExportDocumentType =
 
 export interface ExportDocumentTotals {
   netTotal?: number;
+  /** Nachlass in % (nur informativ fürs Label). */
+  discountPercent?: number;
+  /** Nachlassbetrag (als negativer Wert dargestellt). */
+  discountAmount?: number;
+  /** Nettobetrag nach Nachlass. */
+  netAfterDiscount?: number;
   vatPercent?: number;
   vatAmount?: number;
   grossTotal?: number;
@@ -33,6 +39,8 @@ export interface ExportOfferRow {
   unit: string;
   unitPrice: number;
   total: number;
+  /** Bedarfsposition: mit Preis ausgewiesen, aber nicht in der Summe. */
+  isOptional?: boolean;
 }
 
 /** Eine Positionsgruppe im Angebots-Export (z. B. „Pos. 1 Bad OG" mit Zwischensumme). */
@@ -48,6 +56,17 @@ export interface ExportBrandingData {
   logoUrl: string | null;
   primaryColor: string | null;
   supportEmail: string | null;
+  /** Kompakte Absenderzeile (Anschrift/Kontakt) des Fachbetriebs – nur im Angebot. */
+  contactLine?: string | null;
+}
+
+/** Kopfdaten eines Profi-Angebots (Empfänger + Angebotsmeta) für den Export-Header. */
+export interface ExportOfferMeta {
+  customerName: string;
+  customerAddress: string;
+  offerNumber: string;
+  offerDate: string;
+  validUntil: string;
 }
 
 export interface ExportDocumentData {
@@ -61,7 +80,19 @@ export interface ExportDocumentData {
   totals: ExportDocumentTotals;
   legalNotice: string | null;
   branding?: ExportBrandingData;
+  /** Angebotskopf (nur bei `documentType: 'contractor_offer'`). */
+  offerMeta?: ExportOfferMeta;
+  /** Einleitungstext über den Sektionen. */
+  introText?: string | null;
+  /** Schlusstext unter den Summen. */
+  outroText?: string | null;
+  /** Steuerhinweis (z. B. § 19 UStG bei 0 % MwSt.), unter den Summen. */
+  taxNote?: string | null;
 }
 
 export const ESTIMATE_EXPORT_LEGAL_NOTICE =
   'Diese Auswertung ist eine unverbindliche Kostenschätzung und ersetzt kein geprüftes Angebot eines Fachbetriebs.';
+
+/** Rechtshinweis für das vom Fachbetrieb selbst erstellte Angebot. */
+export const OFFER_EXPORT_LEGAL_NOTICE =
+  'Freibleibendes Angebot, gültig vorbehaltlich Zwischenverkauf. Alle Preise verstehen sich netto zzgl. der gesetzlichen Mehrwertsteuer, sofern nicht anders angegeben.';

@@ -60,6 +60,13 @@ export const routes: Routes = [
         (m) => m.SharedCalculationComponent
       )
   },
+  {
+    path: 'angebot/:token',
+    loadComponent: () =>
+      import('./pages/shared-offer/shared-offer.component').then(
+        (m) => m.SharedOfferComponent
+      )
+  },
   { path: 'ratgeber', component: GuideComponent },
   {
     path: 'ratgeber/:slug',

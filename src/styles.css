@@ -92,6 +92,22 @@ body {
 	box-sizing: border-box;
 }
 
+/* ── Responsive-Konvention (Phase 18) ─────────────────────────────
+   Einheitliche Breakpoints für neuen/angefassten Code:
+     1024px = Tablet · 768px = großes Handy / kleines Tablet · 640px = Handy
+   (Legacy: die App-Shell nutzt zusätzlich 920px, das Profil 560px.)
+   ─────────────────────────────────────────────────────────────── */
+
+/* Mobile: Formularfelder mind. 16px, sonst zoomt iOS-Safari beim Fokus rein.
+   Gilt global; Komponenten-CSS darf auf Mobile nicht kleiner werden. */
+@media (max-width: 768px) {
+	input,
+	select,
+	textarea {
+		font-size: 16px;
+	}
+}
+
 /* Editorial serif display for all headings */
 h1,
 h2 {

@@ -56,6 +56,29 @@
         <input type="text" name="vatId" [(ngModel)]="profile.vatId" />
       </label>
 
+      <p class="field field-wide subhead">
+        <strong>Angebots-Vorlagen</strong> – füllen jedes <em>neu erzeugte</em> Angebot vor
+        (pro Angebot weiterhin überschreibbar).
+      </p>
+
+      <label class="field field-wide">
+        <span>Standard-Einleitungstext</span>
+        <textarea rows="2" name="offerIntroText" [(ngModel)]="profile.offerIntroText"
+          placeholder="Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:"></textarea>
+      </label>
+
+      <label class="field field-wide">
+        <span>Standard-Schlusstext</span>
+        <textarea rows="3" name="offerOutroText" [(ngModel)]="profile.offerOutroText"
+          placeholder="Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache. Wir freuen uns auf Ihren Auftrag."></textarea>
+      </label>
+
+      <label class="field">
+        <span>Standard-Materialaufschlag (%)</span>
+        <input type="number" step="0.5" min="0" name="materialSurchargePercent"
+          [(ngModel)]="profile.materialSurchargePercent" />
+      </label>
+
       @if (errorMsg()) {
         <p class="profile-message error" role="alert">{{ errorMsg() }}</p>
       }

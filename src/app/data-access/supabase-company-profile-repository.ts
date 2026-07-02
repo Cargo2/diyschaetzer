@@ -16,6 +16,9 @@ interface CompanyProfileRow {
   email: string;
   website: string;
   vat_id: string;
+  offer_intro_text: string;
+  offer_outro_text: string;
+  material_surcharge_percent: number;
 }
 
 /**
@@ -71,7 +74,10 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       phone: profile.phone,
       email: profile.email,
       website: profile.website,
-      vat_id: profile.vatId
+      vat_id: profile.vatId,
+      offer_intro_text: profile.offerIntroText,
+      offer_outro_text: profile.offerOutroText,
+      material_surcharge_percent: profile.materialSurchargePercent
     });
     if (error) {
       throw error;
@@ -88,7 +94,10 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       phone: row.phone,
       email: row.email,
       website: row.website,
-      vatId: row.vat_id
+      vatId: row.vat_id,
+      offerIntroText: row.offer_intro_text ?? '',
+      offerOutroText: row.offer_outro_text ?? '',
+      materialSurchargePercent: Number(row.material_surcharge_percent ?? 0)
     };
   }
 }

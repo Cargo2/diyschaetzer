@@ -8,10 +8,12 @@ import { SupabaseContractorOfferRepository } from './supabase-contractor-offer-r
  * Das Frontend spricht ausschließlich gegen dieses Interface.
  */
 export interface ContractorOfferRepository {
-  /** Lädt das gespeicherte Angebot zum Projekt oder `null`, wenn keines existiert. */
-  load(projectId: string): Promise<ContractorOffer | null>;
-  /** Speichert (upsert) das Angebot zum Projekt. */
+  /** Alle Angebote/Versionen eines Projekts (aufsteigend nach Version). */
+  listByProject(projectId: string): Promise<ContractorOffer[]>;
+  /** Speichert (upsert über die Angebots-`id`) ein Angebot. */
   save(offer: ContractorOffer): Promise<void>;
+  /** Löscht ein Angebot/eine Version anhand ihrer `id`. */
+  delete(offerId: string): Promise<void>;
 }
 
 export const CONTRACTOR_OFFER_REPOSITORY =

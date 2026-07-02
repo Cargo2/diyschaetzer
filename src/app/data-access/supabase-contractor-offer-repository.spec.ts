@@ -5,8 +5,12 @@ import { SupabaseContractorOfferRepository } from './supabase-contractor-offer-r
 
 function makeOffer(): ContractorOffer {
   return {
+    id: 'off-1',
     projectId: 'proj-1',
     projectName: 'Sanierung',
+    version: 1,
+    status: 'draft',
+    label: '',
     vatPercent: 19,
     sections: [
       {
@@ -32,8 +36,9 @@ function makeOffer(): ContractorOffer {
 
 function makeClient(opts: {
   userId: string | null;
-  row?: Record<string, unknown> | null;
+  rows?: Record<string, unknown>[];
   onUpsert?: (value: Record<string, unknown>) => void;
+  onDelete?: (value: unknown) => void;
 }) {
   return {
     auth: {
@@ -41,12 +46,20 @@ function makeClient(opts: {
     },
     from: () => ({
       select: () => ({
-        eq: () => ({ maybeSingle: async () => ({ data: opts.row ?? null, error: null }) })
+        eq: () => ({
+          order: async () => ({ data: opts.rows ?? [], error: null })
+        })
       }),
       upsert: async (value: Record<string, unknown>) => {
         opts.onUpsert?.(value);
         return { error: null };
-      }
+      },
+      delete: () => ({
+        eq: async (_column: string, value: unknown) => {
+          opts.onDelete?.(value);
+          return { error: null };
+        }
+      })
     })
   };
 }
@@ -60,21 +73,42 @@ function setup(client: unknown): SupabaseContractorOfferRepository {
 }
 
 describe('SupabaseContractorOfferRepository', () => {
-  it('returns the stored offer_data for the project', async () => {
+  it('lists a project\'s offers, columns overriding offer_data', async () => {
     const offer = makeOffer();
     const repo = setup(
-      makeClient({ userId: 'user-1', row: { project_id: 'proj-1', offer_data: offer } })
+      makeClient({
+        userId: 'user-1',
+        rows: [
+          {
+            id: 'off-99',
+            project_id: 'proj-1',
+            owner_id: 'user-1',
+            offer_data: offer,
+            version: 2,
+            status: 'sent',
+            label: 'nach Gespräch'
+          }
+        ]
+      })
     );
 
-    expect(await repo.load('proj-1')).toEqual(offer);
+    const list = await repo.listByProject('proj-1');
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({
+      id: 'off-99',
+      projectId: 'proj-1',
+      version: 2,
+      status: 'sent',
+      label: 'nach Gespräch'
+    });
   });
 
-  it('returns null when no offer is stored', async () => {
-    const repo = setup(makeClient({ userId: 'user-1', row: null }));
-    expect(await repo.load('proj-x')).toBeNull();
+  it('returns an empty list when no session', async () => {
+    const repo = setup(makeClient({ userId: null }));
+    expect(await repo.listByProject('proj-x')).toEqual([]);
   });
 
-  it('upserts the offer with project_id and the session owner_id', async () => {
+  it('upserts the offer with id, project_id, version, status and the session owner_id', async () => {
     let captured: Record<string, unknown> | null = null;
     const repo = setup(
       makeClient({ userId: 'user-9', onUpsert: (value) => (captured = value) })
@@ -82,7 +116,20 @@ describe('SupabaseContractorOfferRepository', () => {
 
     await repo.save(makeOffer());
 
-    expect(captured).toMatchObject({ project_id: 'proj-1', owner_id: 'user-9' });
+    expect(captured).toMatchObject({
+      id: 'off-1',
+      project_id: 'proj-1',
+      owner_id: 'user-9',
+      version: 1,
+      status: 'draft'
+    });
+  });
+
+  it('deletes by offer id', async () => {
+    let deleted: unknown = null;
+    const repo = setup(makeClient({ userId: 'user-9', onDelete: (value) => (deleted = value) }));
+    await repo.delete('off-1');
+    expect(deleted).toBe('off-1');
   });
 
   it('throws on save without a session', async () => {

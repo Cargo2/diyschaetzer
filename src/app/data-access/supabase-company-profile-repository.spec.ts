@@ -46,7 +46,10 @@ describe('SupabaseCompanyProfileRepository', () => {
           phone: '0123',
           email: 'info@mueller.de',
           website: 'https://mueller.de',
-          vat_id: 'DE123'
+          vat_id: 'DE123',
+          offer_intro_text: 'Guten Tag',
+          offer_outro_text: 'Zahlbar in 14 Tagen',
+          material_surcharge_percent: 12
         }
       })
     );
@@ -62,7 +65,10 @@ describe('SupabaseCompanyProfileRepository', () => {
       phone: '0123',
       email: 'info@mueller.de',
       website: 'https://mueller.de',
-      vatId: 'DE123'
+      vatId: 'DE123',
+      offerIntroText: 'Guten Tag',
+      offerOutroText: 'Zahlbar in 14 Tagen',
+      materialSurchargePercent: 12
     });
   });
 
@@ -86,10 +92,20 @@ describe('SupabaseCompanyProfileRepository', () => {
       phone: '',
       email: '',
       website: '',
-      vatId: 'DE999'
+      vatId: 'DE999',
+      offerIntroText: 'Hallo',
+      offerOutroText: 'Danke',
+      materialSurchargePercent: 15
     });
 
-    expect(captured).toMatchObject({ id: 'user-9', company_name: 'X GmbH', vat_id: 'DE999' });
+    expect(captured).toMatchObject({
+      id: 'user-9',
+      company_name: 'X GmbH',
+      vat_id: 'DE999',
+      offer_intro_text: 'Hallo',
+      offer_outro_text: 'Danke',
+      material_surcharge_percent: 15
+    });
   });
 
   it('throws on save without a session', async () => {
@@ -104,7 +120,10 @@ describe('SupabaseCompanyProfileRepository', () => {
         phone: '',
         email: '',
         website: '',
-        vatId: ''
+        vatId: '',
+        offerIntroText: '',
+        offerOutroText: '',
+        materialSurchargePercent: 0
       })
     ).rejects.toThrow();
   });

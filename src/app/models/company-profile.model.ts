@@ -13,6 +13,12 @@ export interface CompanyProfile {
   website: string;
   /** USt-IdNr. */
   vatId: string;
+  /** Standard-Einleitungstext, füllt ein neu erzeugtes Angebot vor. */
+  offerIntroText: string;
+  /** Standard-Schlusstext (Zahlung/Ausführung), füllt ein neu erzeugtes Angebot vor. */
+  offerOutroText: string;
+  /** Standard-Materialaufschlag in % für neu erzeugte Angebote. */
+  materialSurchargePercent: number;
 }
 
 /** Leeres Firmenprofil (alle Felder leer) als Formular-/Lade-Default. */
@@ -26,6 +32,9 @@ export function emptyCompanyProfile(): CompanyProfile {
     phone: '',
     email: '',
     website: '',
-    vatId: ''
+    vatId: '',
+    offerIntroText: '',
+    offerOutroText: '',
+    materialSurchargePercent: 0
   };
 }

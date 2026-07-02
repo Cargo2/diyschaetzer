@@ -3,13 +3,20 @@ import {
   ESTIMATE_EXPORT_LEGAL_NOTICE,
   ExportDocumentData,
   ExportDocumentSection,
-  ExportOfferGroup
+  ExportOfferGroup,
+  ExportOfferMeta,
+  OFFER_EXPORT_LEGAL_NOTICE
 } from '../models/export-document.model';
 import {
   ContractorOffer,
+  offerDiscountAmount,
   offerGrossTotal,
+  offerLineNumber,
   offerLineTotal,
+  offerNetAfterDiscount,
   offerNetTotal,
+  offerPositionNumber,
+  offerRenderableSections,
   offerSectionSubtotal,
   offerVatAmount
 } from '../models/contractor-offer.model';
@@ -233,50 +240,76 @@ export class ExportDataMapperService {
   }
 
   buildContractorOfferExportData(offer: ContractorOffer): ExportDocumentData {
-    // Positionsnummern: „Baustelle einrichten" ohne „Pos.", übrige Gruppen fortlaufend.
-    let posCounter = 0;
-    const groups: ExportOfferGroup[] = offer.sections.map((section) => {
+    // Nur renderbare Gruppen (mind. eine aktive Position); Nummerierung identisch
+    // zum Editor über die geteilten Helfer, damit „Pos. 1.003" überall gleich ist.
+    const groups: ExportOfferGroup[] = offerRenderableSections(offer).map((section) => {
       const isSetup = section.kind === 'site_setup';
-      const positionLabel = isSetup ? null : `Pos. ${++posCounter}`;
+      const pos = offerPositionNumber(offer, section);
       const activeLines = section.lines.filter((line) => line.isActive);
-      const prefix = isSetup ? '' : `${posCounter}.`;
       return {
-        positionLabel,
+        positionLabel: isSetup ? null : `Pos. ${pos}`,
         title: section.title,
-        rows: activeLines.map((line, index) => ({
-          number: isSetup
-            ? String(index + 1).padStart(3, '0')
-            : `${prefix}${String(index + 1).padStart(3, '0')}`,
+        rows: activeLines.map((line) => ({
+          number: offerLineNumber(offer, section, line) ?? '',
           label: line.label,
           description: line.description,
           quantity: line.quantity,
           unit: line.unit,
           unitPrice: line.unitPrice,
-          total: offerLineTotal(line)
+          total: offerLineTotal(line),
+          isOptional: line.isOptional === true
         })),
         // Einzelne Sammelpositionen (Baustelle/Material) brauchen keine Zwischensumme.
         subtotal: isSetup || section.kind === 'material'
           ? null
           : offerSectionSubtotal(section)
       };
-    }).filter((group) => group.rows.length > 0);
+    });
 
     const sections: ExportDocumentSection[] = [
       { id: 'offer', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
     ];
 
+    const taxNote = offer.vatPercent === 0
+      ? 'Gemäß § 19 UStG (Kleinunternehmerregelung) wird keine Umsatzsteuer berechnet.'
+      : null;
+
+    const offerMeta: ExportOfferMeta = {
+      customerName: offer.customer?.name ?? '',
+      customerAddress: offer.customer?.address ?? '',
+      offerNumber: offer.offerNumber ?? '',
+      offerDate: offer.offerDate ?? '',
+      validUntil: offer.validUntil ?? ''
+    };
+
+    const discountAmount = offerDiscountAmount(offer);
+    const hasDiscount = discountAmount > 0;
+
     return this.createDocument({
       documentType: 'contractor_offer',
-      title: 'Angebot / Kostenschätzung',
+      title: 'Angebot',
       subtitle: offer.projectName,
       projectName: offer.projectName,
       sections,
       totals: {
         netTotal: offerNetTotal(offer),
+        // Nachlass nur ausweisen, wenn vorhanden – als negativer Betrag + Zwischensumme.
+        ...(hasDiscount
+          ? {
+              discountPercent: offer.discountPercent,
+              discountAmount: -discountAmount,
+              netAfterDiscount: offerNetAfterDiscount(offer)
+            }
+          : {}),
         vatPercent: offer.vatPercent,
         vatAmount: offerVatAmount(offer),
         grossTotal: offerGrossTotal(offer)
-      }
+      },
+      legalNotice: OFFER_EXPORT_LEGAL_NOTICE,
+      offerMeta,
+      introText: offer.introText ?? null,
+      outroText: offer.outroText ?? null,
+      taxNote
     });
   }
 
@@ -285,14 +318,25 @@ export class ExportDataMapperService {
       ExportDocumentData,
       'documentType' | 'title' | 'subtitle' | 'sections' | 'totals'
     > &
-      Partial<Pick<ExportDocumentData, 'projectName' | 'roomName'>>
+      Partial<
+        Pick<
+          ExportDocumentData,
+          | 'projectName'
+          | 'roomName'
+          | 'legalNotice'
+          | 'offerMeta'
+          | 'introText'
+          | 'outroText'
+          | 'taxNote'
+        >
+      >
   ): ExportDocumentData {
     return {
       ...values,
       projectName: values.projectName ?? null,
       roomName: values.roomName ?? null,
       createdAt: new Date().toISOString(),
-      legalNotice: ESTIMATE_EXPORT_LEGAL_NOTICE
+      legalNotice: values.legalNotice ?? ESTIMATE_EXPORT_LEGAL_NOTICE
     };
   }
 

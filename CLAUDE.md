@@ -144,7 +144,8 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Katalog aus DB (Phase 12) | `services/catalog.service.ts`, `data-access/catalog-repository.ts` (+ `local-`/`supabase-catalog-repository.ts`), Seed-Generator `tools/generate-catalog-seed.mts` |
 | Firmenprofil (Phase 13) | `pages/profile/`, `services/company-profile.service.ts`, `data-access/company-profile-repository.ts` (+ `supabase-…`), `guards/contractor.guard.ts`, Migration `0006` |
 | Profil-Standardannahmen (Phase 13) | `config/profile-price-fields.ts`, `services/profile-assumption-defaults.service.ts`, `data-access/profile-assumption-defaults-repository.ts` (+ `supabase-…`), Overlay in `services/assumption.service.ts`, Migration `0007` |
-| Profi-Angebotsmodul (Phase 13) | `pages/contractor-offers/`, `services/contractor-offer.service.ts`, `models/contractor-offer.model.ts`, `data-access/contractor-offer-repository.ts` (+ `supabase-…`), Migration `0008`; PDF in `services/export-data-mapper.service.ts` + `pdf-document-builder.service.ts` (`offer`-Sektion) |
+| Profi-Angebotsmodul (Phase 13) | `pages/contractor-offers/`, `services/contractor-offer.service.ts`, `models/contractor-offer.model.ts`, `data-access/contractor-offer-repository.ts` (+ `supabase-…`), Migrationen `0008`/`0016` (Versionen: PK `id`, `version`/`status`/`label`); PDF in `services/export-data-mapper.service.ts` + `pdf-document-builder.service.ts` (`offer`-Sektion) |
+| Angebot teilen (Phase 13) | `pages/shared-offer/`, `services/contractor-offer-share.service.ts`, `data-access/shared-offer-repository.ts` (+ `supabase-…`), Route `/angebot/:token`, Migration `0017` (`shared_offers` + `get_shared_offer`) |
 | Profi-Feedback (Phase 13) | `pages/feedback/feedback-page.component.ts`, `models/feedback.model.ts`, `data-access/feedback-repository.ts` (+ `supabase-…`); Admin: `pages/admin/admin-feedback.component.ts`, `pages/admin/data-access/admin-feedback-repository.ts` (+ `supabase-…`), Migration `0014` (`contractor_feedback`, `admin_list_feedback()`, `admin_set_feedback_status()`) |
 | Export-Branding (Firmenname) | `services/contractor-branding.service.ts` (Cache), Anwendung in `pdf-export.service.ts`/`excel-export.service.ts` |
 | Mehrere Projekte (aktives Projekt) | `services/local-project.service.ts`, `data-access/project-repository.ts` (+ `supabase-`/`local-storage-`/`session-aware-`) |
@@ -233,7 +234,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   (`COMMERCIAL_CONFIG.affiliateEnabled = true`).
 
 ### Kommende Phasen
-- **Phase 13 – Profi-Modus** (in Arbeit).
+- **Phase 13 – Profi-Modus** *(abgeschlossen; nur Mailversand bewusst zurückgestellt)*.
   - **Block 1 erledigt: Firmenprofil** – Tabelle `company_profiles` (owner-scoped RLS, Migration
     `0006`), Repository-Schicht (`CompanyProfileRepository`/`SupabaseCompanyProfileRepository`),
     `CompanyProfileService`, Seite `/profil` hinter `contractorGuard` (eingeloggt + Rolle
@@ -281,8 +282,68 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
     (neuer Tab **Feedback**, `/admin/feedback`) über SECURITY-DEFINER-Funktionen `admin_list_feedback()` /
     `admin_set_feedback_status()` (beide `is_admin()`-gated, Status `new`/`read`). Abgekapselt über
     `FeedbackRepository`/`Supabase…` (Eingabe) und `AdminFeedbackRepository`/`Supabase…` (Admin).
+  - **Block erledigt: Angebots-Feinschliff & Angebotskopf** – das Profi-Angebot ist jetzt ein
+    versandfähiges Dokument (nicht mehr nur ein LV-Fragment). Umgesetzt, **ohne Migration** (alle
+    neuen Felder liegen im vorhandenen jsonb-Blob `offer_data`; Altstand wird über
+    `normalizeContractorOffer` aufgefüllt):
+    - **Vollständiger Angebotskopf**: Kundenanschrift, Angebotsnummer, Angebotsdatum, Bindefrist
+      („gültig bis") am `ContractorOffer`; **Absenderblock** (Anschrift/Tel/Mail/USt-IdNr.) aus dem
+      Firmenprofil über `ContractorBrandingService.contactLine` → Export-Branding →
+      `PdfDocumentBuilderService.offerHeader` (Brief-Kopf mit „Angebot für"/Meta-Block).
+    - **Vor-/Schlusstext**: editierbarer `introText`/`outroText` am Angebot, im PDF über/unter dem LV.
+    - **Steuerhinweis**: bei `vatPercent === 0` automatisch § 19 UStG (Kleinunternehmer) aufs PDF;
+      MwSt.-Satz wird jetzt ausgewiesen (`MwSt. (19 %)`), Bruttosumme hervorgehoben.
+      **Eigener Rechtshinweis** (`OFFER_EXPORT_LEGAL_NOTICE`) statt des DIY-Schätzungs-Disclaimers.
+    - **Bedarfs-/Eventualpositionen**: `ContractorOfferLine.isOptional` (aus `ProfessionalLineItem`
+      durchgereicht + im Editor umschaltbar): mit Preis ausgewiesen, aber **nicht** in der Summe;
+      im PDF als „Bedarfsposition" gekennzeichnet.
+    - **Stale-Erkennung + Merge-Regenerierung**: `sourceUpdatedAt` am Angebot (= `project.updatedAt`
+      bei Erzeugung) → Hinweisbanner bei geändertem Projekt. „Aus Projekt aktualisieren" (früher
+      „Neu erzeugen") **übernimmt** Preis-/Text-Edits (per Positions-`id`) sowie eigene Positionen/
+      Gruppen, statt sie zu verwerfen (`ContractorOfferService.applyPreviousEdits`).
+    - **Bugfixes**: geteilte Positionsnummerierung Editor ↔ PDF (`offerPositionNumber`/`offerLineNumber`
+      im Modell; keine Pos.-Lücken durch leere Gruppen mehr), Race beim Projektwechsel (Lade-Token),
+      Race Profil-Standardpreise (`ngOnInit` wartet `profileDefaults.ready` ab), Umbenennen spiegelt
+      sofort in den Angebotsnamen, leere Zahlenfelder werden vor Persistenz/Export bereinigt
+      (`sanitizeContractorOffer` → kein `null` im jsonb), Speichern bei Projekten ohne Räume gesperrt,
+      `contractorGuard` schickt eingeloggte Nicht-Profis auf `/` statt erneut auf `/login`.
+  - **Block erledigt: Kalkulations-Feinschliff (Material & Nachlass)** – migrationsfrei (alles im
+    jsonb-Blob `offer_data`, Altstand über `normalizeContractorOffer`):
+    - **Material je Raum ausweisen**: Toggle `materialBreakdown` – Material als eine Sammelposition
+      **oder** je Raum eine eigene Zeile (`ContractorOfferService.materialSectionsFor`).
+    - **Material-Aufschlag in %** (`materialSurchargePercent`): Aufschlag auf die Materialkosten,
+      als Hinweis in der Positionsbeschreibung. Toggle/Aufschlag werden im Editor **live** über
+      `rebuildMaterialSections` neu berechnet; beim „Aus Projekt aktualisieren" übernommen.
+    - **Nachlass/Rabatt in %** (`discountPercent`): auf den Nettobetrag **vor** MwSt.; Summenlogik
+      (`offerDiscountAmount`/`offerNetAfterDiscount` → VAT/Brutto) und PDF-Totals (Nachlass +
+      Zwischensumme netto) angepasst.
+    - **Material-Aufschlag als Profil-Standard** ist jetzt umgesetzt (s. nächster Block).
+  - **Block erledigt: Profil-Textvorlagen + Material-Aufschlag-Default** – Profis hinterlegen im
+    Firmenprofil (`/profil`) Standard-**Einleitungs-/Schlusstext** und einen Default-**Material-
+    aufschlag** (%). Diese Werte befüllen jedes **neu erzeugte** Angebot vor (`ContractorOfferDefaults`
+    → `ContractorOfferService.buildOffer`, gezogen in `ContractorOffersComponent.loadOfferDefaults`
+    aus `CompanyProfileService`); pro Angebot bleibt alles überschreibbar, „Aus Projekt aktualisieren"
+    behält die Angebots-Werte. **Migration `0015`** (additive Spalten `offer_intro_text`/
+    `offer_outro_text`/`material_surcharge_percent` auf `company_profiles`, owner-scoped RLS von 0006)
+    ist **bereits per `npx supabase db push` auf der Remote-DB angewendet**.
+  - **Block erledigt: Mehrere Angebote/Versionen pro Projekt** – **Migration `0016`** stellt
+    `contractor_offers` vom PK `project_id` auf einen eigenen PK `id` um (project_id bleibt indizierte
+    FK-Spalte, ON DELETE CASCADE) und ergänzt `version`/`status` (`draft`/`sent`/`accepted`,
+    Check-Constraint)/`label`. **Bereits per `npx supabase db push` remote angewendet.** Modell:
+    `ContractorOffer` um `id`/`version`/`status`/`label` (+ `CONTRACTOR_OFFER_STATUS_LABELS`);
+    Repository `listByProject`/`save` (upsert über `id`)/`delete`; `ContractorOfferService.duplicateAsNewVersion`.
+    Editor: Versions-Chips je Projekt (wechseln), „+ Neue Version" (Kopie), Status-/Label-Feld,
+    Version löschen; höchste Version wird beim Laden aktiv.
+  - **Block erledigt: Angebot per Link teilen** – **Migration `0017`** (`shared_offers` + SECURITY-
+    DEFINER `get_shared_offer(token)`, analog `shared_calculations` 0009; owner-scoped Insert,
+    öffentliche Punktabfrage per Token). **Bereits per `npx supabase db push` remote angewendet.**
+    Gespeichert wird das **neutrale Exportdokument** (Snapshot inkl. Branding/Absender) über
+    `SharedOfferRepository`/`ContractorOfferShareService`. Öffentliche read-only Route
+    `/angebot/:token` (`SharedOfferComponent`, clientseitig via `**`-Fallback). „Teilen-Link"-Button
+    im Editor (nur für gespeicherte Angebote) erzeugt Link + Kopierfunktion.
   - **Noch offen in Phase 13 – ZURÜCKGESTELLT** (Nutzerentscheidung): gebrandetes Schätzungs-PDF
-    **versenden** (Edge Function + Mailversand). Vorerst nicht weiterverfolgt.
+    **versenden** (Edge Function + Mailversand). Vorerst nicht weiterverfolgt – **Teilen-Link ist die
+    umgesetzte Alternative**. Damit ist Phase 13 (Profi-Modus) inhaltlich abgeschlossen.
 - **Phase 14 – Teilen-Link** *(erledigt)*: „Teilen"-Button im **Profi-vs-DIY-Vergleich** erzeugt einen
   teilbaren Link auf eine read-only Ansicht der Kalkulation. Backend-Tabelle `shared_calculations`
   (Migration `0009`), öffentlicher Lese-Token via SECURITY-DEFINER-Funktion. localStorage-Stände
@@ -315,8 +376,40 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   FAQ, `Meine Erfahrung`-Block und interner Verlinkung zueinander + zu Rechner/Kostenseiten.
   **Offen:** echte Amazon-Produktbilder + Affiliate-Links (ASIN) einsetzen und die Baumarkt-
   Platzhalter-SVGs (`public/img/ratgeber/nivelliersystem-*.svg`, `fliese-beige-*.svg`) durch
-  eigene Fotos ersetzen. Hinweis: Markdown-Links tragen (noch) **kein** `rel="sponsored nofollow"`
-  – vor Affiliate-Livegang klären (marked-Renderer erweitern oder Links als HTML pflegen).
+  eigene Fotos ersetzen. (Hinweis: externe Markdown-Links tragen inzwischen automatisch
+  `rel="sponsored nofollow noopener"` + `target="_blank"` über den marked-Renderer in
+  `tools/generate-ratgeber.mts` – gilt aktuell für **alle** externen Links, auch redaktionelle
+  Quellenangaben; ggf. später auf echte Affiliate-Domains eingrenzen.)
+
+  **→ ERLEDIGT (Rechner-Intent-Ratgeber):** Vier neue Beiträge mit direktem Bezug zur
+  Rechner-Kalkulation (hoher Conversion-Intent, jeweils `Antwort zuerst` + Tabelle +
+  `Meine Erfahrung`-Block mit offenen Platzhaltern + `Häufige Fragen` → FAQPage-JSON-LD):
+  `fliesen-berechnen-verschnitt` (Fliesenbedarf & Verschnitt), `fugenmasse-verbrauch-pro-qm`
+  (Fugenmörtel-Verbrauch), `fliesen-auf-fliesen-verlegen` (Renovieren ohne Abriss) und
+  `dusche-abdichten-verbundabdichtung` (Nassbereich, als H2-Schrittfolge angelegt → **HowTo-JSON-LD-
+  kandidat**). Untereinander und mit `fliesenkleber…`/`bad-fliesen-eigenleistung…` sowie den
+  Kostenseiten verlinkt. **Offen:** eigene Fotos statt der Bild-Platzhalter (als HTML-Kommentar
+  markiert, kein aktives `<img>` → nichts bricht) und die `Meine Erfahrung`-Blöcke mit konkreten
+  eigenen Projektdetails/Marken schärfen.
+
+  **→ RATGEBER-/CONTENT-ROADMAP (geplant, für später):** Priorität nach Sichtbarkeit × Passung
+  zum Rechner/Affiliate. Erst weiterbauen, wenn live auf fliesen-kosten.de (sonst kein SEO-Effekt).
+  - **Affiliate (Muster `fliesen-nivelliersystem` wiederholen):**
+    - `fliesen-schneiden-werkzeug` – „Fliesenschneider: manuell oder elektrisch?" (Kaufberatung,
+      Amazon-Spanne 30–300 €, hoher Kauf-Intent).
+    - `fliesen-holzoptik` und `fliesen-betonoptik` – Optik-Serie ausbauen (mehr Suchvolumen als
+      „beige", identisches Template, untereinander + zu `fliesen-beige` verlinken).
+  - **Kostenseiten (nur mit echtem, anonymisiertem Angebot – E-E-A-T-Strategie, s. Memory):**
+    - `fliesen-entfernen-kosten` (Rückbau; Wizard fragt Rückbau bereits ab → CTA passt).
+    - `gaeste-wc-fliesen-kosten` (kleines häufiges Projekt, `roomType: guest_wc` existiert).
+    - `fliesenleger-stundenlohn` (hohes Volumen; aus vorhandenen Angeboten belegbar,
+      z. B. Zusatzposition 66 €/Std im Hamburger Bad-Angebot).
+  - **Profi-Funnel (organisch für die spätere Ads-Phase vorbereiten):**
+    - Ratgeber „Angebot schreiben als Fliesenleger: Positionen, Einheiten, Muster" → verlinkt auf
+      `/vorlage/angebot-fliesen-muster` und `/angebote` (B2B-Keywords konkurrenzarm, hoher LTV).
+  - **Technik-Schulden dazu:** `HowTo`-JSON-LD im Codegen ergänzen (erst der
+    `dusche-abdichten…`-Beitrag ist dafür strukturiert); `og:image`-Default + `summary_large_image`
+    im `SeoService`; verwaiste `/kosten/fliesen-verlegen-rechner`-Seite intern verlinken.
 
   **→ NÄCHSTER SCHRITT:** Weitere Kostenseite je vorliegendem echtem Angebot (z. B.
   `terrasse-fliesen-kosten`; sonst raumneutral „fliesen verlegen kosten pro qm" mit
@@ -341,6 +434,59 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   5. **Google-Ads-Tests** (klein, getaktet, mit Kill-Kriterien): DIY nur als **300-€-Lerntest** auf
      Tool-Intent-Keywords (erwartet negativer ROI → dann SEO statt Paid); **Profi** 300–600 € auf B2B-
      Keywords (`fliesenleger software`, `angebot schreiben`, `aufmaß app`), Erfolg = Profi-Registrierungen.
+
+- **Phase 18 – Mobile-First & Profi-App-Vorbereitung** *(Stufe 1 + 2 erledigt; Stufe 3/4 offen)*.
+  Ziel: die Web-App mobil **wirklich** nutzbar machen (Profi-Angebotsflow zuerst) und darauf eine
+  installierbare App-Version für Profis aufsetzen (PWA zuerst, Stores optional via Capacitor).
+
+  **Breakpoint-Konvention (Phase 18):** neuer/angefasster Code nutzt **1024 / 768 / 640 px**
+  (dokumentiert in `styles.css`). Legacy bleibt: App-Shell zusätzlich 920 px, Profil 560 px.
+
+  **Stufe 1 – Profi-Kern mobil fixen** *(erledigt)*:
+  1. **Geteilte Angebotsansicht `/angebot/:token`** (Kunden-Sicht): Positionstabelle unter 640 px
+     als **Karten-Layout** (Spaltenlabels via `data-label`/`::before`), `.sheet`-Padding reduziert,
+     Summenblock volle Breite (`shared-offer.component.css`).
+  2. **Angebots-Editor `/angebote`**: `line-table` unter 768 px als **Karten je Position**
+     (Bezeichnung oben, Menge·Einheit·Preis nebeneinander, Gesamt/Bedarf/Aktiv als Zeilen, Werkzeuge
+     volle Breite); Versions-Chips/Aktionsleiste flex-wrap.
+  3. **Touch & iOS**: Move-/Löschen-Buttons ≥ 44 px, Checkboxen vergrößert; globale Regel
+     „Inputs ≥ 16 px auf ≤ 768 px" in `styles.css` (iOS-Auto-Zoom); `inputmode="decimal"` auf allen
+     Zahlenfeldern (Menge/Preis/MwSt./Aufschlag/Nachlass); `aria-label` auf Icon-Buttons.
+  4. **PDF auf Mobile**: `PdfExportService` liefert jetzt über `getBlob` + **Web Share API**
+     (`navigator.canShare({files})`) aus – Teilen-/Speichern-Dialog auf iOS/Android; Fallback
+     Blob-Objekt-Link (`download` + `target=_blank`). Der Teilen-Link (Phase 13) bleibt die
+     bevorzugte mobile Alternative.
+
+  **Stufe 2 – Globale Mobile-Härtung** *(erledigt)*:
+  5. Seiten-Audit bei 375 px (Home, Wizard, Login, Kosten-/Ratgeber-Seiten, Projekt-Dashboard):
+     einziger Layout-Überlauf waren **Markdown-Tabellen** in Kosten-/Ratgeber-Content → jetzt
+     `display:block; overflow-x:auto` (horizontal scrollbar statt Seitenüberlauf). *(Gated Seiten
+     `/angebote` + `/angebot/:token` nur per Build/CSS-Review geprüft – brauchen Profi-Login/Daten.)*
+  6. Breakpoint-Konvention dokumentiert (s. o.).
+  7. **Sticky Brutto-+-Speichern-Leiste** im Angebots-Editor auf Mobile (`.mobile-savebar`,
+     `position: sticky; bottom: 0`, mit Safe-Area-Bottom).
+  8. **Safe-Area-Insets** (`viewport-fit=cover` + `env(safe-area-inset-*)`) für die sticky
+     Kopfleiste, den Footer und die mobile Speicherleiste; `theme-color` gesetzt.
+
+  **Stufe 3 – PWA (installierbare „App light") — OFFEN:**
+  9. `ng add @angular/pwa`: `manifest.webmanifest`, Icon-Satz (Basis: vorhandenes Favicon-SVG),
+     `theme-color`, Apple-Touch-Icon, Service Worker (`ngsw`). **Kompatibel mit statischem
+     netcup-Hosting** (nur HTTPS nötig); `.htaccess` ergänzen: `ngsw.json`/`ngsw-worker.js`
+     dürfen nicht gecacht/umgeschrieben werden (Passenger-Hinweis beachten).
+  10. Offline-Strategie: App-Shell + Assets precachen; der anonyme Offline-Fallback
+      (TS-Katalog) existiert bereits – sauberer „Offline"-Hinweis in Angebots-/Projektflows
+      statt Fehlermeldung (Supabase braucht Netz). Später optional: Outbox/Sync für Angebote.
+  11. Install-Prompt gezielt für eingeloggte Profis („Als App installieren", `beforeinstallprompt`
+      + iOS-Anleitung), nicht global aufdringlich.
+
+  **Stufe 4 – Profi-App (Angebote) auf dieser Basis — OFFEN:**
+  12. **Entscheidung PWA-only vs. Capacitor** (nur wenn Store-Präsenz/Push/Kamera gebraucht):
+      Capacitor wrappt die bestehende Angular-App; die abgekapselte Repository-Schicht und der
+      statische Build machen das ohne Server-Umbau möglich. Erst nach Stufe 1–3 entscheiden.
+  13. Mobiler Angebots-Schnellflow: kompakter Einstieg Projekt → Angebot → Teilen/PDF (weniger
+      Marketing-Navigation für eingeloggte Profis, z. B. eigene schlanke Contractor-Shell).
+  14. Nur mit Capacitor sinnvoll (bewusst nachgelagert): Push-Benachrichtigungen
+      (Angebot angesehen/angenommen), Kamera fürs Aufmaß-Foto.
 
 ### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant

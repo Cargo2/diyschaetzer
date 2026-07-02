@@ -3,25 +3,40 @@ import { FormsModule } from '@angular/forms';
 import {
   ContractorOffer,
   ContractorOfferSection,
+  ContractorOfferStatus,
+  CONTRACTOR_OFFER_STATUS_LABELS,
+  offerDiscountAmount,
   offerGrossTotal,
+  offerLineNumber,
   offerLineTotal,
+  offerNetAfterDiscount,
   offerNetTotal,
+  offerPositionNumber,
   offerSectionSubtotal,
   offerVatAmount,
-  ContractorOfferLine
+  ContractorOfferLine,
+  normalizeContractorOffer,
+  sanitizeContractorOffer
 } from '../../models/contractor-offer.model';
 import { LocalProjectService } from '../../services/local-project.service';
-import { ContractorOfferService } from '../../services/contractor-offer.service';
+import {
+  ContractorOfferService,
+  ContractorOfferDefaults
+} from '../../services/contractor-offer.service';
+import { CompanyProfileService } from '../../services/company-profile.service';
+import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
 import { ProfessionalLineItemUnit } from '../../services/professional-offer.service';
 import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
+import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
+import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
 
 /**
  * Profi-Angebotsmodul (Phase 13). Nur über den contractorGuard erreichbar.
- * Projektauswahl + editierbares Leistungsverzeichnis (Block B/C); Persistenz und
- * PDF-Download bauen darauf auf.
+ * Projektauswahl + mehrere Angebots-Versionen je Projekt + editierbares
+ * Leistungsverzeichnis; Persistenz, PDF-Download und Teilen-Link bauen darauf auf.
  */
 @Component({
   selector: 'app-contractor-offers',
@@ -33,12 +48,19 @@ import { PremiumExportButtonComponent } from '../../components/premium-export-bu
 export class ContractorOffersComponent implements OnInit {
   private readonly localProject = inject(LocalProjectService);
   private readonly offerService = inject(ContractorOfferService);
+  private readonly companyProfile = inject(CompanyProfileService);
+  private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
   private readonly repository = inject(CONTRACTOR_OFFER_REPOSITORY);
+  private readonly shareService = inject(ContractorOfferShareService);
   private readonly exportMapper = inject(ExportDataMapperService);
+  private readonly branding = inject(ContractorBrandingService);
 
-  /** Liefert das Exportdokument erst beim Klick (immer der aktuelle Editier-Stand). */
+  /** Profil-Standardwerte (Texte/Materialaufschlag), die neue Angebote vorbefüllen. */
+  private offerDefaults: ContractorOfferDefaults = {};
+
+  /** Liefert das Exportdokument erst beim Klick (immer der aktuelle, bereinigte Editier-Stand). */
   readonly exportDocumentFn = (): ExportDocumentData | null =>
-    this.offer ? this.exportMapper.buildContractorOfferExportData(this.offer) : null;
+    this.offer ? this.buildExportData() : null;
 
   readonly projects = this.localProject.projects;
   readonly activeProjectId = this.localProject.activeProjectId;
@@ -48,6 +70,21 @@ export class ContractorOffersComponent implements OnInit {
   readonly saveSuccess = signal<string | null>(null);
   /** `true`, wenn das aktuelle Angebot aus der DB geladen wurde (nicht frisch erzeugt). */
   readonly loadedFromDb = signal(false);
+  /** `true`, wenn das Projekt seit dem gespeicherten Angebot geändert wurde. */
+  readonly projectChanged = signal(false);
+  /** Alle Versionen des aktiven Projekts (aus der DB). */
+  readonly offersList = signal<ContractorOffer[]>([]);
+
+  /** Teilen-Link des aktuellen Angebots (nach dem Erzeugen). */
+  readonly shareUrl = signal<string | null>(null);
+  readonly sharing = signal(false);
+  readonly shareError = signal<string | null>(null);
+
+  readonly statusOptions: { value: ContractorOfferStatus; label: string }[] = [
+    { value: 'draft', label: CONTRACTOR_OFFER_STATUS_LABELS.draft },
+    { value: 'sent', label: CONTRACTOR_OFFER_STATUS_LABELS.sent },
+    { value: 'accepted', label: CONTRACTOR_OFFER_STATUS_LABELS.accepted }
+  ];
 
   readonly unitOptions: { value: ProfessionalLineItemUnit; label: string }[] = [
     { value: 'pauschal', label: 'pauschal' },
@@ -57,32 +94,59 @@ export class ContractorOffersComponent implements OnInit {
     { value: 'hour', label: 'Std.' }
   ];
 
-  /** Editierbare Arbeitskopie des aktuellen Angebots (regeneriert aus dem Projekt). */
+  /** Editierbare Arbeitskopie des aktuellen Angebots. */
   offer: ContractorOffer | null = null;
   newProjectName = '';
   confirmingDeleteId: string | null = null;
+  /** Angebots-Version, deren Löschung bestätigt werden soll. */
+  confirmingDeleteVersionId: string | null = null;
+
+  /** Monoton steigendes Token, damit nur die zuletzt angeforderte Ladung übernimmt. */
+  private loadToken = 0;
 
   async ngOnInit(): Promise<void> {
     await this.localProject.ready;
-    await this.loadOrGenerate();
+    // Profil-Standardpreise abwarten, damit „Aus Projekt erzeugen" die eigenen
+    // Einheitspreise nutzt und nicht (bei schnellerer Hydration) die System-Defaults.
+    await this.profileDefaults.ready;
+    await this.loadOfferDefaults();
+    await this.loadOffers();
     this.loading.set(false);
+  }
+
+  /** Lädt die Profil-Standardwerte (Texte + Materialaufschlag) für neue Angebote. */
+  private async loadOfferDefaults(): Promise<void> {
+    try {
+      const profile = await this.companyProfile.load();
+      this.offerDefaults = {
+        introText: profile.offerIntroText,
+        outroText: profile.offerOutroText,
+        materialSurchargePercent: profile.materialSurchargePercent
+      };
+    } catch {
+      this.offerDefaults = {};
+    }
   }
 
   // ---- Projektverwaltung ---------------------------------------------------
 
   selectProject(id: string): void {
     this.localProject.switchProject(id);
-    void this.loadOrGenerate();
+    void this.loadOffers();
   }
 
   createProject(): void {
     this.localProject.createProject(this.newProjectName);
     this.newProjectName = '';
-    void this.loadOrGenerate();
+    void this.loadOffers();
   }
 
   rename(id: string, name: string): void {
     this.localProject.renameProject(id, name);
+    // Umbenanntes aktives Projekt sofort im Angebot spiegeln (Untertitel/Dateiname).
+    if (this.offer && id === this.activeProjectId()) {
+      this.offer.projectName = this.activeProjectName;
+    }
   }
 
   requestDelete(id: string): void {
@@ -96,55 +160,139 @@ export class ContractorOffersComponent implements OnInit {
   confirmDelete(id: string): void {
     this.localProject.deleteProject(id);
     this.confirmingDeleteId = null;
-    void this.loadOrGenerate();
+    void this.loadOffers();
   }
 
   roomCount(projectId: string): number {
     return this.projects().find((project) => project.id === projectId)?.rooms.length ?? 0;
   }
 
-  // ---- Angebot laden / erzeugen / speichern --------------------------------
+  // ---- Angebote/Versionen laden & wechseln ---------------------------------
 
   /**
-   * Lädt das gespeicherte Angebot zum aktiven Projekt aus der DB; existiert keines,
-   * wird eines aus dem Projekt erzeugt. Wird bei Projektwechsel/Initialisierung genutzt.
+   * Lädt alle Versionen des aktiven Projekts und wählt die höchste als Arbeitskopie;
+   * gibt es keine, wird eine frische V1 erzeugt (noch nicht gespeichert). Über ein
+   * Token wird bei schnellem Projektwechsel nur die zuletzt angeforderte Ladung übernommen.
    */
-  private async loadOrGenerate(): Promise<void> {
-    this.resetSaveFeedback();
+  private async loadOffers(): Promise<void> {
+    const token = ++this.loadToken;
+    this.resetFeedback();
     const project = this.localProject.getProject();
+    let list: ContractorOffer[] = [];
     try {
-      const saved = await this.repository.load(project.id);
-      if (saved) {
-        // Projektnamen mit dem aktuellen Stand synchron halten (falls umbenannt).
-        this.offer = { ...saved, projectName: project.name };
-        this.loadedFromDb.set(true);
-        return;
-      }
+      list = await this.repository.listByProject(project.id);
     } catch {
-      // Backend offline o. Ä.: auf Neu-Erzeugung zurückfallen.
+      // Backend offline o. Ä.: mit leerer Liste auf Neu-Erzeugung zurückfallen.
     }
-    this.offer = this.offerService.buildOffer(project);
-    this.loadedFromDb.set(false);
+    if (token !== this.loadToken) {
+      return; // Ein neuerer Projektwechsel hat diese Ladung überholt.
+    }
+    list = list.map((offer) =>
+      normalizeContractorOffer({ ...offer, projectName: project.name })
+    );
+    this.offersList.set(list);
+
+    if (list.length > 0) {
+      const latest = [...list].sort((a, b) => (b.version ?? 0) - (a.version ?? 0))[0];
+      this.setWorking(latest, true, project);
+    } else {
+      const fresh = this.offerService.buildOffer(project, undefined, this.offerDefaults);
+      this.setWorking(fresh, false, project);
+    }
   }
 
-  /** (Neu) erzeugt das Angebot aus dem aktiven Projekt – verwirft lokale Edits. */
-  generate(): void {
-    this.resetSaveFeedback();
-    this.offer = this.offerService.buildOffer(this.localProject.getProject());
-    this.loadedFromDb.set(false);
+  /** Setzt die Arbeitskopie (normalisiert/entkoppelt) und die abhängigen Flags. */
+  private setWorking(
+    offer: ContractorOffer,
+    fromDb: boolean,
+    project = this.localProject.getProject()
+  ): void {
+    this.offer = normalizeContractorOffer({ ...offer });
+    this.loadedFromDb.set(fromDb);
+    this.shareUrl.set(null);
+    this.projectChanged.set(
+      fromDb && !!offer.sourceUpdatedAt && offer.sourceUpdatedAt !== project.updatedAt
+    );
   }
 
-  /** Speichert das aktuelle Angebot in der DB (pro Projekt). */
+  /** Wechselt zu einer gespeicherten Version. */
+  selectVersion(id: string): void {
+    const entry = this.offersList().find((offer) => offer.id === id);
+    if (entry) {
+      this.resetFeedback();
+      this.setWorking(entry, true);
+    }
+  }
+
+  isCurrentVersion(id: string): boolean {
+    return this.offer?.id === id;
+  }
+
+  /** Legt eine neue Version als Kopie der aktuellen an (noch nicht gespeichert). */
+  newVersion(): void {
+    if (!this.offer) {
+      return;
+    }
+    this.resetFeedback();
+    const maxVersion = Math.max(
+      this.offer.version ?? 0,
+      ...this.offersList().map((offer) => offer.version ?? 0)
+    );
+    const copy = this.offerService.duplicateAsNewVersion(this.offer, maxVersion + 1);
+    this.setWorking(copy, false);
+  }
+
+  requestDeleteVersion(id: string): void {
+    this.confirmingDeleteVersionId = id;
+  }
+
+  cancelDeleteVersion(): void {
+    this.confirmingDeleteVersionId = null;
+  }
+
+  async confirmDeleteVersion(id: string): Promise<void> {
+    this.confirmingDeleteVersionId = null;
+    try {
+      await this.repository.delete(id);
+    } catch {
+      this.saveError.set('Löschen fehlgeschlagen. Bitte erneut versuchen.');
+      return;
+    }
+    await this.loadOffers();
+  }
+
+  statusLabel(status: ContractorOfferStatus | undefined): string {
+    return status ? CONTRACTOR_OFFER_STATUS_LABELS[status] : '';
+  }
+
+  /**
+   * Frischt die Kalkulationsbasis aus dem aktiven Projekt auf und übernimmt dabei
+   * die bestehenden Anpassungen (Preise, Texte, eigene Positionen) – verwirft sie also **nicht**.
+   */
+  updateFromProject(): void {
+    this.resetFeedback();
+    const project = this.localProject.getProject();
+    this.offer = normalizeContractorOffer(
+      this.offerService.buildOffer(project, this.offer ?? undefined, this.offerDefaults)
+    );
+    this.loadedFromDb.set(false);
+    this.projectChanged.set(false);
+  }
+
+  /** Speichert das aktuelle Angebot (bereinigt) in der DB. */
   async save(): Promise<void> {
     if (!this.offer) {
       return;
     }
-    this.resetSaveFeedback();
+    this.resetFeedback();
     this.saving.set(true);
+    // Eingaben bereinigen (leere Zahlenfelder → 0) und den bereinigten Stand anzeigen.
+    this.offer = sanitizeContractorOffer(this.offer);
     try {
       await this.repository.save(this.offer);
       this.loadedFromDb.set(true);
       this.saveSuccess.set('Angebot gespeichert.');
+      await this.refreshList();
     } catch {
       this.saveError.set('Speichern fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
@@ -152,9 +300,61 @@ export class ContractorOffersComponent implements OnInit {
     }
   }
 
-  private resetSaveFeedback(): void {
+  /** Lädt die Versionsliste neu, ohne die Arbeitskopie zu ersetzen. */
+  private async refreshList(): Promise<void> {
+    const project = this.localProject.getProject();
+    try {
+      const list = (await this.repository.listByProject(project.id)).map((offer) =>
+        normalizeContractorOffer({ ...offer, projectName: project.name })
+      );
+      this.offersList.set(list);
+    } catch {
+      // Liste bleibt wie sie ist.
+    }
+  }
+
+  // ---- Teilen (öffentlicher read-only Link) --------------------------------
+
+  async share(): Promise<void> {
+    if (!this.offer) {
+      return;
+    }
+    this.shareError.set(null);
+    this.shareUrl.set(null);
+    this.sharing.set(true);
+    try {
+      const token = await this.shareService.createShare(this.buildExportData());
+      this.shareUrl.set(this.shareService.shareUrl(token));
+    } catch {
+      this.shareError.set('Teilen fehlgeschlagen. Bitte erneut versuchen.');
+    } finally {
+      this.sharing.set(false);
+    }
+  }
+
+  async copyShareUrl(): Promise<void> {
+    const url = this.shareUrl();
+    if (url) {
+      try {
+        await globalThis.navigator?.clipboard?.writeText(url);
+      } catch {
+        // Clipboard nicht verfügbar – der Link steht sichtbar zum manuellen Kopieren.
+      }
+    }
+  }
+
+  /** Neutrales Exportdokument des aktuellen Stands, mit Branding (Absender). */
+  private buildExportData(): ExportDocumentData {
+    const data = this.exportMapper.buildContractorOfferExportData(
+      sanitizeContractorOffer(this.offer!)
+    );
+    return this.branding.applyTo(data);
+  }
+
+  private resetFeedback(): void {
     this.saveError.set(null);
     this.saveSuccess.set(null);
+    this.shareError.set(null);
   }
 
   get activeProjectName(): string {
@@ -176,6 +376,7 @@ export class ContractorOffersComponent implements OnInit {
       unit: 'pauschal',
       unitPrice: 0,
       isActive: true,
+      isOptional: false,
       origin: 'custom'
     });
   }
@@ -209,25 +410,38 @@ export class ContractorOffersComponent implements OnInit {
     }
   }
 
-  // ---- Positionsnummern & Summen ------------------------------------------
-
-  /** 1-basierter „Pos."-Index unter allen Gruppen außer „Baustelle einrichten". */
-  posNumber(section: ContractorOfferSection): number | null {
+  /**
+   * Baut die Material-Sektion nach Umschalten von Aufschlüsselung/Aufschlag neu.
+   * Reihenfolge bleibt: Baustelle/Räume → Material → eigene Gruppen.
+   */
+  applyMaterialSettings(): void {
     if (!this.offer) {
-      return null;
+      return;
     }
-    const numbered = this.offer.sections.filter((entry) => entry.kind !== 'site_setup');
-    const index = numbered.indexOf(section);
-    return index >= 0 ? index + 1 : null;
+    const materials = this.offerService.rebuildMaterialSections(
+      this.localProject.getProject(),
+      {
+        breakdown: !!this.offer.materialBreakdown,
+        surchargePercent: this.offer.materialSurchargePercent ?? 0
+      }
+    );
+    const base = this.offer.sections.filter(
+      (section) => section.kind !== 'material' && section.kind !== 'custom'
+    );
+    const customs = this.offer.sections.filter((section) => section.kind === 'custom');
+    this.offer.sections = [...base, ...materials, ...customs];
   }
 
-  lineNumber(section: ContractorOfferSection, lineIndex: number): string {
-    const suffix = String(lineIndex + 1).padStart(3, '0');
-    if (section.kind === 'site_setup') {
-      return suffix;
-    }
-    const pos = this.posNumber(section);
-    return pos ? `${pos}.${suffix}` : suffix;
+  // ---- Positionsnummern & Summen ------------------------------------------
+
+  /** 1-basierter „Pos."-Index (geteilt mit dem PDF-Export). */
+  posNumber(section: ContractorOfferSection): number | null {
+    return this.offer ? offerPositionNumber(this.offer, section) : null;
+  }
+
+  /** Positionsnummer einer Zeile („1.003") – identisch zum PDF; `–` für inaktive. */
+  lineNumber(section: ContractorOfferSection, line: ContractorOfferLine): string {
+    return (this.offer && offerLineNumber(this.offer, section, line)) || '–';
   }
 
   lineTotal(line: ContractorOfferLine): number {
@@ -240,6 +454,14 @@ export class ContractorOffersComponent implements OnInit {
 
   netTotal(): number {
     return this.offer ? offerNetTotal(this.offer) : 0;
+  }
+
+  discountAmount(): number {
+    return this.offer ? offerDiscountAmount(this.offer) : 0;
+  }
+
+  netAfterDiscount(): number {
+    return this.offer ? offerNetAfterDiscount(this.offer) : 0;
   }
 
   vatAmount(): number {

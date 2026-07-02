@@ -89,6 +89,8 @@ const UNIT_LABELS: Record<string, string> = {
 
 const TOTAL_ROWS: Array<{ key: keyof ExportDocumentData['totals']; label: string; primary?: boolean }> = [
   { key: 'netTotal', label: 'Nettobetrag' },
+  { key: 'discountAmount', label: 'Nachlass' },
+  { key: 'netAfterDiscount', label: 'Zwischensumme netto' },
   { key: 'vatAmount', label: 'MwSt.' },
   { key: 'grossTotal', label: 'Bruttosumme' },
   { key: 'materialTotal', label: 'Materialkosten gesamt', primary: true },
@@ -101,12 +103,21 @@ export class PdfDocumentBuilderService {
   /** Übersetzt das neutrale Exportmodell in eine pdfmake-Dokumentdefinition. */
   build(data: ExportDocumentData): TDocumentDefinitions {
     const brandName = data.branding?.brandName ?? 'Fliesenprojekt';
-    const content: Content[] = [
-      this.header(data, brandName),
-      ...data.sections.flatMap((section) => this.section(section)),
-      ...this.totals(data)
-    ];
+    const content: Content[] = [this.header(data, brandName)];
 
+    if (data.introText) {
+      content.push({ text: data.introText, margin: [0, 4, 0, 8], lineHeight: 1.25 });
+    }
+
+    content.push(...data.sections.flatMap((section) => this.section(section)));
+    content.push(...this.totals(data));
+
+    if (data.taxNote) {
+      content.push({ text: data.taxNote, style: 'muted', margin: [0, 8, 0, 0] });
+    }
+    if (data.outroText) {
+      content.push({ text: data.outroText, margin: [0, 14, 0, 0], lineHeight: 1.25 });
+    }
     if (data.legalNotice) {
       content.push({
         text: data.legalNotice,
@@ -150,6 +161,10 @@ export class PdfDocumentBuilderService {
   }
 
   private header(data: ExportDocumentData, brandName: string): Content {
+    if (data.offerMeta) {
+      return this.offerHeader(data, brandName);
+    }
+
     const metaParts = [
       data.roomName ? `Raum: ${data.roomName}` : null,
       data.projectName ? `Projekt: ${data.projectName}` : null,
@@ -164,6 +179,57 @@ export class PdfDocumentBuilderService {
         ...(data.subtitle ? [{ text: data.subtitle, style: 'subtitle' }] : []),
         { text: metaParts.join('   ·   '), style: 'muted', margin: [0, 6, 0, 0] },
         {
+          canvas: [
+            { type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 1, lineColor: BORDER_COLOR }
+          ]
+        }
+      ]
+    };
+  }
+
+  /** Brief-Kopf für das Profi-Angebot: Absender, Empfänger und Angebotsmeta. */
+  private offerHeader(data: ExportDocumentData, brandName: string): Content {
+    const meta = data.offerMeta!;
+    const contactLine = data.branding?.contactLine;
+
+    const metaLines: Content[] = [];
+    if (meta.offerNumber) {
+      metaLines.push({ text: `Angebot Nr. ${meta.offerNumber}` });
+    }
+    metaLines.push({
+      text: `Datum: ${this.formatDate(meta.offerDate || data.createdAt)}`
+    });
+    if (meta.validUntil) {
+      metaLines.push({ text: `Gültig bis: ${this.formatDate(meta.validUntil)}` });
+    }
+
+    const customerStack: Content[] = [{ text: 'Angebot für', style: 'muted' }];
+    if (meta.customerName) {
+      customerStack.push({ text: meta.customerName, bold: true });
+    }
+    if (meta.customerAddress) {
+      customerStack.push({ text: meta.customerAddress });
+    }
+    if (!meta.customerName && !meta.customerAddress) {
+      customerStack.push({ text: '—' });
+    }
+
+    return {
+      margin: [0, 0, 0, 8],
+      stack: [
+        { text: brandName.toUpperCase(), style: 'muted', characterSpacing: 1 },
+        ...(contactLine ? [{ text: contactLine, style: 'muted' }] : []),
+        {
+          margin: [0, 12, 0, 0],
+          columns: [
+            { width: '*', stack: customerStack },
+            { width: 'auto', stack: metaLines, alignment: 'right', style: 'muted' }
+          ]
+        },
+        { text: data.title, style: 'title', margin: [0, 14, 0, 0] },
+        ...(data.subtitle ? [{ text: `Projekt: ${data.subtitle}`, style: 'subtitle' }] : []),
+        {
+          margin: [0, 6, 0, 0],
           canvas: [
             { type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 1, lineColor: BORDER_COLOR }
           ]
@@ -217,6 +283,12 @@ export class PdfDocumentBuilderService {
           const labelStack: Content[] = [{ text: row.label, bold: true }];
           if (row.description) {
             labelStack.push({ text: row.description, style: 'muted' });
+          }
+          if (row.isOptional) {
+            labelStack.push({
+              text: 'Bedarfsposition – nicht in der Angebotssumme',
+              style: 'muted'
+            });
           }
           return [
             { text: row.number },
@@ -437,16 +509,24 @@ export class PdfDocumentBuilderService {
     }
 
     const body: TableCell[][] = rows.map((row, index) => {
-      const showTopBorder = index === 0 || row.primary === true;
+      // Bruttosumme ist der Abschluss eines Angebots → immer hervorheben.
+      const primary = row.primary === true || row.key === 'grossTotal';
+      const showTopBorder = index === 0 || primary;
+      let label = row.label;
+      if (row.key === 'vatAmount' && typeof data.totals.vatPercent === 'number') {
+        label = `MwSt. (${data.totals.vatPercent} %)`;
+      } else if (row.key === 'discountAmount' && typeof data.totals.discountPercent === 'number') {
+        label = `Nachlass (${data.totals.discountPercent} %)`;
+      }
       return [
         {
-          text: row.label,
-          style: row.primary ? 'totalLabel' : 'muted',
+          text: label,
+          style: primary ? 'totalLabel' : 'muted',
           border: [false, showTopBorder, false, false]
         },
         {
           text: this.currency(data.totals[row.key]),
-          style: row.primary ? 'totalValue' : 'muted',
+          style: primary ? 'totalValue' : 'muted',
           alignment: 'right',
           border: [false, showTopBorder, false, false]
         }

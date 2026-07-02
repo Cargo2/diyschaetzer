@@ -8,7 +8,13 @@ import {
   ProfessionalLineItemCategory,
   ProfessionalLineItemUnit
 } from './professional-offer.service';
-import { offerNetTotal } from '../models/contractor-offer.model';
+import {
+  ContractorOffer,
+  offerGrossTotal,
+  offerNetAfterDiscount,
+  offerNetTotal,
+  offerVatAmount
+} from '../models/contractor-offer.model';
 
 function lineItem(
   id: string,
@@ -150,5 +156,147 @@ describe('ContractorOfferService', () => {
     const service = setup(0);
     const offer = service.buildOffer(project([room('r1', 'Bad OG')]));
     expect(offer.sections.some((s) => s.kind === 'material')).toBe(false);
+  });
+
+  it('sets header defaults and the source timestamp from the project', () => {
+    const service = setup(500);
+    const proj = project([room('r1', 'Bad OG')]);
+    const offer = service.buildOffer(proj);
+    expect(offer.customer).toEqual({ name: '', address: '' });
+    expect(offer.offerNumber).toBe('');
+    expect(offer.sourceUpdatedAt).toBe(proj.updatedAt);
+  });
+
+  it('prefills a fresh offer from profile defaults (texts + surcharge)', () => {
+    const service = setup(500);
+    const offer = service.buildOffer(project([room('r1', 'Bad OG')]), undefined, {
+      introText: 'Guten Tag',
+      outroText: 'Zahlbar in 14 Tagen',
+      materialSurchargePercent: 10
+    });
+    expect(offer.introText).toBe('Guten Tag');
+    expect(offer.outroText).toBe('Zahlbar in 14 Tagen');
+    expect(offer.materialSurchargePercent).toBe(10);
+    const material = offer.sections.find((s) => s.kind === 'material');
+    expect(material?.lines[0].unitPrice).toBe(550); // 500 × 1,10
+  });
+
+  it('merge: keeps edits, custom lines and custom sections on rebuild', () => {
+    const service = setup(500);
+    const proj = project([room('r1', 'Bad OG')]);
+    const first = service.buildOffer(proj);
+
+    const roomSection = first.sections.find((s) => s.id === 'r1')!;
+    roomSection.lines[0].unitPrice = 999;
+    roomSection.lines[0].label = 'Boden verlegen (angepasst)';
+    roomSection.lines.push({
+      id: 'custom-1',
+      label: 'Zulage',
+      description: '',
+      quantity: 1,
+      unit: 'pauschal',
+      unitPrice: 50,
+      isActive: true,
+      isOptional: false,
+      origin: 'custom'
+    });
+    first.sections.push({
+      id: 'sec-custom',
+      kind: 'custom',
+      title: 'Extra',
+      lines: [
+        {
+          id: 'c2',
+          label: 'Anfahrt',
+          description: '',
+          quantity: 1,
+          unit: 'pauschal',
+          unitPrice: 30,
+          isActive: true,
+          isOptional: false,
+          origin: 'custom'
+        }
+      ]
+    });
+    first.offerNumber = '2026-1';
+
+    const rebuilt = service.buildOffer(proj, first);
+    const rebuiltRoom = rebuilt.sections.find((s) => s.id === 'r1')!;
+    expect(rebuiltRoom.lines[0].unitPrice).toBe(999);
+    expect(rebuiltRoom.lines[0].label).toBe('Boden verlegen (angepasst)');
+    expect(rebuiltRoom.lines.some((l) => l.id === 'custom-1')).toBe(true);
+    expect(rebuilt.sections.some((s) => s.id === 'sec-custom')).toBe(true);
+    expect(rebuilt.offerNumber).toBe('2026-1');
+  });
+
+  it('rebuilds material as one surcharged lump position', () => {
+    const service = setup(500);
+    const proj = project([room('r1', 'Bad OG'), room('r2', 'EG')]);
+    const sections = service.rebuildMaterialSections(proj, {
+      breakdown: false,
+      surchargePercent: 10
+    });
+    expect(sections).toHaveLength(1);
+    expect(sections[0].lines).toHaveLength(1);
+    // (500 + 500) × 1,10 = 1100
+    expect(sections[0].lines[0].unitPrice).toBe(1100);
+  });
+
+  it('rebuilds material per room when breakdown is enabled', () => {
+    const service = setup(500);
+    const proj = project([room('r1', 'Bad OG'), room('r2', 'EG')]);
+    const sections = service.rebuildMaterialSections(proj, {
+      breakdown: true,
+      surchargePercent: 0
+    });
+    expect(sections[0].lines).toHaveLength(2);
+    expect(sections[0].lines.map((l) => l.unitPrice)).toEqual([500, 500]);
+    expect(sections[0].lines.map((l) => l.label)).toEqual([
+      'Material Bad OG',
+      'Material EG'
+    ]);
+  });
+
+  it('applies the discount before VAT', () => {
+    const offer: ContractorOffer = {
+      projectId: 'p',
+      projectName: 'x',
+      vatPercent: 19,
+      discountPercent: 10,
+      sections: [
+        {
+          id: 's',
+          kind: 'room',
+          title: 'R',
+          lines: [
+            { id: 'a', label: 'A', description: '', quantity: 1, unit: 'pauschal', unitPrice: 100, isActive: true, isOptional: false, origin: 'generated' }
+          ]
+        }
+      ]
+    };
+    expect(offerNetTotal(offer)).toBe(100);
+    expect(offerNetAfterDiscount(offer)).toBe(90);
+    expect(offerVatAmount(offer)).toBe(17.1);
+    expect(offerGrossTotal(offer)).toBe(107.1);
+  });
+
+  it('excludes optional (Bedarf) positions from the net total', () => {
+    const offer: ContractorOffer = {
+      projectId: 'p',
+      projectName: 'x',
+      vatPercent: 19,
+      sections: [
+        {
+          id: 's',
+          kind: 'room',
+          title: 'R',
+          lines: [
+            { id: 'a', label: 'A', description: '', quantity: 1, unit: 'pauschal', unitPrice: 100, isActive: true, isOptional: false, origin: 'generated' },
+            { id: 'b', label: 'B', description: '', quantity: 1, unit: 'pauschal', unitPrice: 50, isActive: true, isOptional: true, origin: 'custom' }
+          ]
+        }
+      ]
+    };
+    expect(offerNetTotal(offer)).toBe(100);
   });
 });

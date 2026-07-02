@@ -10,9 +10,14 @@ export interface PdfExportResult {
   reason: 'downloaded' | 'access_denied' | 'generation_failed';
 }
 
+interface PdfDoc {
+  download(filename?: string): void;
+  getBlob(callback: (blob: Blob) => void): void;
+}
+
 interface PdfMakeStatic {
   vfs: Record<string, string>;
-  createPdf(documentDefinitions: TDocumentDefinitions): { download(filename?: string): void };
+  createPdf(documentDefinitions: TDocumentDefinitions): PdfDoc;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,12 +37,59 @@ export class PdfExportService {
     try {
       const pdfMake = await this.loadPdfMake();
       const definition = this.builder.build(this.branding.applyTo(data));
-      pdfMake.createPdf(definition).download(this.fileName(data));
+      await this.deliver(pdfMake.createPdf(definition), this.fileName(data));
       return { exported: true, reason: 'downloaded' };
     } catch (error) {
       console.error('PDF generation failed.', error);
       return { exported: false, reason: 'generation_failed' };
     }
+  }
+
+  /**
+   * Liefert das PDF aus. Auf Geräten mit Datei-Sharing (mobil, v. a. iOS/Android)
+   * über die **Web Share API** (Teilen-/Speichern-Dialog) – dort ist der klassische
+   * `download()` unzuverlässig (iOS-Safari). Sonst klassischer Download über einen
+   * Blob-Objekt-Link (funktioniert auch, wenn `download` inline geöffnet wird).
+   */
+  private deliver(pdf: PdfDoc, filename: string): Promise<void> {
+    return new Promise<void>((resolve) => {
+      pdf.getBlob(async (blob: Blob) => {
+        try {
+          const file = new File([blob], filename, { type: 'application/pdf' });
+          const nav = globalThis.navigator as Navigator & {
+            canShare?: (data: { files: File[] }) => boolean;
+          };
+          if (nav?.canShare?.({ files: [file] })) {
+            try {
+              await nav.share({ files: [file], title: filename });
+              return; // erfolgreich geteilt/gespeichert
+            } catch (error) {
+              // Abbruch durch den Nutzer → nicht zusätzlich herunterladen.
+              if ((error as { name?: string })?.name === 'AbortError') {
+                return;
+              }
+              // sonstiger Fehler → auf den Download-Pfad zurückfallen
+            }
+          }
+          this.downloadBlob(blob, filename);
+        } finally {
+          resolve();
+        }
+      });
+    });
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = 'noopener';
+    anchor.target = '_blank';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   /**

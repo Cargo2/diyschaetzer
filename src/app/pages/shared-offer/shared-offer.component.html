@@ -1,0 +1,123 @@
+<section class="shared-offer">
+  @if (loading()) {
+    <p class="status">Angebot wird geladen …</p>
+  } @else if (notFound()) {
+    <div class="status">
+      <h1>Angebot nicht gefunden</h1>
+      <p>Dieser Link ist ungültig oder wurde entfernt.</p>
+      <a routerLink="/">Zur Startseite</a>
+    </div>
+  } @else if (doc(); as d) {
+    <article class="sheet">
+      <header class="head">
+        <div class="sender">
+          @if (d.branding?.brandName) {
+            <div class="brand">{{ d.branding?.brandName }}</div>
+          }
+          @if (d.branding?.contactLine) {
+            <div class="contact">{{ d.branding?.contactLine }}</div>
+          }
+        </div>
+
+        <div class="head-cols">
+          <div class="customer">
+            <span class="muted">Angebot für</span>
+            @if (d.offerMeta?.customerName) {
+              <div class="cust-name">{{ d.offerMeta?.customerName }}</div>
+            }
+            @if (d.offerMeta?.customerAddress) {
+              <div class="cust-addr">{{ d.offerMeta?.customerAddress }}</div>
+            }
+          </div>
+          <div class="meta">
+            @if (d.offerMeta?.offerNumber) {
+              <div>Angebot Nr. {{ d.offerMeta?.offerNumber }}</div>
+            }
+            <div>Datum: {{ formatDate(d.offerMeta?.offerDate || d.createdAt) }}</div>
+            @if (d.offerMeta?.validUntil) {
+              <div>Gültig bis: {{ formatDate(d.offerMeta?.validUntil) }}</div>
+            }
+          </div>
+        </div>
+
+        <h1>{{ d.title }}</h1>
+        @if (d.subtitle) {
+          <p class="subtitle">Projekt: {{ d.subtitle }}</p>
+        }
+      </header>
+
+      @if (d.introText) {
+        <p class="prose">{{ d.introText }}</p>
+      }
+
+      @for (group of groups(); track group.title) {
+        <section class="group">
+          <h2>
+            @if (group.positionLabel) {
+              <span class="pos">{{ group.positionLabel }}</span>
+            }
+            {{ group.title }}
+          </h2>
+          <table>
+            <thead>
+              <tr>
+                <th class="c-pos">Pos</th>
+                <th>Bezeichnung</th>
+                <th class="c-num">Menge</th>
+                <th class="c-unit">Einheit</th>
+                <th class="c-num">Einheitspreis</th>
+                <th class="c-num">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of group.rows; track row.number) {
+                <tr>
+                  <td class="c-pos" data-label="Pos">{{ row.number }}</td>
+                  <td class="c-desc">
+                    <div class="label">{{ row.label }}</div>
+                    @if (row.description) {
+                      <div class="muted">{{ row.description }}</div>
+                    }
+                    @if (row.isOptional) {
+                      <div class="muted">Bedarfsposition – nicht in der Angebotssumme</div>
+                    }
+                  </td>
+                  <td class="c-num" data-label="Menge">{{ num(row.quantity) }}</td>
+                  <td class="c-unit" data-label="Einheit">{{ unitLabel(row.unit) }}</td>
+                  <td class="c-num" data-label="Einheitspreis">{{ eur(row.unitPrice) }}</td>
+                  <td class="c-num c-total" data-label="Gesamt">{{ eur(row.total) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (group.subtotal !== null) {
+            <div class="subtotal">Summe {{ group.title }}: {{ eur(group.subtotal) }}</div>
+          }
+        </section>
+      }
+
+      <div class="totals">
+        <div class="row"><span>Nettobetrag</span><span>{{ eur(d.totals.netTotal) }}</span></div>
+        @if (d.totals.discountAmount !== undefined) {
+          <div class="row">
+            <span>Nachlass ({{ d.totals.discountPercent }} %)</span>
+            <span>{{ eur(d.totals.discountAmount) }}</span>
+          </div>
+          <div class="row"><span>Zwischensumme netto</span><span>{{ eur(d.totals.netAfterDiscount) }}</span></div>
+        }
+        <div class="row"><span>MwSt. ({{ d.totals.vatPercent }} %)</span><span>{{ eur(d.totals.vatAmount) }}</span></div>
+        <div class="row gross"><span>Bruttosumme</span><span>{{ eur(d.totals.grossTotal) }}</span></div>
+      </div>
+
+      @if (d.taxNote) {
+        <p class="muted note">{{ d.taxNote }}</p>
+      }
+      @if (d.outroText) {
+        <p class="prose">{{ d.outroText }}</p>
+      }
+      @if (d.legalNotice) {
+        <p class="legal">{{ d.legalNotice }}</p>
+      }
+    </article>
+  }
+</section>

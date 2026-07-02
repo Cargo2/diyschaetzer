@@ -1,5 +1,6 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { ExportBrandingData, ExportDocumentData } from '../models/export-document.model';
+import { CompanyProfile } from '../models/company-profile.model';
 import { AuthService } from './auth.service';
 import { CompanyProfileService } from './company-profile.service';
 
@@ -19,6 +20,8 @@ export class ContractorBrandingService {
   private readonly companyProfile = inject(CompanyProfileService);
 
   private readonly brandNameSig = signal<string | null>(null);
+  /** Kompakte Absenderzeile (Anschrift/Kontakt) – nur fürs Angebot. */
+  private readonly contactLineSig = signal<string | null>(null);
   /** Für welchen Nutzer der Cache zuletzt geladen wurde (verhindert Doppelladen). */
   private loadedForUserId: string | null = null;
 
@@ -45,7 +48,13 @@ export class ContractorBrandingService {
     if (!brandName) {
       return null;
     }
-    return { brandName, logoUrl: null, primaryColor: null, supportEmail: null };
+    return {
+      brandName,
+      logoUrl: null,
+      primaryColor: null,
+      supportEmail: null,
+      contactLine: this.contactLineSig()
+    };
   }
 
   /** Legt das Profi-Branding auf das Exportmodell, sofern ein Firmenname vorliegt. */
@@ -64,6 +73,7 @@ export class ContractorBrandingService {
     const profile = this.auth.profile();
     if (profile?.role !== 'contractor') {
       this.brandNameSig.set(null);
+      this.contactLineSig.set(null);
       this.loadedForUserId = null;
       return;
     }
@@ -71,10 +81,27 @@ export class ContractorBrandingService {
       const companyProfile = await this.companyProfile.load();
       const brandName = companyProfile.companyName.trim();
       this.brandNameSig.set(brandName.length > 0 ? brandName : null);
+      this.contactLineSig.set(this.buildContactLine(companyProfile));
       this.loadedForUserId = profile.id;
     } catch {
       // Backend offline o. Ä.: Default-Branding bleibt aktiv.
       this.brandNameSig.set(null);
+      this.contactLineSig.set(null);
     }
+  }
+
+  /** Baut aus den Profilfeldern eine kompakte, einzeilige Absenderangabe. */
+  private buildContactLine(profile: CompanyProfile): string | null {
+    const address = [profile.street, [profile.postalCode, profile.city].filter(Boolean).join(' ')]
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .join(', ');
+    const contact = [
+      profile.phone.trim() ? `Tel. ${profile.phone.trim()}` : '',
+      profile.email.trim(),
+      profile.vatId.trim() ? `USt-IdNr. ${profile.vatId.trim()}` : ''
+    ].filter((part) => part.length > 0);
+    const line = [address, ...contact].filter((part) => part.length > 0).join('  ·  ');
+    return line.length > 0 ? line : null;
   }
 }
