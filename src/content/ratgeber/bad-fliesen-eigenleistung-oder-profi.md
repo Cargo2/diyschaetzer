@@ -35,9 +35,7 @@ und Untergrund zu tun hat.** Genau die drei häufigsten Problemzonen im Detail:
 
 ## Problem 1: Die bodengleiche (ebenerdige) Dusche
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/bodengleiche-dusche.svg legen
-     (oder als .jpg ablegen und den Pfad in dieser Zeile anpassen). -->
-![Bodengleiche Dusche mit Duschrinne – das Gefälle muss stimmen](/img/ratgeber/bodengleiche-dusche.svg)
+![Bodengleiche Walk-in-Dusche in einem modernen Bad mit Naturstein-Optik](/img/ratgeber/bodengleiche-dusche.jpg)
 
 Die ebenerdige Dusche ist beliebt, aber der **anspruchsvollste** Teil im Bad. Ohne
 Duschtasse muss der **gefliese Boden selbst** das Wasser sicher zum Ablauf führen.
@@ -56,8 +54,7 @@ Duschtasse muss der **gefliese Boden selbst** das Wasser sicher zum Ablauf führ
 
 ## Problem 2: Undichte Abdichtung und Dichtungen
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/bad-abdichtung.svg legen. -->
-![Verbundabdichtung mit Dichtband in Ecken und Wandanschlüssen](/img/ratgeber/bad-abdichtung.svg)
+![Flexible Dichtschlämme (Verbundabdichtung) für Böden und Wände unter Fliesen](/img/ratgeber/bad-abdichtung.jpg)
 
 Die **Verbundabdichtung** liegt unsichtbar zwischen Untergrund und Fliese – und ist der
 eigentliche Schutz vor Feuchteschäden. Nach **DIN 18534** ist sie im Nassbereich
@@ -77,8 +74,7 @@ es erfordert Fachkenntnis und penible Sorgfalt – **kleine Fehler = teure Folge
 
 ## Problem 3: Die Gefahren, wenn es schiefgeht
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/wasserschaden-schimmel.svg legen. -->
-![Feuchteschaden und Schimmel als Folge einer undichten Abdichtung](/img/ratgeber/wasserschaden-schimmel.svg)
+![Schimmel an einer gerissenen Silikonfuge als Folge einer undichten Abdichtung](/img/ratgeber/wasserschaden-schimmel.jpg)
 
 Ein undichtes Bad bleibt selten ein Schönheitsfehler. Was auf dem Spiel steht:
 

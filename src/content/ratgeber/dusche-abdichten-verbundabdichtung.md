@@ -13,9 +13,7 @@ Durchführungen einarbeiten, dann die Fläche in zwei Anstrichen kreuzweise abdi
 trocknen lassen – erst danach wird gefliest. Fehler an dieser Stelle zeigen sich oft erst
 Monate später als Feuchteschaden.
 
-<!-- Bild-Tipp: eigenes Foto der fertigen Abdichtung mit eingelegten Dichtbändern nach
-     public/img/ratgeber/verbundabdichtung-dichtband.svg (oder .jpg) legen und einbinden:
-     ![Verbundabdichtung mit Dichtband in den Ecken](/img/ratgeber/verbundabdichtung-dichtband.svg) -->
+![Wasserdichtes, gewebearmiertes Dichtband für die Verbundabdichtung](/img/ratgeber/verbundabdichtung-dichtband.jpg)
 
 ## Warum die Fliese allein nicht abdichtet
 

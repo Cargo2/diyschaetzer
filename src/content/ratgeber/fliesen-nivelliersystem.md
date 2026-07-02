@@ -16,7 +16,7 @@ Fliesenstärke in den Arbeitsbereich des Systems fallen.
 Dieser Ratgeber erklärt, wie ein Nivelliersystem funktioniert, welche Systemarten es gibt
 und stellt konkrete Systeme aus dem Baumarkt und von Amazon vor.
 
-![Fliesen-Nivelliersystem im Einsatz beim Verlegen von Bodenfliesen](/img/ratgeber/nivelliersystem-hero.svg)
+![Nachfüllpack mit Laschen für ein Fliesen-Nivelliersystem](/img/ratgeber/nivelliersystem-hero.jpg)
 
 ## Was ist ein Fliesen-Nivelliersystem – und wann brauchst du es?
 
@@ -55,8 +55,7 @@ ausgehen, und musst nicht auf Lieferung warten.
 
 ### toom Baumarkt
 
-<!-- Platzhalter-Bild: eigenes Foto des toom-Systems nach public/img/ratgeber/nivelliersystem-toom.svg legen. -->
-![Nivelliersystem aus dem toom Baumarkt – Laschen, Keile und Zange](/img/ratgeber/nivelliersystem-toom.svg)
+![Fliesen-Nivellier-Set aus dem toom Baumarkt – Laschen und Keile](/img/ratgeber/nivelliersystem-toom.jpg)
 
 toom führt Keil-Laschen-Sets (Laschen + Keile, oft im Set mit Zange) in den gängigen
 Fugenstärken 1 mm, 2 mm und 3 mm. Praktisch für ein einzelnes Bad oder einen Raum;
@@ -67,8 +66,7 @@ Nachfüllpackungen mit Laschen sind separat erhältlich.
 
 ### OBI
 
-<!-- Platzhalter-Bild: eigenes Foto des OBI-Systems nach public/img/ratgeber/nivelliersystem-obi.svg legen. -->
-![Nivelliersystem von OBI – Laschen und Keile im Set](/img/ratgeber/nivelliersystem-obi.svg)
+![Nivelliersystem von OBI – Laschen und Keile im Set](/img/ratgeber/nivelliersystem-obi.jpg)
 
 Bei OBI findest du sowohl Eigenmarken-Sets als auch Markensysteme (z. B. von Wolfcraft).
 Auch hier gibt es die Laschen einzeln zum Nachkaufen und passende Verlegezangen. Achte
@@ -88,29 +86,27 @@ unten sind klickbar und führen direkt zum jeweiligen Angebot.
 
 ### Raimondi Levelling System (Profi)
 
-<!-- Amazon-Produktbild einfügen: nivelliersystem-raimondi.svg ersetzen. -->
-[![Raimondi Levelling System – Profi-Nivelliersystem](/img/ratgeber/nivelliersystem-raimondi.svg)](https://www.amazon.de/s?k=raimondi+levelling+system&linkCode=ll2&tag=alkoholvergle-21&linkId=eedce17636bb2f40072fe543fac224f7&ref_=as_li_ss_tl)
+[![Raimondi Levelling System – Profi-Nivelliersystem](/img/ratgeber/nivelliersystem-raimondi.jpg)](https://www.amazon.de/s?k=raimondi+levelling+system&linkCode=ll2&tag=alkoholvergle-21&linkId=eedce17636bb2f40072fe543fac224f7&ref_=as_li_ss_tl)
 
 Der italienische Klassiker unter Profis. Sehr robuste Laschen, präzise Keile und eine
 ergonomische Zange. Teurer als No-Name-Ware, aber langlebig – lohnt sich, wenn du
 regelmäßig verlegst.
 
-### RUBI Tile Level Quick (wiederverwendbar)
+### RUBI Delta Level System (Keil-Laschen-System)
 
-<!-- Amazon-Produktbild einfügen: nivelliersystem-rubi.svg ersetzen. -->
-[![RUBI Tile Level Quick – Schraub-Nivelliersystem mit wiederverwendbaren Kappen](/img/ratgeber/nivelliersystem-rubi.svg)](https://amzn.to/4p0BFdJ)
+[![RUBI Nivelliersystem – Kit Delta Level System](/img/ratgeber/nivelliersystem-rubi.jpg)](https://amzn.to/4p0BFdJ)
+
+Klassisches Keil-Laschen-System eines etablierten Markenherstellers: Lasche einlegen,
+Keil einschieben, nach dem Aushärten abschlagen. Robust und gut dosierbar – solides
+Mittelfeld zwischen einfachem Baumarkt-Set und Profisystem.
+
+### Gakago (Schraubsystem, wiederverwendbar)
+
+[![Gakago Schraub-Nivelliersystem mit wiederverwendbaren Kappen und Zange](/img/ratgeber/nivelliersystem-gakago.jpg)](https://amzn.to/44ayXbQ)
 
 Schraubsystem mit wiederverwendbaren Kappen: Du drehst die Kappe zum Anpressen fest und
 wieder ab – nur die Laschen sind Verbrauchsmaterial. Feinfühlig dosierbar, ideal für
 Großformat und empfindliche Oberflächen.
-
-### Gakago / Vorratssets (Budget)
-
-<!-- Amazon-Produktbild einfügen: nivelliersystem-gakago.svg ersetzen. -->
-[![Gakago Nivelliersystem-Set mit vielen Laschen und Keilen](/img/ratgeber/nivelliersystem-gakago.svg)](https://amzn.to/44ayXbQ)
-
-Große Vorratssets (z. B. 100–500 Laschen + Keile) zum kleinen Preis. Für ein einmaliges
-Projekt völlig ausreichend. Achte auf die passende Laschenstärke zu deiner Wunsch-Fugenbreite.
 
 ## Worauf du beim Kauf achten musst
 

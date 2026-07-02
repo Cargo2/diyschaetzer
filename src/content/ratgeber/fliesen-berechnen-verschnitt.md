@@ -12,9 +12,7 @@ Schnitten. Dazu eine kleine Reserve (etwa 1 m²) für spätere Reparaturen aus d
 Charge. Genau das rechnet dir der [kostenlose Fliesenrechner](/raum-anlegen) automatisch
 aus deinen Raummaßen – inklusive Paketzahl.
 
-<!-- Bild-Tipp: eigenes Foto einer verlegten Fläche mit sichtbaren Randschnitten nach
-     public/img/ratgeber/verschnitt-randschnitte.svg (oder .jpg) legen und hier einbinden:
-     ![Randschnitte an einer gefliesten Wand](/img/ratgeber/verschnitt-randschnitte.svg) -->
+![Elektrischer Nass-Fliesenschneider – Rand- und Passschnitte erzeugen den Verschnitt](/img/ratgeber/verschnitt-fliesenschneider.jpg)
 
 ## Warum überhaupt Verschnitt?
 

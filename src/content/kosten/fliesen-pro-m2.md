@@ -9,11 +9,7 @@ ctaLabel: Kosten pro m² jetzt berechnen
 
 **Antwort zuerst:** Für die reine Verlegung durch einen Fachbetrieb solltest du je nach Format mit grob **80 bis 115 € pro m²** rechnen. Das Material kommt mit etwa **20 bis 100 € pro m²** dazu. In Eigenleistung sparst du die Arbeitskosten und zahlst vor allem Material plus einmaliges oder geliehenes Werkzeug. Wie viel es bei dir konkret wird, hängt von Fläche, Fliesenformat, Untergrund und Region ab. Genau diese Faktoren rechnet der kostenlose Rechner für deinen Raum durch.
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/kosten/fliesen-pro-m2.svg legen
-     (oder als .jpg ablegen und den Pfad in der Bildzeile anpassen). Passend z. B. ein Foto einer
-     frisch verlegten Fläche oder ein Ausschnitt eines anonymisierten Angebots – bei Letzterem
-     vorher Firmenname, Logo, Adresse, Angebotsnummer und Kontaktdaten schwärzen. -->
-![Frisch verlegte Fliesenfläche als Beispiel für Kosten pro Quadratmeter](/img/kosten/fliesen-pro-m2.svg)
+![Verlegte Bodenfliesen in Betonoptik als Beispiel für Kosten pro Quadratmeter](/img/kosten/fliesen-pro-m2.jpg)
 
 ## Wie sich der Quadratmeterpreis zusammensetzt
 

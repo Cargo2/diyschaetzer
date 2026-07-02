@@ -23,9 +23,7 @@ Leistung (mehr dazu weiter unten). In der Praxis begegnen dir vor allem diese So
 
 ### Dispersionskleber (Fertigkleber)
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/dispersionskleber.svg legen
-     (oder als .jpg ablegen und den Pfad in dieser Zeile anpassen). -->
-![Dispersionskleber – pastöser, gebrauchsfertiger Fliesenkleber im Eimer](/img/ratgeber/dispersionskleber.svg)
+![Dispersionskleber – pastöser, gebrauchsfertiger Fliesenkleber im Eimer](/img/ratgeber/dispersionskleber.jpg)
 
 Pastöser, **gebrauchsfertiger** Kleber aus dem Eimer (Klasse **D**) – nicht anrühren,
 direkt verarbeiten. Klebt gut, ist aber weniger belastbar als zementäre Kleber und
@@ -37,8 +35,7 @@ nur bedingt feuchtigkeitsfest.
 
 ### Zementärer Flexkleber (Dünnbettmörtel, C2)
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/flexkleber.svg legen. -->
-![Zementärer Flexkleber im Sack – der Standard-Dünnbettmörtel](/img/ratgeber/flexkleber.svg)
+![Zementärer Flexkleber im Sack – der Standard-Dünnbettmörtel](/img/ratgeber/flexkleber.jpg)
 
 Der **Allrounder**: Pulver aus dem Sack, mit Wasser angerührt. „Flex" (Zusatz **S1/S2**)
 bedeutet **verformbar** – er fängt kleine Bewegungen des Untergrunds ab. Wasser- und
@@ -50,8 +47,7 @@ frostfest, damit auch für Bad und außen geeignet.
 
 ### Mittelbett- / Fließbettmörtel
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/mittelbettmoertel.svg legen. -->
-![Mittelbett- bzw. Fließbettmörtel für großformatige Fliesen](/img/ratgeber/mittelbettmoertel.svg)
+![Flexibler Dünn- und Mittelbettmörtel im Sack für großformatige Fliesen](/img/ratgeber/mittelbettmoertel.jpg)
 
 Zementär, aber für **dickere Kleberbetten** ausgelegt. **Mittelbett** gleicht kleine
 Unebenheiten aus; **Fließbett** ist so eingestellt, dass er unter der Fliese satt
@@ -62,8 +58,7 @@ verläuft und **Hohlräume vermeidet** – wichtig bei Großformat.
 
 ### Naturstein- / Trasskleber
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/natursteinkleber.svg legen. -->
-![Naturstein- bzw. Trasskleber – verhindert Verfärbungen und Ausblühungen](/img/ratgeber/natursteinkleber.svg)
+![Naturstein- bzw. Trasskleber – weiß und verfärbungsfrei für Marmor und Granit](/img/ratgeber/natursteinkleber.jpg)
 
 Speziell für **Naturstein** (Marmor, Travertin & Co.). **Trass** bindet Kalk und
 reduziert **Ausblühungen und Verfärbungen**, die empfindliche Steine sonst durch
@@ -74,8 +69,7 @@ normalen Zementkleber bekommen können. Oft **schnell abbindend** und hell einge
 
 ### Schnellkleber (schnell abbindend)
 
-<!-- Platzhalter-Bild: eigenes Foto nach public/img/ratgeber/schnellkleber.svg legen. -->
-![Schnell abbindender Fliesenkleber für kurze Wartezeiten](/img/ratgeber/schnellkleber.svg)
+![Schnell abbindender Fliesenkleber für kurze Wartezeiten](/img/ratgeber/schnellkleber.jpg)
 
 Zementärer Kleber mit **verkürzter Abbindezeit** – schon nach wenigen Stunden
 begeh- und verfugbar. Praktisch bei Terminen, aber die **offene Zeit ist kürzer**:

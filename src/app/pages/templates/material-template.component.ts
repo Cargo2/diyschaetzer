@@ -31,7 +31,7 @@ export class MaterialTemplateComponent implements OnInit {
   private readonly seo = inject(SeoService);
 
   /** Sobald vorhanden auf z. B. '/vorlage/material-hero.jpg' setzen (Datei nach public/vorlage/). */
-  readonly imageSrc: string | null = null;
+  readonly imageSrc: string | null = '/vorlage/material-hero.jpg';
   /** Selbst gehostetes Screencast; per `preload="none"` erst beim Start geladen. */
   readonly videoSrc: string | null = '/vorlage/materialliste.mp4';
   /** Optionales Vorschaubild (Poster) fürs Video. */

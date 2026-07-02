@@ -12,9 +12,7 @@ kleinteiliges Mosaik bis über 1,5 kg/m². Je kleiner die Fliese und je breiter 
 die Fuge, desto mehr Masse. Den genauen Bedarf für deinen Raum rechnet der
 [kostenlose Fliesenrechner](/raum-anlegen) mit.
 
-<!-- Bild-Tipp: eigenes Foto beim Einschlämmen/Abziehen der Fuge nach
-     public/img/ratgeber/fuge-einschlaemmen.svg (oder .jpg) legen und hier einbinden:
-     ![Fugenmasse mit dem Gummischieber diagonal einarbeiten](/img/ratgeber/fuge-einschlaemmen.svg) -->
+![Zementärer Flexfugen-Mörtel im Sack – Grundlage für die Verbrauchsrechnung](/img/ratgeber/fugenmoertel.jpg)
 
 ## Wovon der Verbrauch abhängt
 

@@ -12,9 +12,7 @@ zwingend mit einem zementären Flexkleber (C2). Tabu ist die Methode bei losen o
 hohlliegenden Fliesen, fehlender Abdichtung im Nassbereich und dort, wo die zusätzliche
 Aufbauhöhe an Türen und Übergängen zum Problem wird.
 
-<!-- Bild-Tipp: eigenes Foto vom angerauten/grundierten Altbelag nach
-     public/img/ratgeber/altbelag-grundiert.svg (oder .jpg) legen und hier einbinden:
-     ![Alter Fliesenbelag angeraut und mit Haftgrund vorbereitet](/img/ratgeber/altbelag-grundiert.svg) -->
+![Bodenausgleichsmasse gleicht Unebenheiten des Altbelags vor dem Verlegen aus](/img/ratgeber/altbelag-ausgleichen.jpg)
 
 ## Wann Fliesen auf Fliesen erlaubt ist
 
