@@ -55,39 +55,35 @@
           </button>
         }
       } @else {
-        <!-- Heimwerker: Raumname (Zusammenfassung) mit Materialliste als Dropdown (Hover/Klick). -->
-        <div class="tab-dropdown">
-          @if (resultsAvailable()) {
-            <a routerLink="/zusammenfassung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-              {{ roomName() }}
-            </a>
-          } @else {
-            <button
-              type="button"
-              class="tab-button disabled"
-              title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
-              (click)="openResultsPage('/zusammenfassung')"
-            >
-              {{ roomName() }}
-            </button>
-          }
-          <div class="tab-dropdown-menu">
-            @if (resultsAvailable()) {
-              <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-                Materialliste
-              </a>
-            } @else {
-              <button
-                type="button"
-                class="tab-button disabled"
-                title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
-                (click)="openResultsPage('/materialliste')"
-              >
-                Materialliste
-              </button>
-            }
-          </div>
-        </div>
+        <!-- Heimwerker: Raumname (Zusammenfassung) + Materialliste direkt als Menüpunkte. -->
+        @if (resultsAvailable()) {
+          <a routerLink="/zusammenfassung" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            {{ roomName() }}
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="tab-button disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="openResultsPage('/zusammenfassung')"
+          >
+            {{ roomName() }}
+          </button>
+        }
+        @if (resultsAvailable()) {
+          <a routerLink="/materialliste" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+            Materialliste
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="tab-button disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="openResultsPage('/materialliste')"
+          >
+            Materialliste
+          </button>
+        }
       }
 
       <a routerLink="/projekt-dashboard" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
