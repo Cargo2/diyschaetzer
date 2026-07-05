@@ -9,6 +9,13 @@
   gap: 1.4rem;
 }
 
+/* Grid-Items dürfen schmaler werden als ihr Inhalt (min-width: auto),
+   sonst drückt die Tabelle (min-width: 34rem) die Seite über den Viewport
+   statt im .tmpl-table-wrap horizontal zu scrollen. */
+.tmpl-page > * {
+  min-width: 0;
+}
+
 .tmpl-hero {
   background:
     radial-gradient(44rem 26rem at 110% -30%, rgba(194, 112, 61, 0.26), transparent 55%),
@@ -250,4 +257,113 @@ blockquote {
 
 .tmpl-tool {
   border: 1px solid rgba(17, 87, 74, 0.18);
+}
+
+/* Mobile: das Leistungsverzeichnis-Muster (5 Spalten mit langen Texten) wird
+   unter 640px zu gestapelten Karten statt horizontal scrollbar. Nur auf die
+   Angebots-Tabelle (.offer-lv) gescopet – die schmalen Material-Tabellen der
+   Material-Vorlage behalten das Scroll-Verhalten. Muster wie in Phase 18
+   (`data-label` + `::before`). */
+@media (max-width: 640px) {
+  table.offer-lv {
+    display: block;
+    min-width: 0;
+    font-size: 0.92rem;
+  }
+
+  table.offer-lv thead {
+    /* Spaltenüberschriften wandern als data-label in die Karten. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  table.offer-lv tbody,
+  table.offer-lv tr,
+  table.offer-lv td {
+    display: block;
+  }
+
+  /* Positionszeilen als Karte */
+  table.offer-lv tbody tr:not(.grp):not(.sum) {
+    border: 1px solid rgba(19, 23, 17, 0.14);
+    border-radius: 0.6rem;
+    background: var(--card);
+    padding: 0.7rem 0.85rem;
+    margin: 0 0 0.6rem;
+  }
+
+  table.offer-lv tbody tr:not(.grp):not(.sum) td {
+    border: none;
+    padding: 0.12rem 0;
+  }
+
+  /* Positionsnummer als kleine Kopfzeile */
+  table.offer-lv tbody tr:not(.grp):not(.sum) td:first-child {
+    color: var(--copper);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  table.offer-lv tbody tr:not(.grp):not(.sum) td:first-child::before {
+    content: 'Pos. ';
+  }
+
+  /* Leistungsbeschreibung als Kartentitel */
+  table.offer-lv tbody tr:not(.grp):not(.sum) td:nth-child(2) {
+    color: var(--ink);
+    font-weight: 700;
+    padding: 0.1rem 0 0.4rem;
+  }
+
+  /* Menge / Einheitspreis / Gesamt als Label-Wert-Zeilen */
+  table.offer-lv tbody tr:not(.grp):not(.sum) td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  table.offer-lv tbody tr:not(.grp):not(.sum) td[data-label]::before {
+    content: attr(data-label);
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* Gruppen-Kopfzeilen bleiben volle Breite */
+  table.offer-lv tbody tr.grp td {
+    border: none;
+    border-radius: 0.5rem;
+    margin: 0.4rem 0 0.55rem;
+  }
+
+  /* Summenzeilen als Label-links / Wert-rechts */
+  table.offer-lv tbody tr.sum {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 0.2rem;
+  }
+
+  table.offer-lv tbody tr.sum td {
+    border: none;
+    padding: 0;
+    text-align: left;
+  }
+
+  table.offer-lv tbody tr.sum td:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  table.offer-lv tbody tr.sum.total {
+    margin-top: 0.2rem;
+    border-top: 2px solid rgba(17, 87, 74, 0.22);
+    padding-top: 0.5rem;
+    font-size: 1.02rem;
+  }
 }

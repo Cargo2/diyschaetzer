@@ -28,8 +28,8 @@ interface FaqItem {
 export class OfferTemplateComponent implements OnInit {
   private readonly seo = inject(SeoService);
 
-  /** Sobald vorhanden auf z. B. '/vorlage/angebot-muster.png' setzen (Datei nach public/vorlage/). */
-  readonly imageSrc: string | null = null;
+  /** Screenshot eines fertigen Leistungsverzeichnisses (Datei in public/vorlage/). */
+  readonly imageSrc: string | null = '/vorlage/angebot-hero.png';
   /** Selbst gehostetes Screencast; per `preload="none"` erst beim Start geladen. */
   readonly videoSrc: string | null = '/vorlage/angebot.mp4';
   /** Optionales Vorschaubild (Poster) fürs Video. */
