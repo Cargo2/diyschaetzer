@@ -32,7 +32,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
         font-weight: 800;
         margin: 0 auto 1rem;
         padding: 1rem;
-        width: min(80vw, 100%);
+        width: 100%;
       }
     `
   ]

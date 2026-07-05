@@ -30,7 +30,6 @@
   color: #eef5f0;
   display: grid;
   gap: clamp(1.5rem, 4vw, 3.5rem);
-  grid-template-columns: minmax(0, 1.4fr) minmax(13rem, 0.7fr);
   padding: clamp(2rem, 5vw, 4rem);
   position: relative;
 }
@@ -63,8 +62,7 @@
   animation: glow-drift 11s ease-in-out infinite;
 }
 
-.hero-copy,
-.hero-previews {
+.hero-copy {
   position: relative;
   z-index: 1;
 }
@@ -356,14 +354,13 @@
   text-decoration: underline;
 }
 
-/* ── Hero: zwei Vorschau-Bilder (Ergebnis ↔ Angebot) ─────────── */
-.hero-previews {
-  align-self: center;
-  justify-self: center;
-  display: grid;
-  gap: 1.2rem;
+/* ── Hero: Vorschau-Bild je Pfad (unter dem jeweiligen CTA) ──── */
+.hero-path .hero-preview {
   width: 100%;
-  max-width: 25rem;
+  max-width: 24rem;
+  /* schiebt beide Bilder an die Unterkante der gleich hohen Pfad-Spalten,
+     damit sie trotz unterschiedlich langer Texte auf einer Linie stehen */
+  margin-top: auto;
 }
 
 .hero-preview {
@@ -776,31 +773,6 @@
   flex: 0 0 auto;
 }
 
-/* Hero erst spät stapeln, damit Text neben dem Bild bleibt; gestapelt die
-   beiden Vorschau-Bilder kompakt nebeneinander (statt hoch übereinander). */
-@media (max-width: 760px) {
-  .hero-section {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-previews {
-    max-width: none;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.9rem;
-  }
-
-  .hero-preview-result,
-  .hero-preview-offer {
-    transform: none;
-  }
-}
-
-@media (max-width: 460px) {
-  .hero-previews {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 900px) {
   .feature-grid,
   .comparison-grid,
@@ -846,5 +818,11 @@
     border-top: 1px solid rgba(255, 255, 255, 0.16);
     padding-left: 0;
     padding-top: 1.4rem;
+  }
+
+  /* gestapelt: keine Rotation der Vorschau-Bilder */
+  .hero-preview-result,
+  .hero-preview-offer {
+    transform: none;
   }
 }

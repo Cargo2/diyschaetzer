@@ -4,9 +4,8 @@
       <p class="eyebrow">Fliesen-Kostenschätzer</p>
       <h1>Fliesenprojekt planen: Selber machen oder Profi beauftragen?</h1>
       <p class="hero-text">
-        Plane Räume und Fliesenbereiche Schritt für Schritt. Der Kostenschätzer hilft dir, Flächen,
-        Fliesenbereiche und erste Richtwerte strukturiert zu erfassen, als Grundlage für den
-        späteren Vergleich zwischen Eigenleistung und Fachbetrieb.
+        Plane Räume und Fliesenbereiche Schritt für Schritt und vergleiche, was Eigenleistung
+        gegenüber dem Fachbetrieb spart.
       </p>
 
       <div class="hero-paths">
@@ -20,39 +19,37 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Keine Registrierung notwendig
           </p>
+          <figure class="hero-preview hero-preview-result">
+            <img
+              src="/hero-ergebnis-preview.svg"
+              alt="Beispiel-Ergebnis des Kostenschätzers: Vergleich von Eigenleistung und Profi-Kosten"
+              width="480"
+              height="360"
+            />
+            <figcaption>Dein Ergebnis als Heimwerker</figcaption>
+          </figure>
         </div>
         <div class="hero-path">
           <p class="hero-path-label">Profi?</p>
           <p class="hero-path-text">
-            Erstelle aus deinen eigenen Daten in Sekunden ein Angebot als Leistungsverzeichnis.
+            Erstelle aus deinen eigenen Daten in Sekunden ein Angebot und schicke es dem Kunden.
+            Kostenlos.
           </p>
           <a routerLink="/angebote" class="secondary-action">Angebot erstellen</a>
+          <figure class="hero-preview hero-preview-offer">
+            <img
+              src="/hero-angebot-preview.svg"
+              alt="Beispiel eines Profi-Angebots als Leistungsverzeichnis mit Netto, MwSt. und Gesamtsumme"
+              width="480"
+              height="360"
+            />
+            <figcaption>Angebot für Profis – in Sekunden</figcaption>
+          </figure>
         </div>
       </div>
 
-      <a href="#vergleich" class="hero-more">Mehr erfahren ↓</a>
+      <a href="#ablauf" class="hero-more">Mehr erfahren ↓</a>
     </div>
-
-    <aside class="hero-previews">
-      <figure class="hero-preview hero-preview-result">
-        <img
-          src="/hero-ergebnis-preview.svg"
-          alt="Beispiel-Ergebnis des Kostenschätzers: Vergleich von Eigenleistung und Profi-Kosten"
-          width="480"
-          height="360"
-        />
-        <figcaption>Dein Ergebnis als Heimwerker</figcaption>
-      </figure>
-      <figure class="hero-preview hero-preview-offer">
-        <img
-          src="/hero-angebot-preview.svg"
-          alt="Beispiel eines Profi-Angebots als Leistungsverzeichnis mit Netto, MwSt. und Gesamtsumme"
-          width="480"
-          height="360"
-        />
-        <figcaption>Angebot für Profis – in Sekunden</figcaption>
-      </figure>
-    </aside>
   </section>
 
   <!-- Nutzen-Sektion vorerst ausgeblendet; Code bleibt für spätere Wiederverwendung erhalten.
@@ -103,6 +100,33 @@
     </div>
   </section>
   -->
+
+  <section class="content-band" id="ablauf">
+    <div class="section-header">
+      <p>Ablauf</p>
+      <h2>So funktioniert der Kostenschätzer</h2>
+    </div>
+
+    <div class="steps-grid">
+      <article class="step-card">
+        <span>1</span>
+        <h3>Raum oder Bereich auswählen</h3>
+        <p>Wähle Bad, Küche, Wohnraum, Terrasse oder einen anderen Fliesenbereich.</p>
+      </article>
+      <article class="step-card">
+        <span>2</span>
+        <h3>Ausstattung festlegen</h3>
+        <p>Gib an, ob Dusche, Badewanne, Waschtisch, WC, Heizung und Fliesenbereiche geplant sind.</p>
+      </article>
+      <article class="step-card">
+        <span>3</span>
+        <h3>Annahmen prüfen</h3>
+        <p>In der Zusammenfassung siehst du bearbeitbare Richtwerte wie Fliesenpreis oder Duschgröße.</p>
+      </article>
+    </div>
+
+    <a routerLink="/raum-anlegen" class="primary-action compact-action">Jetzt starten</a>
+  </section>
 
   <section class="content-band comparison-band" id="vergleich">
     <div class="section-header">
@@ -284,33 +308,6 @@
     <a routerLink="/raum-anlegen" class="secondary-cta">Projekt einschätzen</a>
   </section>
   -->
-
-  <section class="content-band">
-    <div class="section-header">
-      <p>Ablauf</p>
-      <h2>So funktioniert der Kostenschätzer</h2>
-    </div>
-
-    <div class="steps-grid">
-      <article class="step-card">
-        <span>1</span>
-        <h3>Raum oder Bereich auswählen</h3>
-        <p>Wähle Bad, Küche, Wohnraum, Terrasse oder einen anderen Fliesenbereich.</p>
-      </article>
-      <article class="step-card">
-        <span>2</span>
-        <h3>Ausstattung festlegen</h3>
-        <p>Gib an, ob Dusche, Badewanne, Waschtisch, WC, Heizung und Fliesenbereiche geplant sind.</p>
-      </article>
-      <article class="step-card">
-        <span>3</span>
-        <h3>Annahmen prüfen</h3>
-        <p>In der Zusammenfassung siehst du bearbeitbare Richtwerte wie Fliesenpreis oder Duschgröße.</p>
-      </article>
-    </div>
-
-    <a routerLink="/raum-anlegen" class="primary-action compact-action">Jetzt starten</a>
-  </section>
 
   <!-- Weiterführende-Links-Sektion vorerst ausgeblendet; Code bleibt für spätere Wiederverwendung erhalten.
   <section class="content-band">

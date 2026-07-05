@@ -1,7 +1,9 @@
 @let step = currentStep();
 @let state = formState();
 
-<section class="mx-auto w-full rounded-[1.25rem] border border-white/80 bg-white p-5 shadow-[0_20px_55px_rgba(83,91,76,0.10)] sm:w-[80vw] sm:p-8">
+<!-- Volle Stage-Breite (86rem-Kappung der App-Shell) statt sm:w-[80vw]:
+     80vw wuchs auf großen Monitoren über die Content-Stage hinaus. -->
+<section class="mx-auto w-full rounded-[1.25rem] border border-white/80 bg-white p-5 shadow-[0_20px_55px_rgba(83,91,76,0.10)] sm:p-8">
   <div class="mx-auto flex min-h-[calc(100vh-8.5rem)] w-full flex-col justify-between gap-8">
     <div class="space-y-8">
       <header class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
