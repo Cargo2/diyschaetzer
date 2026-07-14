@@ -29,5 +29,5 @@ export function absoluteUrl(path: string): string {
  */
 export const APP_URL = 'https://app.fliesen-kosten.de';
 export const MARKETING_HOSTNAMES = ['fliesen-kosten.de', 'www.fliesen-kosten.de'];
-/** Go-Live-Schalter: erst auf true stellen, wenn app.* deployt ist. */
-export const APP_DOMAIN_LIVE = false;
+/** Go-Live-Schalter: erst auf true stellen, wenn app.* deployt ist (seit 14.07.2026 live). */
+export const APP_DOMAIN_LIVE = true;
