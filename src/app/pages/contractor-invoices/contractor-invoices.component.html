@@ -1,34 +1,33 @@
 <section class="invoices-page">
   <header class="invoices-header">
-    <h1>Rechnungen</h1>
+    <h1>{{ 'Rechnungen' | t }}</h1>
     <p class="invoices-intro">
-      Rechnungen entstehen aus einem gespeicherten Angebot über
-      <strong>„Als Rechnung übernehmen"</strong>. Hier verwaltest du sie, lädst PDF und
-      XRechnung (XML) herunter und passt Pflichtangaben (§ 14 UStG) an.
+      {{ 'Rechnungen entstehen aus einem gespeicherten Angebot über' | t }}
+      <strong>„{{ 'Als Rechnung übernehmen' | t }}"</strong>
+      {{ '. Hier verwaltest du sie, lädst PDF und XRechnung (XML) herunter und passt Pflichtangaben (§ 14 UStG) an.' | t }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="invoices-status">Rechnungen werden geladen …</p>
+    <p class="invoices-status">{{ 'Rechnungen werden geladen …' | t }}</p>
   } @else {
     <!-- Rechnungsliste -->
     <section class="panel">
-      <h2>Deine Rechnungen</h2>
+      <h2>{{ 'Deine Rechnungen' | t }}</h2>
       @if (invoices().length === 0) {
         <p class="invoices-status">
-          Noch keine Rechnungen. Öffne ein gespeichertes Angebot unter „Angebote" und
-          wähle „Als Rechnung übernehmen".
-          <a routerLink="/angebote">Zu den Angeboten</a>
+          {{ 'Noch keine Rechnungen. Öffne ein gespeichertes Angebot unter „Angebote" und wähle „Als Rechnung übernehmen".' | t }}
+          <a routerLink="/angebote">{{ 'Zu den Angeboten' | t }}</a>
         </p>
       } @else {
         <table class="invoice-list">
           <thead>
             <tr>
-              <th>Nummer</th>
-              <th>Datum</th>
-              <th>Kunde</th>
-              <th class="num">Brutto</th>
-              <th>Status</th>
+              <th>{{ 'Nummer' | t }}</th>
+              <th>{{ 'Datum' | t }}</th>
+              <th>{{ 'Kunde' | t }}</th>
+              <th class="num">{{ 'Brutto' | t }}</th>
+              <th>{{ 'Status' | t }}</th>
               <th></th>
             </tr>
           </thead>
@@ -46,18 +45,18 @@
                 </td>
                 <td class="row-actions" data-label="">
                   @if (isCurrent(item.id)) {
-                    <span class="badge-active">Geöffnet</span>
+                    <span class="badge-active">{{ 'Geöffnet' | t }}</span>
                   } @else {
-                    <button type="button" class="btn-light" (click)="selectInvoice(item.id!)">Öffnen</button>
+                    <button type="button" class="btn-light" (click)="selectInvoice(item.id!)">{{ 'Öffnen' | t }}</button>
                   }
                   @if (confirmingDeleteId === item.id) {
                     <span class="confirm-delete">
-                      Sicher?
-                      <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">Ja</button>
-                      <button type="button" class="btn-light btn-small" (click)="cancelDelete()">Nein</button>
+                      {{ 'Sicher?' | t }}
+                      <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">{{ 'Ja' | t }}</button>
+                      <button type="button" class="btn-light btn-small" (click)="cancelDelete()">{{ 'Nein' | t }}</button>
                     </span>
                   } @else {
-                    <button type="button" class="btn-danger btn-small" (click)="requestDelete(item.id!)">Löschen</button>
+                    <button type="button" class="btn-danger btn-small" (click)="requestDelete(item.id!)">{{ 'Löschen' | t }}</button>
                   }
                 </td>
               </tr>
@@ -71,18 +70,18 @@
     @if (invoice) {
       <section class="panel">
         <div class="invoice-head">
-          <h2>Rechnung {{ invoice.invoiceNumber }}</h2>
+          <h2>{{ 'Rechnung' | t }} {{ invoice.invoiceNumber }}</h2>
           <div class="invoice-head-actions">
             @if (loadedFromDb()) {
-              <span class="badge-saved">Gespeicherter Stand</span>
+              <span class="badge-saved">{{ 'Gespeicherter Stand' | t }}</span>
             } @else {
-              <span class="badge-draft">Nicht gespeichert</span>
+              <span class="badge-draft">{{ 'Nicht gespeichert' | t }}</span>
             }
             <button type="button" class="btn-primary" [disabled]="saving()" (click)="save()">
-              {{ saving() ? 'Speichern …' : 'Speichern' }}
+              {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
             </button>
             <app-premium-export-button
-              [label]="'PDF herunterladen'"
+              [label]="'PDF herunterladen' | t"
               [format]="'pdf'"
               [document]="exportDocumentFn"
             />
@@ -91,10 +90,10 @@
                 type="button"
                 class="btn-light"
                 [disabled]="xrBlocked()"
-                [title]="xrBlocked() ? 'Für die XRechnung fehlen: ' + xrMissingFields().join(', ') : 'XRechnung (XML) herunterladen'"
+                [title]="xrBlocked() ? (('Für die XRechnung fehlen:' | t) + ' ' + xrMissingFieldsLabel()) : ('XRechnung (XML) herunterladen' | t)"
                 (click)="downloadXml()"
               >
-                XRechnung (XML)
+                {{ 'XRechnung (XML)' | t }}
               </button>
             }
           </div>
@@ -102,18 +101,18 @@
 
         @if (!xrApplicable()) {
           <p class="invoices-message info" role="status">
-            XRechnung ist nur für Betriebe mit Sitz in Deutschland verfügbar.
+            {{ 'XRechnung ist nur für Betriebe mit Sitz in Deutschland verfügbar.' | t }}
           </p>
         } @else if (xrBlocked()) {
           <p class="invoices-message warning" role="note">
-            <strong>Für die XRechnung fehlen:</strong> {{ xrMissingFields().join(', ') }}.
+            <strong>{{ 'Für die XRechnung fehlen:' | t }}</strong> {{ xrMissingFieldsLabel() }}.
             @if (xrCustomerEmailMissing()) {
-              Die E-Mail des Kunden braucht XRechnung für die elektronische Zustellung (BT-49).
+              {{ 'Die E-Mail des Kunden braucht XRechnung für die elektronische Zustellung (BT-49).' | t }}
             }
             @if (xrSellerIncomplete()) {
-              Fehlende Absender-/Bank-/Steuerdaten (z. B. IBAN) im
-              <a routerLink="/konto/firmenprofil">Firmenprofil</a> ergänzen und
-              dann hier „Firmendaten aus Profil aktualisieren" klicken.
+              {{ 'Fehlende Absender-/Bank-/Steuerdaten (z. B. IBAN) im' | t }}
+              <a routerLink="/konto/firmenprofil">{{ 'Firmenprofil' | t }}</a>
+              {{ 'ergänzen und dann hier „Firmendaten aus Profil aktualisieren" klicken.' | t }}
             }
           </p>
         }
@@ -128,88 +127,87 @@
         <!-- Rechnungskopf: Empfänger + Pflichtangaben -->
         <div class="invoice-meta">
           <fieldset class="meta-block">
-            <legend>Rechnungsempfänger</legend>
+            <legend>{{ 'Rechnungsempfänger' | t }}</legend>
             <label class="meta-field">
-              <span>Name / Firma @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" placeholder="Kundenname" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.name)" />
+              <span>{{ 'Name / Firma' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Kundenname' | t" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.name)" />
             </label>
             <label class="meta-field">
-              <span>Straße &amp; Nr. @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <span>{{ 'Straße & Nr.' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
               <input type="text" [(ngModel)]="invoice.customer.street" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.street)" />
             </label>
             <div class="meta-row">
               <label class="meta-field meta-narrow">
-                <span>PLZ @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'PLZ' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="text" [(ngModel)]="invoice.customer.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.postalCode)" />
               </label>
               <label class="meta-field">
-                <span>Ort @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'Ort' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="text" [(ngModel)]="invoice.customer.city" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.city)" />
               </label>
               <label class="meta-field meta-narrow">
-                <span>Land</span>
+                <span>{{ 'Land' | t }}</span>
                 <input type="text" [(ngModel)]="invoice.customer.countryCode" [ngModelOptions]="{ standalone: true }" />
               </label>
             </div>
             <label class="meta-field">
-              <span>E-Mail @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
-              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" placeholder="kunde@beispiel.de" inputmode="email" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.email)" />
+              <span>{{ 'E-Mail' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
+              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" [placeholder]="'kunde@beispiel.de' | t" inputmode="email" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.email)" />
               @if (xrApplicable()) {
-                <small class="meta-hint">Elektronische Adresse des Empfängers – Pflichtangabe der XRechnung (BT-49).</small>
+                <small class="meta-hint">{{ 'Elektronische Adresse des Empfängers – Pflichtangabe der XRechnung (BT-49).' | t }}</small>
               }
             </label>
           </fieldset>
 
           <fieldset class="meta-block">
-            <legend>Rechnungsdaten</legend>
+            <legend>{{ 'Rechnungsdaten' | t }}</legend>
             <label class="meta-field">
-              <span>Rechnungsnummer @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <span>{{ 'Rechnungsnummer' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
               <input type="text" [(ngModel)]="invoice.invoiceNumber" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceNumber)" />
             </label>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Rechnungsdatum @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'Rechnungsdatum' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="date" [(ngModel)]="invoice.invoiceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceDate)" />
               </label>
               <label class="meta-field">
-                <span>Zahlbar bis @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'Zahlbar bis' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="date" [(ngModel)]="invoice.dueDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.dueDate)" />
               </label>
             </div>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Leistungsdatum @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'Leistungsdatum' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="date" [(ngModel)]="invoice.serviceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
-                <span>Status</span>
+                <span>{{ 'Status' | t }}</span>
                 <select [(ngModel)]="invoice.status" [ngModelOptions]="{ standalone: true }">
                   @for (option of statusOptions; track option.value) {
-                    <option [value]="option.value">{{ option.label }}</option>
+                    <option [value]="option.value">{{ option.label | t }}</option>
                   }
                 </select>
               </label>
             </div>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Leistungszeitraum von @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'Leistungszeitraum von' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="date" [(ngModel)]="invoice.servicePeriodStart" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
-                <span>bis @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <span>{{ 'bis' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
                 <input type="date" [(ngModel)]="invoice.servicePeriodEnd" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
             </div>
             <label class="meta-field">
-              <span>Käuferreferenz / Leitweg-ID (BT-10) @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" placeholder="n/a (bei Behörden: Leitweg-ID)" [class.xr-missing]="xrApplicable() && isBlank(invoice.buyerReference)" />
+              <span>{{ 'Käuferreferenz / Leitweg-ID (BT-10)' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" [placeholder]="'n/a (bei Behörden: Leitweg-ID)' | t" [class.xr-missing]="xrApplicable() && isBlank(invoice.buyerReference)" />
               @if (xrApplicable()) {
-                <small class="meta-hint">Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".</small>
+                <small class="meta-hint">{{ 'Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".' | t }}</small>
               }
               @if (buyerReferenceLooksMalformed()) {
                 <small class="meta-hint meta-hint-warning">
-                  Sieht nach einer Leitweg-ID aus, entspricht aber nicht dem üblichen Format
-                  (z. B. 04011000-1234512345-06).
+                  {{ 'Sieht nach einer Leitweg-ID aus, entspricht aber nicht dem üblichen Format (z. B. 04011000-1234512345-06).' | t }}
                 </small>
               }
             </label>
@@ -217,48 +215,48 @@
         </div>
 
         @if (xrApplicable()) {
-          <p class="xr-legend"><span class="xr-star">*</span> Pflicht für die XRechnung (XML).</p>
+          <p class="xr-legend"><span class="xr-star">*</span> {{ 'Pflicht für die XRechnung (XML).' | t }}</p>
         }
 
         <div class="seller-note">
           <p>
-            Absender-/Steuer-/Bankdaten stammen aus deinem
-            <a routerLink="/konto/firmenprofil">Firmenprofil</a> und sind als Snapshot in dieser
-            Rechnung gespeichert: {{ invoice.seller.companyName || '—' }}
-            @if (invoice.seller.vatId) { · USt-IdNr. {{ invoice.seller.vatId }} }
-            @else if (invoice.seller.taxNumber) { · Steuernr. {{ invoice.seller.taxNumber }} }
-            @if (invoice.seller.iban) { · IBAN {{ invoice.seller.iban }} }
+            {{ 'Absender-/Steuer-/Bankdaten stammen aus deinem' | t }}
+            <a routerLink="/konto/firmenprofil">{{ 'Firmenprofil' | t }}</a>
+            {{ 'und sind als Snapshot in dieser Rechnung gespeichert:' | t }} {{ invoice.seller.companyName || '—' }}
+            @if (invoice.seller.vatId) { · {{ 'USt-IdNr.' | t }} {{ invoice.seller.vatId }} }
+            @else if (invoice.seller.taxNumber) { · {{ 'Steuernr.' | t }} {{ invoice.seller.taxNumber }} }
+            @if (invoice.seller.iban) { · {{ 'IBAN' | t }} {{ invoice.seller.iban }} }
           </p>
           <button
             type="button"
             class="btn-light btn-small"
             [disabled]="refreshingSeller()"
             (click)="refreshSellerFromProfile()"
-            title="Absender-/Steuer-/Bankdaten aus dem aktuellen Firmenprofil in diese Rechnung übernehmen"
+            [title]="'Absender-/Steuer-/Bankdaten aus dem aktuellen Firmenprofil in diese Rechnung übernehmen' | t"
           >
-            {{ refreshingSeller() ? 'Wird übernommen …' : 'Firmendaten aus Profil aktualisieren' }}
+            {{ refreshingSeller() ? ('Wird übernommen …' | t) : ('Firmendaten aus Profil aktualisieren' | t) }}
           </button>
         </div>
 
         <label class="invoice-text">
-          <span>Einleitungstext (optional)</span>
+          <span>{{ 'Einleitungstext (optional)' | t }}</span>
           <textarea rows="2" [(ngModel)]="invoice.introText" [ngModelOptions]="{ standalone: true }"
-            placeholder="Sehr geehrte …, für die ausgeführten Arbeiten berechne ich Ihnen:"></textarea>
+            [placeholder]="'Sehr geehrte …, für die ausgeführten Arbeiten berechne ich Ihnen:' | t"></textarea>
         </label>
 
         @for (section of invoice.sections; track section.id; let si = $index) {
           <div class="invoice-section">
             <div class="section-head">
               <span class="pos-badge">
-                {{ section.kind === 'site_setup' ? '–' : 'Pos. ' + posNumber(section) }}
+                {{ section.kind === 'site_setup' ? '–' : (('Pos.' | t) + ' ' + posNumber(section)) }}
               </span>
               <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" />
               <span class="section-subtotal">{{ eur(sectionSubtotal(section)) }}</span>
               <span class="section-actions">
-                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" title="Nach oben">↑</button>
-                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === invoice.sections.length - 1" title="Nach unten">↓</button>
+                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" [title]="'Nach oben' | t">↑</button>
+                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === invoice.sections.length - 1" [title]="'Nach unten' | t">↓</button>
                 @if (section.kind === 'custom') {
-                  <button type="button" class="btn-danger" (click)="removeSection(section)">Gruppe löschen</button>
+                  <button type="button" class="btn-danger" (click)="removeSection(section)">{{ 'Gruppe löschen' | t }}</button>
                 }
               </span>
             </div>
@@ -266,13 +264,13 @@
             <table class="line-table">
               <thead>
                 <tr>
-                  <th class="col-pos">Pos</th>
-                  <th class="col-label">Bezeichnung</th>
-                  <th class="col-num">Menge</th>
-                  <th class="col-unit">Einheit</th>
-                  <th class="col-num">Einheitspreis</th>
-                  <th class="col-num">Gesamt</th>
-                  <th class="col-active">Aktiv</th>
+                  <th class="col-pos">{{ 'Pos' | t }}</th>
+                  <th class="col-label">{{ 'Bezeichnung' | t }}</th>
+                  <th class="col-num">{{ 'Menge' | t }}</th>
+                  <th class="col-unit">{{ 'Einheit' | t }}</th>
+                  <th class="col-num">{{ 'Einheitspreis' | t }}</th>
+                  <th class="col-num">{{ 'Gesamt' | t }}</th>
+                  <th class="col-active">{{ 'Aktiv' | t }}</th>
                   <th class="col-tools"></th>
                 </tr>
               </thead>
@@ -281,8 +279,8 @@
                   <tr [class.inactive]="!line.isActive">
                     <td class="col-pos" data-label="Pos">{{ lineNumber(section, line) }}</td>
                     <td class="col-label">
-                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" placeholder="Bezeichnung" />
-                      <input class="cell-input cell-desc" placeholder="Beschreibung (optional)" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" />
+                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
                     </td>
                     <td class="col-num" data-label="Menge">
                       <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
@@ -290,7 +288,7 @@
                     <td class="col-unit" data-label="Einheit">
                       <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }">
                         @for (option of unitOptions; track option.value) {
-                          <option [value]="option.value">{{ option.label }}</option>
+                          <option [value]="option.value">{{ option.label | t }}</option>
                         }
                       </select>
                     </td>
@@ -302,67 +300,66 @@
                       <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" />
                     </td>
                     <td class="col-tools" data-label="">
-                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" title="Nach oben" aria-label="Position nach oben">↑</button>
-                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" title="Nach unten" aria-label="Position nach unten">↓</button>
-                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" title="Position löschen" aria-label="Position löschen">✕</button>
+                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
+                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
+                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
 
-            <button type="button" class="btn-light add-line" (click)="addLine(section)">+ Position</button>
+            <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
           </div>
         }
 
         <div class="calc-options">
           <label class="opt">
-            <span>Nachlass</span>
+            <span>{{ 'Nachlass' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="invoice.discountPercent"
               [ngModelOptions]="{ standalone: true }" /> %
           </label>
         </div>
 
         <div class="invoice-foot">
-          <button type="button" class="btn-light" (click)="addSection()">+ Gruppe hinzufügen</button>
+          <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>
 
           <div class="totals">
             <div class="total-row">
-              <span>Nettobetrag</span><span>{{ eur(netTotal()) }}</span>
+              <span>{{ 'Nettobetrag' | t }}</span><span>{{ eur(netTotal()) }}</span>
             </div>
             @if ((invoice.discountPercent ?? 0) > 0) {
               <div class="total-row">
-                <span>Nachlass ({{ invoice.discountPercent }} %)</span><span>−{{ eur(discountAmount()) }}</span>
+                <span>{{ 'Nachlass' | t }} ({{ invoice.discountPercent }} %)</span><span>−{{ eur(discountAmount()) }}</span>
               </div>
               <div class="total-row">
-                <span>Zwischensumme netto</span><span>{{ eur(netAfterDiscount()) }}</span>
+                <span>{{ 'Zwischensumme netto' | t }}</span><span>{{ eur(netAfterDiscount()) }}</span>
               </div>
             }
             <div class="total-row">
               <span>
-                zzgl.
+                {{ 'zzgl.' | t }}
                 <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="invoice.vatPercent" [ngModelOptions]="{ standalone: true }" />
-                % MwSt.
+                % {{ 'MwSt.' | t }}
               </span>
               <span>{{ eur(vatAmount()) }}</span>
             </div>
             <div class="total-row gross">
-              <span>Rechnungsbetrag</span><span>{{ eur(grossTotal()) }}</span>
+              <span>{{ 'Rechnungsbetrag' | t }}</span><span>{{ eur(grossTotal()) }}</span>
             </div>
           </div>
         </div>
 
         @if (invoice.vatPercent === 0) {
           <p class="invoices-message info" role="status">
-            0 % MwSt.: Auf PDF und XRechnung wird automatisch der § 19-Hinweis
-            (Kleinunternehmerregelung) ausgewiesen.
+            {{ '0 % MwSt.: Auf PDF und XRechnung wird automatisch der § 19-Hinweis (Kleinunternehmerregelung) ausgewiesen.' | t }}
           </p>
         }
 
         <label class="invoice-text">
-          <span>Schlusstext (optional)</span>
+          <span>{{ 'Schlusstext (optional)' | t }}</span>
           <textarea rows="3" [(ngModel)]="invoice.outroText" [ngModelOptions]="{ standalone: true }"
-            placeholder="Zahlungsbedingungen, Dank … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug auf das unten genannte Konto."></textarea>
+            [placeholder]="'Zahlungsbedingungen, Dank … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug auf das unten genannte Konto.' | t"></textarea>
         </label>
       </section>
     }

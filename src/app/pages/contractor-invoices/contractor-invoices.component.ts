@@ -39,6 +39,8 @@ import { ContractorBrandingService } from '../../services/contractor-branding.se
 import { XRechnungExportService } from '../../services/xrechnung-export.service';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Rechnungsmodul (M12). Nur über den contractorGuard erreichbar. Rechnungen
@@ -49,7 +51,7 @@ import { PremiumExportButtonComponent } from '../../components/premium-export-bu
 @Component({
   selector: 'app-contractor-invoices',
   standalone: true,
-  imports: [FormsModule, RouterLink, PremiumExportButtonComponent],
+  imports: [FormsModule, RouterLink, PremiumExportButtonComponent, TranslatePipe],
   templateUrl: './contractor-invoices.component.html',
   styleUrl: './contractor-invoices.component.css'
 })
@@ -60,6 +62,7 @@ export class ContractorInvoicesComponent implements OnInit {
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly branding = inject(ContractorBrandingService);
   private readonly xrechnung = inject(XRechnungExportService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -87,6 +90,13 @@ export class ContractorInvoicesComponent implements OnInit {
   /** Fehlende XRechnung-Pflichtfelder (leer = Download freigegeben). */
   xrMissingFields(): string[] {
     return this.invoice ? listMissingXRechnungFields(this.invoice) : [];
+  }
+
+  /** {@link xrMissingFields}, aber jedes Feld übersetzt und für die Anzeige verbunden. */
+  xrMissingFieldsLabel(): string {
+    return this.xrMissingFields()
+      .map((field) => this.i18n.t(field))
+      .join(', ');
   }
 
   xrBlocked(): boolean {
@@ -176,7 +186,7 @@ export class ContractorInvoicesComponent implements OnInit {
   }
 
   statusLabel(status: ContractorInvoiceStatus | undefined): string {
-    return status ? CONTRACTOR_INVOICE_STATUS_LABELS[status] : '';
+    return status ? this.i18n.t(CONTRACTOR_INVOICE_STATUS_LABELS[status]) : '';
   }
 
   get hasInvoice(): boolean {
@@ -195,13 +205,15 @@ export class ContractorInvoicesComponent implements OnInit {
     try {
       await this.repository.save(this.invoice);
       this.loadedFromDb.set(true);
-      this.saveSuccess.set('Rechnung gespeichert.');
+      this.saveSuccess.set(this.i18n.t('Rechnung gespeichert.'));
       await this.loadList();
     } catch (error) {
       this.saveError.set(
-        this.invoiceService.isDuplicateNumberError(error)
-          ? INVOICE_DUPLICATE_NUMBER_MESSAGE
-          : 'Speichern fehlgeschlagen. Bitte erneut versuchen.'
+        this.i18n.t(
+          this.invoiceService.isDuplicateNumberError(error)
+            ? INVOICE_DUPLICATE_NUMBER_MESSAGE
+            : 'Speichern fehlgeschlagen. Bitte erneut versuchen.'
+        )
       );
     } finally {
       this.saving.set(false);
@@ -224,9 +236,13 @@ export class ContractorInvoicesComponent implements OnInit {
     try {
       const profile = await this.companyProfile.load();
       this.invoice.seller = this.invoiceService.sellerFromProfile(profile);
-      this.saveSuccess.set('Firmendaten aus dem Profil übernommen. Zum Sichern bitte „Speichern".');
+      this.saveSuccess.set(
+        this.i18n.t('Firmendaten aus dem Profil übernommen. Zum Sichern bitte „Speichern".')
+      );
     } catch {
-      this.saveError.set('Firmendaten konnten nicht geladen werden. Bitte erneut versuchen.');
+      this.saveError.set(
+        this.i18n.t('Firmendaten konnten nicht geladen werden. Bitte erneut versuchen.')
+      );
     } finally {
       this.refreshingSeller.set(false);
     }
@@ -245,7 +261,7 @@ export class ContractorInvoicesComponent implements OnInit {
     try {
       await this.repository.delete(id);
     } catch {
-      this.saveError.set('Löschen fehlgeschlagen. Bitte erneut versuchen.');
+      this.saveError.set(this.i18n.t('Löschen fehlgeschlagen. Bitte erneut versuchen.'));
       return;
     }
     // Falls die aktuell offene Rechnung gelöscht wurde, Editor entkoppeln.

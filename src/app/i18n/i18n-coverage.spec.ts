@@ -44,7 +44,9 @@ const SCANNED_FILES = [
   'src/app/components/wizard/wizard.component.ts',
   'src/app/components/wizard/wizard.component.html',
   'src/app/pages/contractor-offers/*.html',
+  'src/app/pages/contractor-offers/*.ts',
   'src/app/pages/contractor-invoices/*.html',
+  'src/app/pages/contractor-invoices/*.ts',
   'src/app/pages/profile/konto-*.html',
   'src/app/pages/profile/konto-*.ts'
 ];
@@ -94,8 +96,57 @@ const DYNAMIC_SOURCES: { source: readonly Record<string, unknown>[]; field: stri
   { source: asRecordArray(PROFILE_PRICE_FIELDS), field: 'unit' }
 ];
 
-/** Allowlist für Dictionary-Keys, die nur dynamisch (nicht per Regex greifbar) genutzt werden. */
-const DYNAMIC_KEYS: readonly string[] = [];
+/**
+ * Allowlist für Dictionary-Keys, die nur dynamisch (nicht per Regex greifbar) genutzt werden.
+ *
+ * T3 – Angebote/Rechnungen: `statusOptions`/`unitOptions` sind Instanzfelder (kein
+ * exportierbares Modul-Array wie bei den Wizard-Optionen), ihr `label` wird im Template als
+ * `option.label | t` (Variable, kein Literal) übersetzt; `statusLabel()` übersetzt
+ * `CONTRACTOR_OFFER_STATUS_LABELS[status]`/`CONTRACTOR_INVOICE_STATUS_LABELS[status]` ebenso
+ * per Variable. Die XRechnung-Pflichtfeldnamen kommen aus `listMissingXRechnungFields()`/
+ * `listMissingXRechnungSellerFields()` (Modell, bewusst unangetastet) und werden über
+ * `xrMissingFieldsLabel()` (`this.i18n.t(field)` mit Variable) gerendert. Die Limit-/
+ * Duplikat-Meldungen (`OFFER_LIMIT_MESSAGE`/`INVOICE_DUPLICATE_NUMBER_MESSAGE`) sind
+ * Modul-Konstanten, die per `this.i18n.t(KONSTANTE)` bzw. `offerLimitMessage | t`
+ * (Feld, das die Konstante hält) übersetzt werden – ebenfalls keine Literale.
+ */
+const DYNAMIC_KEYS: readonly string[] = [
+  // --- Modul-Konstanten (Angebote/Rechnungen) ---
+  'Limit erreicht – lösche ein Angebot oder schalte Premium frei.',
+  'Diese Rechnungsnummer ist bereits vergeben. Bitte wähle eine andere Nummer.',
+  // --- statusOptions (Angebote/Rechnungen) ---
+  'Entwurf',
+  'Versendet',
+  'Angenommen',
+  'Bezahlt',
+  // --- unitOptions (Angebote/Rechnungen) ---
+  'pauschal',
+  'm²',
+  'lfm',
+  'Stück',
+  'Std.',
+  // --- XRechnung-Pflichtfeldnamen (contractor-invoice.model.ts) ---
+  'Firmenname',
+  'Straße (Absender)',
+  'PLZ (Absender)',
+  'Ort (Absender)',
+  'IBAN',
+  'Steuernummer oder USt-IdNr.',
+  'Ansprechpartner',
+  'Telefon',
+  'E-Mail',
+  'Rechnungsnummer',
+  'Rechnungsdatum',
+  'Leistungsdatum oder Leistungszeitraum',
+  'Zahlungsziel (Fälligkeit)',
+  'Käuferreferenz (BT-10)',
+  'Kundenname',
+  'Straße (Kunde)',
+  'PLZ (Kunde)',
+  'Ort (Kunde)',
+  'E-Mail des Kunden (Pflicht für XRechnung-Versand)',
+  'Mindestens eine aktive Position'
+];
 
 const PIPE_RE = /'((?:[^'\\]|\\.)*)'\s*\|\s*t\b/g;
 const CALL_RE = /\bt\(\s*'((?:[^'\\]|\\.)*)'\s*\)/g;

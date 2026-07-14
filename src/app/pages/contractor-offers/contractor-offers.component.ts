@@ -37,6 +37,8 @@ import { ContractorBrandingService } from '../../services/contractor-branding.se
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
 import { SubscriptionStatusService } from '../../services/subscription-status.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /** Ohne aktives Abo gespeicherte Angebote/Versionen (spiegelt den DB-Trigger). */
 const FREE_OFFER_LIMIT = 3;
@@ -61,7 +63,7 @@ function isOfferLimitError(error: unknown): boolean {
 @Component({
   selector: 'app-contractor-offers',
   standalone: true,
-  imports: [FormsModule, RouterLink, PremiumExportButtonComponent],
+  imports: [FormsModule, RouterLink, PremiumExportButtonComponent, TranslatePipe],
   templateUrl: './contractor-offers.component.html',
   styleUrl: './contractor-offers.component.css'
 })
@@ -78,6 +80,7 @@ export class ContractorOffersComponent implements OnInit {
   private readonly invoiceRepository = inject(CONTRACTOR_INVOICE_REPOSITORY);
   private readonly invoiceService = inject(ContractorInvoiceService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
   /** Für die Vorlage sichtbarer Grenzwert-Hinweis. */
   readonly offerLimitMessage = OFFER_LIMIT_MESSAGE;
@@ -368,7 +371,7 @@ export class ContractorOffersComponent implements OnInit {
     try {
       await this.repository.delete(id);
     } catch {
-      this.saveError.set('Löschen fehlgeschlagen. Bitte erneut versuchen.');
+      this.saveError.set(this.i18n.t('Löschen fehlgeschlagen. Bitte erneut versuchen.'));
       return;
     }
     await this.loadOffers();
@@ -376,7 +379,7 @@ export class ContractorOffersComponent implements OnInit {
   }
 
   statusLabel(status: ContractorOfferStatus | undefined): string {
-    return status ? CONTRACTOR_OFFER_STATUS_LABELS[status] : '';
+    return status ? this.i18n.t(CONTRACTOR_OFFER_STATUS_LABELS[status]) : '';
   }
 
   /**
@@ -401,7 +404,7 @@ export class ContractorOffersComponent implements OnInit {
     // Neues Angebot bei erreichter Free-Grenze gar nicht erst senden.
     if (this.newOfferBlocked()) {
       this.resetFeedback();
-      this.saveError.set(OFFER_LIMIT_MESSAGE);
+      this.saveError.set(this.i18n.t(OFFER_LIMIT_MESSAGE));
       return;
     }
     this.resetFeedback();
@@ -411,16 +414,16 @@ export class ContractorOffersComponent implements OnInit {
     try {
       await this.repository.save(this.offer);
       this.loadedFromDb.set(true);
-      this.saveSuccess.set('Angebot gespeichert.');
+      this.saveSuccess.set(this.i18n.t('Angebot gespeichert.'));
       await this.refreshList();
       await this.refreshOfferCount();
     } catch (error) {
       // Serverseitigen Trigger-Fehler in dieselbe verständliche Meldung übersetzen.
       if (isOfferLimitError(error)) {
-        this.saveError.set(OFFER_LIMIT_MESSAGE);
+        this.saveError.set(this.i18n.t(OFFER_LIMIT_MESSAGE));
         await this.refreshOfferCount();
       } else {
-        this.saveError.set('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+        this.saveError.set(this.i18n.t('Speichern fehlgeschlagen. Bitte erneut versuchen.'));
       }
     } finally {
       this.saving.set(false);
@@ -460,7 +463,7 @@ export class ContractorOffersComponent implements OnInit {
       this.shareUrl.set(this.shareService.shareUrl(token));
       await this.loadTracking(offerId);
     } catch {
-      this.shareError.set('Teilen fehlgeschlagen. Bitte erneut versuchen.');
+      this.shareError.set(this.i18n.t('Teilen fehlgeschlagen. Bitte erneut versuchen.'));
     } finally {
       this.sharing.set(false);
     }
@@ -507,7 +510,9 @@ export class ContractorOffersComponent implements OnInit {
       this.invoiceService.setPending(invoice);
       await this.router.navigate(['/rechnungen']);
     } catch {
-      this.invoiceError.set('Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.');
+      this.invoiceError.set(
+        this.i18n.t('Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.')
+      );
     } finally {
       this.creatingInvoice.set(false);
     }
@@ -544,7 +549,7 @@ export class ContractorOffersComponent implements OnInit {
       await this.router.navigate(['/rechnungen']);
     } catch {
       this.invoiceError.set(
-        'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.'
+        this.i18n.t('Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.')
       );
     } finally {
       this.creatingInvoice.set(false);

@@ -1,27 +1,26 @@
 <section class="offers-page">
   <header class="offers-header">
-    <h1>Angebote</h1>
+    <h1>{{ 'Angebote' | t }}</h1>
     <p class="offers-intro">
-      Wähle ein Projekt, erzeuge daraus eine Schätzung und passe die Positionen an. Die
-      Handwerkerleistung steht im Vordergrund; Material erscheint als kompakte Sammelposition.
+      {{ 'Wähle ein Projekt, erzeuge daraus eine Schätzung und passe die Positionen an. Die Handwerkerleistung steht im Vordergrund; Material erscheint als kompakte Sammelposition.' | t }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="offers-status">Projekte werden geladen …</p>
+    <p class="offers-status">{{ 'Projekte werden geladen …' | t }}</p>
   } @else {
     <!-- Projektverwaltung -->
     <section class="panel">
-      <h2>Projekte</h2>
+      <h2>{{ 'Projekte' | t }}</h2>
       <div class="new-project">
         <input
           type="text"
-          placeholder="Name des neuen Projekts"
+          [placeholder]="'Name des neuen Projekts' | t"
           [(ngModel)]="newProjectName"
           [ngModelOptions]="{ standalone: true }"
           (keydown.enter)="createProject()"
         />
-        <button type="button" class="btn-primary" (click)="createProject()">Neues Projekt</button>
+        <button type="button" class="btn-primary" (click)="createProject()">{{ 'Neues Projekt' | t }}</button>
       </div>
 
       <ul class="project-list">
@@ -34,20 +33,20 @@
               [value]="project.name"
               (change)="rename(project.id, nameInput.value)"
             />
-            <span class="project-meta">{{ roomCount(project.id) }} Raum/Räume</span>
+            <span class="project-meta">{{ roomCount(project.id) }} {{ 'Raum/Räume' | t }}</span>
             @if (project.id === activeProjectId()) {
-              <span class="badge-active">Ausgewählt</span>
+              <span class="badge-active">{{ 'Ausgewählt' | t }}</span>
             } @else {
-              <button type="button" class="btn-light" (click)="selectProject(project.id)">Auswählen</button>
+              <button type="button" class="btn-light" (click)="selectProject(project.id)">{{ 'Auswählen' | t }}</button>
             }
             @if (confirmingDeleteId === project.id) {
               <span class="confirm-delete">
-                Sicher?
-                <button type="button" class="btn-danger" (click)="confirmDelete(project.id)">Ja, löschen</button>
-                <button type="button" class="btn-light" (click)="cancelDelete()">Abbrechen</button>
+                {{ 'Sicher?' | t }}
+                <button type="button" class="btn-danger" (click)="confirmDelete(project.id)">{{ 'Ja, löschen' | t }}</button>
+                <button type="button" class="btn-light" (click)="cancelDelete()">{{ 'Abbrechen' | t }}</button>
               </span>
             } @else {
-              <button type="button" class="btn-light" (click)="requestDelete(project.id)">Löschen</button>
+              <button type="button" class="btn-light" (click)="requestDelete(project.id)">{{ 'Löschen' | t }}</button>
             }
           </li>
         }
@@ -57,42 +56,42 @@
     <!-- Angebot -->
     <section class="panel">
       <div class="offer-head">
-        <h2>Schätzung: {{ activeProjectName }}</h2>
+        <h2>{{ 'Schätzung:' | t }} {{ activeProjectName }}</h2>
         <div class="offer-head-actions">
           @if (showLimitBadge()) {
-            <span class="badge-limit">{{ offerCount() }} von {{ freeOfferLimit }} Angeboten (Free)</span>
+            <span class="badge-limit">{{ offerCount() }} {{ 'von' | t }} {{ freeOfferLimit }} {{ 'Angeboten (Free)' | t }}</span>
           }
           @if (loadedFromDb()) {
-            <span class="badge-saved">Gespeicherter Stand</span>
+            <span class="badge-saved">{{ 'Gespeicherter Stand' | t }}</span>
           } @else if (offer) {
-            <span class="badge-draft">Nicht gespeichert</span>
+            <span class="badge-draft">{{ 'Nicht gespeichert' | t }}</span>
           }
           <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
-            Aus Projekt aktualisieren
+            {{ 'Aus Projekt aktualisieren' | t }}
           </button>
           <button
             type="button"
             class="btn-primary"
             [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
-            [title]="newOfferBlocked() ? offerLimitMessage : ''"
+            [title]="newOfferBlocked() ? (offerLimitMessage | t) : ''"
             (click)="save()"
           >
-            {{ saving() ? 'Speichern …' : 'Speichern' }}
+            {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
           </button>
           @if (hasRooms && offer) {
             <app-premium-export-button
-              [label]="'PDF herunterladen'"
+              [label]="'PDF herunterladen' | t"
               [format]="'pdf'"
               [document]="exportDocumentFn"
             />
             <button type="button" class="btn-light" [disabled]="sharing() || !loadedFromDb()"
-              (click)="share()" [title]="loadedFromDb() ? '' : 'Bitte zuerst speichern'">
-              {{ sharing() ? 'Link wird erstellt …' : 'Teilen-Link' }}
+              (click)="share()" [title]="loadedFromDb() ? '' : ('Bitte zuerst speichern' | t)">
+              {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link' | t) }}
             </button>
             <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
               (click)="createInvoiceFromOffer()"
-              [title]="loadedFromDb() ? 'Nur aktive Pflichtpositionen werden übernommen' : 'Speichere zuerst das Angebot'">
-              {{ creatingInvoice() ? 'Rechnung wird erstellt …' : 'Als Rechnung übernehmen' }}
+              [title]="loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t)">
+              {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Als Rechnung übernehmen' | t) }}
             </button>
           }
         </div>
@@ -100,15 +99,15 @@
 
       @if (limitReached()) {
         <p class="offers-message warning offer-limit-hint" role="status">
-          {{ offerLimitMessage }}
-          <a routerLink="/konto/premium">Premium freischalten</a>
+          {{ offerLimitMessage | t }}
+          <a routerLink="/konto/premium">{{ 'Premium freischalten' | t }}</a>
         </p>
       }
 
       <!-- Versionen des Projekts -->
       @if (hasRooms && offer) {
         <div class="versions">
-          <span class="versions-label">Versionen:</span>
+          <span class="versions-label">{{ 'Versionen:' | t }}</span>
           @for (v of offersList(); track v.id) {
             <button type="button" class="version-chip" [class.active]="isCurrentVersion(v.id!)"
               (click)="selectVersion(v.id!)">
@@ -117,19 +116,19 @@
             </button>
           }
           @if (offersList().length === 0) {
-            <span class="versions-empty">Noch keine gespeicherte Version.</span>
+            <span class="versions-empty">{{ 'Noch keine gespeicherte Version.' | t }}</span>
           }
           <button type="button" class="btn-light btn-small" [disabled]="limitReached()"
-            [title]="limitReached() ? offerLimitMessage : ''" (click)="newVersion()">+ Neue Version</button>
+            [title]="limitReached() ? (offerLimitMessage | t) : ''" (click)="newVersion()">{{ '+ Neue Version' | t }}</button>
           @if (confirmingDeleteVersionId && offer.id === confirmingDeleteVersionId) {
             <span class="confirm-delete">
-              Version löschen?
-              <button type="button" class="btn-danger btn-small" (click)="confirmDeleteVersion(offer.id!)">Ja</button>
-              <button type="button" class="btn-light btn-small" (click)="cancelDeleteVersion()">Nein</button>
+              {{ 'Version löschen?' | t }}
+              <button type="button" class="btn-danger btn-small" (click)="confirmDeleteVersion(offer.id!)">{{ 'Ja' | t }}</button>
+              <button type="button" class="btn-light btn-small" (click)="cancelDeleteVersion()">{{ 'Nein' | t }}</button>
             </span>
           } @else if (loadedFromDb()) {
             <button type="button" class="btn-danger btn-small" (click)="requestDeleteVersion(offer.id!)">
-              Diese Version löschen
+              {{ 'Diese Version löschen' | t }}
             </button>
           }
         </div>
@@ -143,11 +142,11 @@
       }
       @if (projectChanged()) {
         <p class="offers-message warning" role="status">
-          Das Projekt hat sich seit dem gespeicherten Angebot geändert.
+          {{ 'Das Projekt hat sich seit dem gespeicherten Angebot geändert.' | t }}
           <button type="button" class="btn-link" (click)="updateFromProject()">
-            Aus Projekt aktualisieren
+            {{ 'Aus Projekt aktualisieren' | t }}
           </button>
-          – deine Anpassungen bleiben erhalten.
+          {{ '– deine Anpassungen bleiben erhalten.' | t }}
         </p>
       }
       @if (shareError()) {
@@ -158,88 +157,87 @@
       }
       @if (shareUrl(); as url) {
         <p class="offers-message success share-link" role="status">
-          Öffentlicher Link (read-only):
+          {{ 'Öffentlicher Link (read-only):' | t }}
           <a [href]="url" target="_blank" rel="noopener">{{ url }}</a>
-          <button type="button" class="btn-link" (click)="copyShareUrl()">Kopieren</button>
+          <button type="button" class="btn-link" (click)="copyShareUrl()">{{ 'Kopieren' | t }}</button>
         </p>
       }
       @if (tracking(); as t) {
         <p class="tracking-info" role="status">
-          Geteilt am {{ formatTrackingDate(t.createdAt) }}
+          {{ 'Geteilt am' | t }} {{ formatTrackingDate(t.createdAt) }}
           @if (t.viewedAt) {
-            · Zuletzt angesehen am {{ formatTrackingDate(t.viewedAt) }} ({{ t.viewCount }} Aufrufe)
+            · {{ 'Zuletzt angesehen am' | t }} {{ formatTrackingDate(t.viewedAt) }} ({{ t.viewCount }} {{ 'Aufrufe' | t }})
           }
           @if (t.acceptedAt) {
-            · <span class="tracking-accepted">✓ Angenommen von {{ t.acceptedByName }} am {{ formatTrackingDate(t.acceptedAt) }}</span>
+            · <span class="tracking-accepted">✓ {{ 'Angenommen von' | t }} {{ t.acceptedByName }} {{ 'am' | t }} {{ formatTrackingDate(t.acceptedAt) }}</span>
           }
         </p>
       }
 
       @if (!hasRooms) {
         <p class="offers-status">
-          Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an –
-          danach kannst du hier die Schätzung erzeugen und bearbeiten.
+          {{ 'Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an – danach kannst du hier die Schätzung erzeugen und bearbeiten.' | t }}
         </p>
       } @else if (offer) {
         <!-- Angebotskopf: Empfänger + Angebotsmeta -->
         <div class="offer-meta">
           <div class="meta-customer">
             <label class="meta-field">
-              <span>Kunde / Empfänger</span>
-              <input type="text" [(ngModel)]="offer.customer!.name" [ngModelOptions]="{ standalone: true }" placeholder="Name des Kunden" />
+              <span>{{ 'Kunde / Empfänger' | t }}</span>
+              <input type="text" [(ngModel)]="offer.customer!.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Name des Kunden' | t" />
             </label>
             <label class="meta-field">
-              <span>Anschrift</span>
-              <textarea rows="3" [(ngModel)]="offer.customer!.address" [ngModelOptions]="{ standalone: true }" placeholder="Straße Nr.&#10;PLZ Ort"></textarea>
+              <span>{{ 'Anschrift' | t }}</span>
+              <textarea rows="3" [(ngModel)]="offer.customer!.address" [ngModelOptions]="{ standalone: true }" [placeholder]="('Straße Nr.' | t) + '\n' + ('PLZ Ort' | t)"></textarea>
             </label>
           </div>
           <div class="meta-numbers">
             <label class="meta-field">
-              <span>Angebotsnummer</span>
-              <input type="text" [(ngModel)]="offer.offerNumber" [ngModelOptions]="{ standalone: true }" placeholder="z. B. 2026-042" />
+              <span>{{ 'Angebotsnummer' | t }}</span>
+              <input type="text" [(ngModel)]="offer.offerNumber" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. 2026-042' | t" />
             </label>
             <label class="meta-field">
-              <span>Angebotsdatum</span>
+              <span>{{ 'Angebotsdatum' | t }}</span>
               <input type="date" [(ngModel)]="offer.offerDate" [ngModelOptions]="{ standalone: true }" />
             </label>
             <label class="meta-field">
-              <span>Gültig bis</span>
+              <span>{{ 'Gültig bis' | t }}</span>
               <input type="date" [(ngModel)]="offer.validUntil" [ngModelOptions]="{ standalone: true }" />
             </label>
             <label class="meta-field">
-              <span>Status</span>
+              <span>{{ 'Status' | t }}</span>
               <select [(ngModel)]="offer.status" [ngModelOptions]="{ standalone: true }">
                 @for (option of statusOptions; track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
+                  <option [value]="option.value">{{ option.label | t }}</option>
                 }
               </select>
             </label>
             <label class="meta-field">
-              <span>Versions-Bezeichnung</span>
-              <input type="text" [(ngModel)]="offer.label" [ngModelOptions]="{ standalone: true }" placeholder="z. B. nach Kundengespräch" />
+              <span>{{ 'Versions-Bezeichnung' | t }}</span>
+              <input type="text" [(ngModel)]="offer.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. nach Kundengespräch' | t" />
             </label>
           </div>
         </div>
 
         <label class="offer-text">
-          <span>Einleitungstext (optional)</span>
+          <span>{{ 'Einleitungstext (optional)' | t }}</span>
           <textarea rows="2" [(ngModel)]="offer.introText" [ngModelOptions]="{ standalone: true }"
-            placeholder="Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:"></textarea>
+            [placeholder]="'Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:' | t"></textarea>
         </label>
 
         @for (section of offer.sections; track section.id; let si = $index) {
           <div class="offer-section">
             <div class="section-head">
               <span class="pos-badge">
-                {{ section.kind === 'site_setup' ? '–' : 'Pos. ' + posNumber(section) }}
+                {{ section.kind === 'site_setup' ? '–' : (('Pos.' | t) + ' ' + posNumber(section)) }}
               </span>
               <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" />
               <span class="section-subtotal">{{ eur(sectionSubtotal(section)) }}</span>
               <span class="section-actions">
-                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" title="Nach oben">↑</button>
-                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === offer.sections.length - 1" title="Nach unten">↓</button>
+                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" [title]="'Nach oben' | t">↑</button>
+                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === offer.sections.length - 1" [title]="'Nach unten' | t">↓</button>
                 @if (section.kind === 'custom') {
-                  <button type="button" class="btn-danger" (click)="removeSection(section)">Gruppe löschen</button>
+                  <button type="button" class="btn-danger" (click)="removeSection(section)">{{ 'Gruppe löschen' | t }}</button>
                 }
               </span>
             </div>
@@ -247,14 +245,14 @@
             <table class="line-table">
               <thead>
                 <tr>
-                  <th class="col-pos">Pos</th>
-                  <th class="col-label">Bezeichnung</th>
-                  <th class="col-num">Menge</th>
-                  <th class="col-unit">Einheit</th>
-                  <th class="col-num">Einheitspreis</th>
-                  <th class="col-num">Gesamt</th>
-                  <th class="col-active">Bedarf</th>
-                  <th class="col-active">Aktiv</th>
+                  <th class="col-pos">{{ 'Pos' | t }}</th>
+                  <th class="col-label">{{ 'Bezeichnung' | t }}</th>
+                  <th class="col-num">{{ 'Menge' | t }}</th>
+                  <th class="col-unit">{{ 'Einheit' | t }}</th>
+                  <th class="col-num">{{ 'Einheitspreis' | t }}</th>
+                  <th class="col-num">{{ 'Gesamt' | t }}</th>
+                  <th class="col-active">{{ 'Bedarf' | t }}</th>
+                  <th class="col-active">{{ 'Aktiv' | t }}</th>
                   <th class="col-tools"></th>
                 </tr>
               </thead>
@@ -263,8 +261,8 @@
                   <tr [class.inactive]="!line.isActive" [class.optional]="line.isOptional">
                     <td class="col-pos" data-label="Pos">{{ lineNumber(section, line) }}</td>
                     <td class="col-label">
-                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" placeholder="Bezeichnung" />
-                      <input class="cell-input cell-desc" placeholder="Beschreibung (optional)" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" />
+                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
                     </td>
                     <td class="col-num" data-label="Menge">
                       <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
@@ -272,7 +270,7 @@
                     <td class="col-unit" data-label="Einheit">
                       <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }">
                         @for (option of unitOptions; track option.value) {
-                          <option [value]="option.value">{{ option.label }}</option>
+                          <option [value]="option.value">{{ option.label | t }}</option>
                         }
                       </select>
                     </td>
@@ -281,22 +279,22 @@
                     </td>
                     <td class="col-num total" data-label="Gesamt">{{ eur(lineTotal(line)) }}</td>
                     <td class="col-active" data-label="Bedarfsposition">
-                      <input type="checkbox" [(ngModel)]="line.isOptional" [ngModelOptions]="{ standalone: true }" title="Bedarfsposition (nicht in der Summe)" />
+                      <input type="checkbox" [(ngModel)]="line.isOptional" [ngModelOptions]="{ standalone: true }" [title]="'Bedarfsposition (nicht in der Summe)' | t" />
                     </td>
                     <td class="col-active" data-label="Aktiv">
                       <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" />
                     </td>
                     <td class="col-tools" data-label="">
-                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" title="Nach oben" aria-label="Position nach oben">↑</button>
-                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" title="Nach unten" aria-label="Position nach unten">↓</button>
-                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" title="Position löschen" aria-label="Position löschen">✕</button>
+                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
+                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
+                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
 
-            <button type="button" class="btn-light add-line" (click)="addLine(section)">+ Position</button>
+            <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
           </div>
         }
 
@@ -304,78 +302,78 @@
           <label class="opt">
             <input type="checkbox" [(ngModel)]="offer.materialBreakdown"
               (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" />
-            Material je Raum ausweisen
+            {{ 'Material je Raum ausweisen' | t }}
           </label>
           <label class="opt">
-            <span>Materialaufschlag</span>
+            <span>{{ 'Materialaufschlag' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="offer.materialSurchargePercent"
               (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" /> %
           </label>
           <label class="opt">
-            <span>Nachlass</span>
+            <span>{{ 'Nachlass' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="offer.discountPercent"
               [ngModelOptions]="{ standalone: true }" /> %
           </label>
         </div>
 
         <div class="offer-foot">
-          <button type="button" class="btn-light" (click)="addSection()">+ Gruppe hinzufügen</button>
+          <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>
 
           <div class="totals">
             <div class="total-row">
-              <span>Nettobetrag</span><span>{{ eur(netTotal()) }}</span>
+              <span>{{ 'Nettobetrag' | t }}</span><span>{{ eur(netTotal()) }}</span>
             </div>
             @if ((offer.discountPercent ?? 0) > 0) {
               <div class="total-row">
-                <span>Nachlass ({{ offer.discountPercent }} %)</span><span>−{{ eur(discountAmount()) }}</span>
+                <span>{{ 'Nachlass' | t }} ({{ offer.discountPercent }} %)</span><span>−{{ eur(discountAmount()) }}</span>
               </div>
               <div class="total-row">
-                <span>Zwischensumme netto</span><span>{{ eur(netAfterDiscount()) }}</span>
+                <span>{{ 'Zwischensumme netto' | t }}</span><span>{{ eur(netAfterDiscount()) }}</span>
               </div>
             }
             <div class="total-row">
               <span>
-                zzgl.
+                {{ 'zzgl.' | t }}
                 <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="offer.vatPercent" [ngModelOptions]="{ standalone: true }" />
-                % MwSt.
+                % {{ 'MwSt.' | t }}
               </span>
               <span>{{ eur(vatAmount()) }}</span>
             </div>
             <div class="total-row gross">
-              <span>Gesamtsumme</span><span>{{ eur(grossTotal()) }}</span>
+              <span>{{ 'Gesamtsumme' | t }}</span><span>{{ eur(grossTotal()) }}</span>
             </div>
           </div>
         </div>
 
         @if (offer.status === 'accepted' && loadedFromDb()) {
           <div class="deposit-invoice">
-            <span class="deposit-label">Anzahlungsrechnung</span>
+            <span class="deposit-label">{{ 'Anzahlungsrechnung' | t }}</span>
             <label class="opt">
-              <span>Anteil</span>
+              <span>{{ 'Anteil' | t }}</span>
               <input type="number" inputmode="decimal" step="1" min="1" max="100"
                 [(ngModel)]="depositPercent" [ngModelOptions]="{ standalone: true }" /> %
             </label>
             <button type="button" class="btn-light" [disabled]="creatingInvoice()"
               (click)="createDepositInvoice()">
-              {{ creatingInvoice() ? 'Rechnung wird erstellt …' : 'Anzahlungsrechnung erstellen' }}
+              {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Anzahlungsrechnung erstellen' | t) }}
             </button>
           </div>
         }
 
         <label class="offer-text">
-          <span>Schlusstext (optional)</span>
+          <span>{{ 'Schlusstext (optional)' | t }}</span>
           <textarea rows="3" [(ngModel)]="offer.outroText" [ngModelOptions]="{ standalone: true }"
-            placeholder="Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache."></textarea>
+            [placeholder]="'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.' | t"></textarea>
         </label>
 
         <!-- Mobile: Brutto + Speichern immer greifbar (nur auf Handy sichtbar). -->
         <div class="mobile-savebar">
           <div class="mobile-savebar-total">
-            <span>Gesamt</span>
+            <span>{{ 'Gesamt' | t }}</span>
             <strong>{{ eur(grossTotal()) }}</strong>
           </div>
           <button type="button" class="btn-primary" [disabled]="saving() || !hasRooms || newOfferBlocked()" (click)="save()">
-            {{ saving() ? 'Speichern …' : 'Speichern' }}
+            {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
           </button>
         </div>
       }
