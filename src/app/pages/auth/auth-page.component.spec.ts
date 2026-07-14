@@ -1,18 +1,27 @@
 import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { AppHostService } from '../../services/app-host.service';
 import { AuthService } from '../../services/auth.service';
+import { UserProfile } from '../../models/auth.model';
 import { AuthPageComponent } from './auth-page.component';
 
 interface AuthStub {
   isConfigured: boolean;
+  ready: Promise<void>;
+  isAuthenticated: () => boolean;
+  profile: () => UserProfile | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: () => Promise<{ needsEmailConfirmation: boolean }>;
+  signInWithGoogle: () => Promise<void>;
+  claimContractorRole: () => Promise<boolean>;
+  refreshProfile: () => Promise<void>;
 }
 
 function setup(options: {
   queryParams?: Record<string, string>;
   auth?: Partial<AuthStub>;
+  isAppHost?: boolean;
 }): {
   component: AuthPageComponent;
   navigated: () => string | null;
@@ -20,8 +29,14 @@ function setup(options: {
   let navigatedTo: string | null = null;
   const auth: AuthStub = {
     isConfigured: true,
+    ready: Promise.resolve(),
+    isAuthenticated: () => false,
+    profile: () => null,
     signIn: async () => {},
     signUp: async () => ({ needsEmailConfirmation: true }),
+    signInWithGoogle: async () => {},
+    claimContractorRole: async () => true,
+    refreshProfile: async () => {},
     ...options.auth
   };
   const router = { navigateByUrl: async (url: string) => { navigatedTo = url; } };
@@ -39,6 +54,7 @@ function setup(options: {
       { provide: AuthService, useValue: auth },
       { provide: Router, useValue: router },
       { provide: ActivatedRoute, useValue: route },
+      { provide: AppHostService, useValue: { isAppHost: options.isAppHost ?? false } },
       { provide: PLATFORM_ID, useValue: 'browser' }
     ]
   });
@@ -99,6 +115,7 @@ describe('AuthPageComponent – Deep-Link-Query-Parameter', () => {
     component.ngOnInit();
     component.email = 'a@b.de';
     component.password = 'secret1';
+    component.passwordConfirm = 'secret1';
 
     await component.submit();
 
@@ -117,9 +134,122 @@ describe('AuthPageComponent – Deep-Link-Query-Parameter', () => {
     component.ngOnInit();
     component.email = 'a@b.de';
     component.password = 'secret1';
+    component.passwordConfirm = 'secret1';
 
     await component.submit();
 
     expect(navigated()).toBe('/konto/premium');
+  });
+});
+
+describe('AuthPageComponent – Passwort-Bestätigung', () => {
+  it('blocks submit and shows a message when the passwords do not match', async () => {
+    let signUpCalled = false;
+    const { component } = setup({
+      queryParams: { modus: 'registrieren' },
+      auth: {
+        signUp: async () => {
+          signUpCalled = true;
+          return { needsEmailConfirmation: true };
+        }
+      }
+    });
+    component.ngOnInit();
+    component.email = 'a@b.de';
+    component.password = 'secret1';
+    component.passwordConfirm = 'secret2';
+
+    await component.submit();
+
+    expect(component.errorMsg()).toContain('stimmen nicht überein');
+    expect(signUpCalled).toBe(false);
+  });
+
+  it('calls signUp when the passwords match', async () => {
+    let signUpCalled = false;
+    const { component } = setup({
+      queryParams: { modus: 'registrieren' },
+      auth: {
+        signUp: async () => {
+          signUpCalled = true;
+          return { needsEmailConfirmation: true };
+        }
+      }
+    });
+    component.ngOnInit();
+    component.email = 'a@b.de';
+    component.password = 'secret1';
+    component.passwordConfirm = 'secret1';
+
+    await component.submit();
+
+    expect(signUpCalled).toBe(true);
+  });
+});
+
+describe('AuthPageComponent – OAuth-Rückkehr / bereits eingeloggt', () => {
+  it('consumes the redirect target on init when already authenticated', async () => {
+    const { component, navigated } = setup({
+      queryParams: { weiter: '/konto/premium' },
+      auth: { isAuthenticated: () => true }
+    });
+
+    await component.ngOnInit();
+
+    expect(navigated()).toBe('/konto/premium');
+  });
+
+  it('navigates to the app dashboard by default in the app host', async () => {
+    const { component, navigated } = setup({
+      auth: { isAuthenticated: () => true },
+      isAppHost: true
+    });
+
+    await component.ngOnInit();
+
+    expect(navigated()).toBe('/projekt-dashboard');
+  });
+
+  it('claims the contractor role after a Google signup as Betrieb', async () => {
+    let claimCalled = false;
+    let refreshCalled = false;
+    const { component } = setup({
+      auth: {
+        isAuthenticated: () => true,
+        profile: () => ({ id: 'u1', role: 'customer', plan: 'free', displayName: null }),
+        claimContractorRole: async () => {
+          claimCalled = true;
+          return true;
+        },
+        refreshProfile: async () => {
+          refreshCalled = true;
+        }
+      }
+    });
+    // Rollen-Flag wie vor dem OAuth-Redirect gesetzt.
+    globalThis.sessionStorage?.setItem('auth_signup_role', 'contractor');
+
+    await component.ngOnInit();
+
+    expect(claimCalled).toBe(true);
+    expect(refreshCalled).toBe(true);
+  });
+
+  it('does not claim a role for a Google login without the contractor flag', async () => {
+    let claimCalled = false;
+    const { component } = setup({
+      auth: {
+        isAuthenticated: () => true,
+        profile: () => ({ id: 'u1', role: 'customer', plan: 'free', displayName: null }),
+        claimContractorRole: async () => {
+          claimCalled = true;
+          return true;
+        }
+      }
+    });
+
+    await component.ngOnInit();
+
+    expect(claimCalled).toBe(false);
   });
 });

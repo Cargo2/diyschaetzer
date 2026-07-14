@@ -67,7 +67,13 @@ export class AuthService {
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { role, display_name: displayName ?? null } }
+      options: {
+        data: { role, display_name: displayName ?? null },
+        // Bestätigungs-Mail zurück auf DIESEN Origin (nicht auf die künftige
+        // Supabase-Site-URL, sonst landen alle Signups auf der falschen Domain).
+        // SSR-sicher: `location` existiert im Build nicht; signUp läuft nur im Browser.
+        emailRedirectTo: globalThis.location ? globalThis.location.origin + '/login' : undefined
+      }
     });
     if (error) {
       throw error;
@@ -82,6 +88,58 @@ export class AuthService {
     if (error) {
       throw error;
     }
+  }
+
+  /**
+   * Startet den Google-OAuth-Login (PKCE). Start UND Rückkehr müssen auf demselben
+   * Origin liegen – der PKCE-Verifier liegt per-Origin im localStorage –, daher
+   * `redirectTo` immer auf `<origin>/login`. Der Browser navigiert weg; Fehler
+   * werden geworfen und in der Komponente humanisiert.
+   */
+  async signInWithGoogle(): Promise<void> {
+    const client = this.requireClient();
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: (globalThis.location?.origin ?? '') + '/login' }
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Einmaliger Rollen-Anspruch customer→contractor für frisch per Google
+   * registrierte Profis (RPC `claim_contractor_role`, Migration 0022). Der RPC
+   * setzt die harten Prüfungen serverseitig durch (15-Min-Fenster, nur OAuth-
+   * Signups ohne role-Metadatum). Gibt `true` bei Erfolg zurück; Fehler werden
+   * NICHT geworfen, nur geloggt und als `false` gemeldet.
+   */
+  async claimContractorRole(): Promise<boolean> {
+    if (!this.client) {
+      return false;
+    }
+    const { error } = await this.client.rpc('claim_contractor_role');
+    if (error) {
+      console.warn('[auth] claim_contractor_role fehlgeschlagen:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Erzwingt ein Neuladen des Profils zur aktuellen Session (z. B. nach einem
+   * Rollen-Anspruch). Invalidiert den Dedup-Cache, damit `fetchProfile`
+   * tatsächlich erneut liest.
+   */
+  async refreshProfile(): Promise<void> {
+    const session = this.sessionSig();
+    if (!session || !this.client) {
+      return;
+    }
+    this.loadedUserId = null;
+    this.inFlightUserId = null;
+    this.inFlight = null;
+    await this.loadProfile(session);
   }
 
   async signOut(): Promise<void> {

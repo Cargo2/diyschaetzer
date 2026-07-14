@@ -82,6 +82,32 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 
 ---
 
+## Google-OAuth + Rollen-Anspruch (WP3, Migration 0022)
+
+- **Google-Login** über Supabase-OAuth (Provider `google`, PKCE). Start- und Rückkehr-
+  Origin sind identisch (`redirectTo = <origin>/login`), da der PKCE-Verifier per-Origin
+  im `localStorage` liegt. **Vor Livegang zwingend im Supabase-Dashboard pflegen**
+  (siehe [docs/auth-google.md](docs/auth-google.md)): Provider aktivieren (Client-ID/Secret),
+  Site URL + **Additional Redirect URLs** (die `/login`-Varianten **aller** Origins) als
+  Allowlist – knüpft an Pkt. 18/19 (Auth-Redirect-URLs einschränken, keine Wildcards).
+- **Neuer RPC `claim_contractor_role()`** ([0022](supabase/migrations/0022_claim_contractor_role.sql),
+  `security definer`, fixer `search_path = public`): einmaliger Upgrade-Pfad
+  `customer → contractor` für Profis, die sich bewusst per Google als Betrieb registrieren
+  (OAuth liefert kein `role`-Metadatum → `handle_new_user()` legt `customer` an, 0003 friert
+  es ein). **Keine Privileg-Eskalation** – `contractor` ist bei der E-Mail-Registrierung
+  ohnehin frei wählbar. Serverseitige Schranken: (1) nur `auth.uid()` selbst; (2) nur wenn
+  das Profil unverändert `customer`/`free` ist; (3) nur **≤ 15 Minuten** nach
+  `auth.users.created_at`; (4) nur wenn `raw_user_meta_data` **keinen** `role`-Key hat
+  (echter OAuth-Signup, keine nachträgliche Umgehung der bewussten E-Mail-Rollenwahl);
+  bei Verstoß `raise exception`. `revoke execute from public, anon` + `grant execute to
+  authenticated`.
+- **Plan bleibt geschützt**: Der Upgrade läuft über ein **transaktionslokales** GUC-Flag
+  (`set_config('app.allow_role_upgrade','on', true)`), das `protect_profile_role_plan()`
+  (0003, hier per `create or replace` minimal erweitert) genau **einen** Zweig
+  `customer → contractor` erlaubt – und dabei `new.plan := old.plan` **erzwingt**. Alle
+  übrigen Pfade (admin/service_role/Einfrieren) verhalten sich unverändert wie in 0003
+  → Pkt. 23 bleibt gewahrt (kein Loch für `admin`- oder `plan`-Eskalation).
+
 ## Lead-/Abo-Modul (2026-07-10, Migrationen 0018–0020)
 
 - **`leads`**: RLS aktiv, **keine** Policies für `anon`/`authenticated` (`revoke all`) – Lesen ausschließlich
@@ -111,5 +137,7 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
    gepusht; **`0014` (Profi-Feedback) wurde am 2026-06-30 via `npx supabase db push` angewendet.**
    Verbleibender Schritt: RLS-Verhalten in der Live-DB aktiv gegenprüfen.
 3. Supabase-Dashboard: Auth-Redirect-URLs/CORS einschränken, Passwort-Reset-Flow, E-Mail-Bestätigung (Pkt. 18/19).
+   **Google-OAuth** aktivieren + Redirect-URL-Allowlist pflegen und Migration 0022 anwenden
+   (siehe [docs/auth-google.md](docs/auth-google.md)).
 4. Hosting: Security-Header setzen (Pkt. 28); Prod-Supabase-Werte sicher injizieren (Pkt. 2).
 5. Repo-Sichtbarkeit prüfen (Pkt. 8).
