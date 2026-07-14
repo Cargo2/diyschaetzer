@@ -237,6 +237,11 @@
 }
 
 .seller-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem .8rem;
   font-size: .82rem;
   color: #6b7280;
   background: #f9fafb;
@@ -245,6 +250,8 @@
   padding: .55rem .8rem;
   margin: 0 0 1rem;
 }
+
+.seller-note p { margin: 0; flex: 1 1 20rem; }
 
 .seller-note a { color: #047857; font-weight: 700; }
 

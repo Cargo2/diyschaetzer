@@ -31,6 +31,7 @@ import {
   ContractorInvoiceService,
   INVOICE_DUPLICATE_NUMBER_MESSAGE
 } from '../../services/contractor-invoice.service';
+import { CompanyProfileService } from '../../services/company-profile.service';
 import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
@@ -54,12 +55,14 @@ import { PremiumExportButtonComponent } from '../../components/premium-export-bu
 export class ContractorInvoicesComponent implements OnInit {
   private readonly repository = inject(CONTRACTOR_INVOICE_REPOSITORY);
   private readonly invoiceService = inject(ContractorInvoiceService);
+  private readonly companyProfile = inject(CompanyProfileService);
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly branding = inject(ContractorBrandingService);
   private readonly xrechnung = inject(XRechnungExportService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
+  readonly refreshingSeller = signal(false);
   readonly saveError = signal<string | null>(null);
   readonly saveSuccess = signal<string | null>(null);
   /** `true`, wenn die aktuelle Rechnung aus der DB geladen wurde (nicht frisch übernommen). */
@@ -192,6 +195,30 @@ export class ContractorInvoicesComponent implements OnInit {
       );
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  /**
+   * Befüllt den Verkäufer-Snapshot dieser Rechnung neu aus dem **aktuellen**
+   * Firmenprofil. Bewusste Nutzeraktion (Button), damit nachgetragene Daten (z. B.
+   * IBAN) in eine bereits erzeugte Rechnung übernommen werden – das § 14-Snapshot-
+   * Prinzip bleibt gewahrt, weil es nie automatisch/still geschieht. Der neue Stand
+   * wird erst mit „Speichern" persistiert.
+   */
+  async refreshSellerFromProfile(): Promise<void> {
+    if (!this.invoice) {
+      return;
+    }
+    this.resetFeedback();
+    this.refreshingSeller.set(true);
+    try {
+      const profile = await this.companyProfile.load();
+      this.invoice.seller = this.invoiceService.sellerFromProfile(profile);
+      this.saveSuccess.set('Firmendaten aus dem Profil übernommen. Zum Sichern bitte „Speichern".');
+    } catch {
+      this.saveError.set('Firmendaten konnten nicht geladen werden. Bitte erneut versuchen.');
+    } finally {
+      this.refreshingSeller.set(false);
     }
   }
 

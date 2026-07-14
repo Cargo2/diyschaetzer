@@ -4,6 +4,8 @@ import { CONTRACTOR_INVOICE_REPOSITORY, ContractorInvoiceRepository } from '../.
 import { ContractorInvoice, emptyInvoiceCustomer, emptyInvoiceSeller } from '../../models/contractor-invoice.model';
 import { ContractorOfferLine } from '../../models/contractor-offer.model';
 import { XRechnungExportService } from '../../services/xrechnung-export.service';
+import { CompanyProfileService } from '../../services/company-profile.service';
+import { CompanyProfile, emptyCompanyProfile } from '../../models/company-profile.model';
 import { ContractorInvoicesComponent } from './contractor-invoices.component';
 
 function line(partial: Partial<ContractorOfferLine> = {}): ContractorOfferLine {
@@ -74,7 +76,9 @@ function stubRepository(): ContractorInvoiceRepository {
   };
 }
 
-function setup(): { component: ContractorInvoicesComponent; downloads: ContractorInvoice[] } {
+function setup(
+  profileOverride: Partial<CompanyProfile> = {}
+): { component: ContractorInvoicesComponent; downloads: ContractorInvoice[] } {
   const downloads: ContractorInvoice[] = [];
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -85,6 +89,12 @@ function setup(): { component: ContractorInvoicesComponent; downloads: Contracto
       {
         provide: XRechnungExportService,
         useValue: { download: (invoice: ContractorInvoice) => downloads.push(invoice) }
+      },
+      {
+        provide: CompanyProfileService,
+        useValue: {
+          load: async () => ({ ...emptyCompanyProfile(), ...profileOverride })
+        }
       }
     ]
   });
@@ -133,5 +143,36 @@ describe('ContractorInvoicesComponent – XRechnung-Pflichtfeld-Gating', () => {
     component.downloadXml();
     expect(downloads.length).toBe(1);
     expect(downloads[0].invoiceNumber).toBe('RE-2026-007');
+  });
+});
+
+describe('ContractorInvoicesComponent – Firmendaten aus Profil aktualisieren', () => {
+  it('refills the seller snapshot from the current company profile and clears the block', async () => {
+    const { component } = setup({
+      companyName: 'Fliesen Meister GmbH',
+      street: 'Handwerkerstr. 5',
+      postalCode: '10115',
+      city: 'Berlin',
+      phone: '030 1234567',
+      email: 'info@fliesenmeister.de',
+      vatId: 'DE123456789',
+      iban: 'DE02120300000000202051'
+    });
+    // Bestehende Rechnung mit veraltetem Snapshot (IBAN fehlt) – die Sackgasse aus dem Bug.
+    component.invoice = completeInvoice({ seller: { ...completeInvoice().seller, iban: '' } });
+    expect(component.xrSellerIncomplete()).toBe(true);
+
+    await component.refreshSellerFromProfile();
+
+    expect(component.invoice!.seller.iban).toBe('DE02120300000000202051');
+    expect(component.xrSellerIncomplete()).toBe(false);
+    expect(component.refreshingSeller()).toBe(false);
+  });
+
+  it('does nothing when no invoice is loaded', async () => {
+    const { component } = setup({ iban: 'DE02120300000000202051' });
+    component.invoice = null;
+    await component.refreshSellerFromProfile();
+    expect(component.invoice).toBeNull();
   });
 });

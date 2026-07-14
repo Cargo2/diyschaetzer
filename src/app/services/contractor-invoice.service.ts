@@ -115,9 +115,13 @@ export class ContractorInvoiceService {
     return value;
   }
 
-  // ---- intern --------------------------------------------------------------
-
-  private sellerFromProfile(profile: InvoiceSellerSource): ContractorInvoiceSeller {
+  /**
+   * Baut den Verkäufer-Snapshot aus einer Firmenprofil-Quelle. Öffentlich, damit
+   * die Rechnungsseite den Snapshot einer bereits bestehenden Rechnung auf
+   * bewusste Nutzeraktion („Firmendaten aus Profil aktualisieren") neu befüllen
+   * kann – ohne das § 14-Snapshot-Prinzip für automatisch/still zu unterlaufen.
+   */
+  sellerFromProfile(profile: InvoiceSellerSource): ContractorInvoiceSeller {
     return {
       companyName: profile.companyName ?? '',
       contactName: profile.contactName ?? '',

@@ -105,9 +105,9 @@
               Die E-Mail des Kunden braucht XRechnung für die elektronische Zustellung (BT-49).
             }
             @if (xrSellerIncomplete()) {
-              Absender-/Bank-/Steuerdaten kannst du im
-              <a routerLink="/konto/firmenprofil">Firmenprofil ergänzen</a> –
-              sie werden beim nächsten „Als Rechnung übernehmen" übernommen.
+              Fehlende Absender-/Bank-/Steuerdaten (z. B. IBAN) im
+              <a routerLink="/konto/firmenprofil">Firmenprofil</a> ergänzen und
+              dann hier „Firmendaten aus Profil aktualisieren" klicken.
             }
           </p>
         }
@@ -208,13 +208,25 @@
 
         <p class="xr-legend"><span class="xr-star">*</span> Pflicht für die XRechnung (XML).</p>
 
-        <p class="seller-note">
-          Absender-/Steuer-/Bankdaten stammen aus deinem
-          <a routerLink="/konto/firmenprofil">Firmenprofil</a> und sind als Snapshot in dieser
-          Rechnung gespeichert: {{ invoice.seller.companyName || '—' }}
-          @if (invoice.seller.vatId) { · USt-IdNr. {{ invoice.seller.vatId }} }
-          @else if (invoice.seller.taxNumber) { · Steuernr. {{ invoice.seller.taxNumber }} }
-        </p>
+        <div class="seller-note">
+          <p>
+            Absender-/Steuer-/Bankdaten stammen aus deinem
+            <a routerLink="/konto/firmenprofil">Firmenprofil</a> und sind als Snapshot in dieser
+            Rechnung gespeichert: {{ invoice.seller.companyName || '—' }}
+            @if (invoice.seller.vatId) { · USt-IdNr. {{ invoice.seller.vatId }} }
+            @else if (invoice.seller.taxNumber) { · Steuernr. {{ invoice.seller.taxNumber }} }
+            @if (invoice.seller.iban) { · IBAN {{ invoice.seller.iban }} }
+          </p>
+          <button
+            type="button"
+            class="btn-light btn-small"
+            [disabled]="refreshingSeller()"
+            (click)="refreshSellerFromProfile()"
+            title="Absender-/Steuer-/Bankdaten aus dem aktuellen Firmenprofil in diese Rechnung übernehmen"
+          >
+            {{ refreshingSeller() ? 'Wird übernommen …' : 'Firmendaten aus Profil aktualisieren' }}
+          </button>
+        </div>
 
         <label class="invoice-text">
           <span>Einleitungstext (optional)</span>
