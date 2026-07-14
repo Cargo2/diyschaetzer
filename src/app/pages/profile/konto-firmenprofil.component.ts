@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CompanyProfile, emptyCompanyProfile } from '../../models/company-profile.model';
 import { CompanyProfileService } from '../../services/company-profile.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Kuratierte Länderliste für „Land des Firmensitzes" (Aufgabe X1). Nur Betriebe mit
@@ -34,13 +36,14 @@ export const COUNTRY_OPTIONS: { label: string; value: string }[] = [
 @Component({
   selector: 'app-konto-firmenprofil',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './konto-firmenprofil.component.html',
   styleUrl: './profile-page.component.css'
 })
 export class KontoFirmenprofilComponent implements OnInit {
   private readonly companyProfile = inject(CompanyProfileService);
   private readonly branding = inject(ContractorBrandingService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -63,7 +66,7 @@ export class KontoFirmenprofilComponent implements OnInit {
     try {
       this.profile = await this.companyProfile.load();
     } catch {
-      this.errorMsg.set('Das Firmenprofil konnte nicht geladen werden.');
+      this.errorMsg.set(this.i18n.t('Das Firmenprofil konnte nicht geladen werden.'));
     } finally {
       this.loading.set(false);
     }
@@ -77,9 +80,9 @@ export class KontoFirmenprofilComponent implements OnInit {
       await this.companyProfile.save(this.profile);
       // Branding-Cache auffrischen, damit der geänderte Firmenname sofort im Export erscheint.
       await this.branding.refresh();
-      this.successMsg.set('Firmenprofil gespeichert.');
+      this.successMsg.set(this.i18n.t('Firmenprofil gespeichert.'));
     } catch {
-      this.errorMsg.set('Speichern fehlgeschlagen. Bitte versuche es erneut.');
+      this.errorMsg.set(this.i18n.t('Speichern fehlgeschlagen. Bitte versuche es erneut.'));
     } finally {
       this.saving.set(false);
     }

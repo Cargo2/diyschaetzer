@@ -5,6 +5,8 @@ import {
   ProfileAssumptionDefaults
 } from '../../config/profile-price-fields';
 import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Konto → „Eigene Preise" (contractorGuard). Enthält NUR die Standard-Preise
@@ -14,12 +16,13 @@ import { ProfileAssumptionDefaultsService } from '../../services/profile-assumpt
 @Component({
   selector: 'app-konto-preise',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './konto-preise.component.html',
   styleUrl: './profile-page.component.css'
 })
 export class KontoPreiseComponent implements OnInit {
   private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(true);
   readonly priceFields = PROFILE_PRICE_FIELDS;
@@ -46,9 +49,9 @@ export class KontoPreiseComponent implements OnInit {
         }
       }
       await this.profileDefaults.save(defaults);
-      this.priceSuccessMsg.set('Standard-Preise gespeichert.');
+      this.priceSuccessMsg.set(this.i18n.t('Standard-Preise gespeichert.'));
     } catch {
-      this.priceErrorMsg.set('Speichern der Standard-Preise fehlgeschlagen.');
+      this.priceErrorMsg.set(this.i18n.t('Speichern der Standard-Preise fehlgeschlagen.'));
     } finally {
       this.savingPrices.set(false);
     }
@@ -65,7 +68,7 @@ export class KontoPreiseComponent implements OnInit {
       }
       this.priceValues = values;
     } catch {
-      this.priceErrorMsg.set('Die Standard-Preise konnten nicht geladen werden.');
+      this.priceErrorMsg.set(this.i18n.t('Die Standard-Preise konnten nicht geladen werden.'));
     }
   }
 }

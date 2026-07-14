@@ -23,6 +23,8 @@ import {
   SUBSTRATE_OPTIONS,
   SCOPE_OPTIONS
 } from '../components/wizard/wizard.component';
+import { COUNTRY_OPTIONS } from '../pages/profile/konto-firmenprofil.component';
+import { PROFILE_PRICE_FIELDS } from '../config/profile-price-fields';
 
 /**
  * Coverage-Spec: hält die Dictionaries und die gewrappten Templates ehrlich.
@@ -43,7 +45,8 @@ const SCANNED_FILES = [
   'src/app/components/wizard/wizard.component.html',
   'src/app/pages/contractor-offers/*.html',
   'src/app/pages/contractor-invoices/*.html',
-  'src/app/pages/profile/konto-*.html'
+  'src/app/pages/profile/konto-*.html',
+  'src/app/pages/profile/konto-*.ts'
 ];
 
 /**
@@ -83,7 +86,12 @@ const DYNAMIC_SOURCES: { source: readonly Record<string, unknown>[]; field: stri
   ...WIZARD_OPTION_SOURCES.flatMap((source) => [
     { source, field: 'title' },
     { source, field: 'description' }
-  ])
+  ]),
+  // T4: Konto-Seiten – Länderauswahl im Firmenprofil (COUNTRY_OPTIONS.label) und
+  // die config-getriebenen Profil-Preisfelder (PROFILE_PRICE_FIELDS.label/.unit).
+  { source: asRecordArray(COUNTRY_OPTIONS), field: 'label' },
+  { source: asRecordArray(PROFILE_PRICE_FIELDS), field: 'label' },
+  { source: asRecordArray(PROFILE_PRICE_FIELDS), field: 'unit' }
 ];
 
 /** Allowlist für Dictionary-Keys, die nur dynamisch (nicht per Regex greifbar) genutzt werden. */

@@ -1,57 +1,57 @@
 <section class="profile-page">
   <header class="profile-header">
-    <h1>Anfragen empfangen</h1>
+    <h1>{{ 'Anfragen empfangen' | t }}</h1>
     <p class="profile-intro">
-      Lege deine <strong>Angebots-Textvorlagen</strong> fest und steuere, ob und für welche
-      Gebiete/Raumarten du bestätigte Interessenten-Anfragen erhalten möchtest.
+      {{ 'Lege deine' | t }} <strong>{{ 'Angebots-Textvorlagen' | t }}</strong>
+      {{ 'fest und steuere, ob und für welche Gebiete/Raumarten du bestätigte Interessenten-Anfragen erhalten möchtest.' | t }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="profile-status">Einstellungen werden geladen …</p>
+    <p class="profile-status">{{ 'Einstellungen werden geladen …' | t }}</p>
   } @else {
     <form class="profile-form" (ngSubmit)="save()">
       <p class="field field-wide subhead">
-        <strong>Angebots-Vorlagen</strong> – füllen jedes <em>neu erzeugte</em> Angebot vor
-        (pro Angebot weiterhin überschreibbar).
+        <strong>{{ 'Angebots-Vorlagen' | t }}</strong> – {{ 'füllen jedes' | t }} <em>{{ 'neu erzeugte' | t }}</em>
+        {{ 'Angebot vor (pro Angebot weiterhin überschreibbar).' | t }}
       </p>
 
       <label class="field field-wide">
-        <span>Standard-Einleitungstext</span>
+        <span>{{ 'Standard-Einleitungstext' | t }}</span>
         <textarea rows="2" name="offerIntroText" [(ngModel)]="profile.offerIntroText"
-          placeholder="Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:"></textarea>
+          [placeholder]="'Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:' | t"></textarea>
       </label>
 
       <label class="field field-wide">
-        <span>Standard-Schlusstext</span>
+        <span>{{ 'Standard-Schlusstext' | t }}</span>
         <textarea rows="3" name="offerOutroText" [(ngModel)]="profile.offerOutroText"
-          placeholder="Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache. Wir freuen uns auf Ihren Auftrag."></textarea>
+          [placeholder]="'Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache. Wir freuen uns auf Ihren Auftrag.' | t"></textarea>
       </label>
 
       <label class="field">
-        <span>Standard-Materialaufschlag (%)</span>
+        <span>{{ 'Standard-Materialaufschlag (%)' | t }}</span>
         <input type="number" step="0.5" min="0" name="materialSurchargePercent"
           [(ngModel)]="profile.materialSurchargePercent" inputmode="decimal" />
       </label>
 
       <p class="field field-wide subhead">
-        <strong>Lead-Anfragen empfangen</strong> – lege fest, ob und für welche Gebiete/Raumarten
-        du bestätigte Interessenten-Anfragen erhalten möchtest. Wird mit „Speichern" übernommen.
+        <strong>{{ 'Lead-Anfragen empfangen' | t }}</strong> –
+        {{ 'lege fest, ob und für welche Gebiete/Raumarten du bestätigte Interessenten-Anfragen erhalten möchtest. Wird mit „Speichern" übernommen.' | t }}
       </p>
 
       <label class="field field-wide toggle-field">
         <input type="checkbox" name="leadsActive" [(ngModel)]="profile.leadsActive" />
-        <span>Anfragen aktiv empfangen</span>
+        <span>{{ 'Anfragen aktiv empfangen' | t }}</span>
       </label>
 
       <label class="field field-wide">
-        <span>PLZ-Gebiete (mit Komma trennen, z. B. 96117, 960, 91)</span>
+        <span>{{ 'PLZ-Gebiete (mit Komma trennen, z. B. 96117, 960, 91)' | t }}</span>
         <input type="text" name="leadZipAreas" [(ngModel)]="leadZipAreasInput"
           placeholder="96117, 96050, 91" inputmode="numeric" />
       </label>
 
       <fieldset class="field field-wide room-types">
-        <legend>Raumarten</legend>
+        <legend>{{ 'Raumarten' | t }}</legend>
         @for (option of roomTypeOptions; track option.value) {
           <label class="checkbox-item">
             <input
@@ -59,22 +59,22 @@
               [checked]="isRoomTypeSelected(option.value)"
               (change)="toggleRoomType(option.value)"
             />
-            <span>{{ option.label }}</span>
+            <span>{{ option.label | t }}</span>
           </label>
         }
       </fieldset>
 
       <label class="field field-narrow">
-        <span>Max. Anfragen / Monat</span>
+        <span>{{ 'Max. Anfragen / Monat' | t }}</span>
         <input type="number" min="0" step="1" name="leadMaxPerMonth"
           [(ngModel)]="profile.leadMaxPerMonth" inputmode="numeric" />
       </label>
 
       <label class="field">
-        <span>Kontaktkanal</span>
+        <span>{{ 'Kontaktkanal' | t }}</span>
         <select name="leadContactChannel" [(ngModel)]="profile.leadContactChannel">
-          <option value="email">E-Mail</option>
-          <option value="phone">Telefon</option>
+          <option value="email">{{ 'E-Mail' | t }}</option>
+          <option value="phone">{{ 'Telefon' | t }}</option>
         </select>
       </label>
 
@@ -87,7 +87,7 @@
 
       <div class="profile-actions">
         <button type="submit" class="btn-primary" [disabled]="saving()">
-          {{ saving() ? 'Speichern …' : 'Speichern' }}
+          {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
         </button>
       </div>
     </form>

@@ -1,20 +1,18 @@
 <section class="profile-page">
   <header class="profile-header">
-    <h1>Eigene Preise</h1>
+    <h1>{{ 'Eigene Preise' | t }}</h1>
     <p class="profile-intro">
-      Hinterlege deine eigenen Einheitspreise und den Fliesen-Richtwert. Sie gelten als
-      Standard in jeder Raumkalkulation. Leer lassen = System-Standard (als Platzhalter
-      angezeigt). In der einzelnen Kalkulation geänderte Werte haben weiterhin Vorrang.
+      {{ 'Hinterlege deine eigenen Einheitspreise und den Fliesen-Richtwert. Sie gelten als Standard in jeder Raumkalkulation. Leer lassen = System-Standard (als Platzhalter angezeigt). In der einzelnen Kalkulation geänderte Werte haben weiterhin Vorrang.' | t }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="profile-status">Preise werden geladen …</p>
+    <p class="profile-status">{{ 'Preise werden geladen …' | t }}</p>
   } @else {
     <form class="profile-form prices-form" (ngSubmit)="savePrices()">
       @for (field of priceFields; track field.path) {
         <label class="field">
-          <span>{{ field.label }} ({{ field.unit }})</span>
+          <span>{{ field.label | t }} ({{ field.unit | t }})</span>
           <input
             type="number"
             step="0.01"
@@ -35,7 +33,7 @@
 
       <div class="profile-actions">
         <button type="submit" class="btn-primary" [disabled]="savingPrices()">
-          {{ savingPrices() ? 'Speichern …' : 'Standard-Preise speichern' }}
+          {{ savingPrices() ? ('Speichern …' | t) : ('Standard-Preise speichern' | t) }}
         </button>
       </div>
     </form>

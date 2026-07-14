@@ -1,91 +1,90 @@
 <section class="profile-page">
   <header class="profile-header">
-    <h1>Firmenprofil</h1>
+    <h1>{{ 'Firmenprofil' | t }}</h1>
     <p class="profile-intro">
-      Dein <strong>Firmenname</strong> erscheint als Kopf- und Fußzeile auf deinen Export-Dateien
-      (PDF/Excel). Die übrigen Angaben dienen als Grundlage für deine Profi-Angebote.
+      {{ 'Dein' | t }} <strong>{{ 'Firmenname' | t }}</strong>
+      {{ 'erscheint als Kopf- und Fußzeile auf deinen Export-Dateien (PDF/Excel). Die übrigen Angaben dienen als Grundlage für deine Profi-Angebote.' | t }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="profile-status">Profil wird geladen …</p>
+    <p class="profile-status">{{ 'Profil wird geladen …' | t }}</p>
   } @else {
     <form class="profile-form" (ngSubmit)="save()">
       <label class="field field-wide">
-        <span>Firmenname @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'Firmenname' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="text" name="companyName" [(ngModel)]="profile.companyName" autocomplete="organization" />
       </label>
 
       <label class="field field-wide">
-        <span>Ansprechpartner @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung, sofern kein Firmenname angegeben ist">*</span> }</span>
+        <span>{{ 'Ansprechpartner' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung, sofern kein Firmenname angegeben ist' | t">*</span> }</span>
         <input type="text" name="contactName" [(ngModel)]="profile.contactName" autocomplete="name" />
       </label>
 
       <label class="field field-wide">
-        <span>Straße &amp; Hausnummer @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'Straße & Hausnummer' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="text" name="street" [(ngModel)]="profile.street" autocomplete="street-address" />
       </label>
 
       <label class="field field-narrow">
-        <span>PLZ @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'PLZ' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="text" name="postalCode" [(ngModel)]="profile.postalCode" autocomplete="postal-code" inputmode="numeric" />
       </label>
 
       <label class="field">
-        <span>Ort @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'Ort' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="text" name="city" [(ngModel)]="profile.city" autocomplete="address-level2" />
       </label>
 
       <label class="field">
-        <span>Land des Firmensitzes</span>
+        <span>{{ 'Land des Firmensitzes' | t }}</span>
         <select name="countryCode" [(ngModel)]="profile.countryCode">
           @for (option of countryOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
+            <option [value]="option.value">{{ option.label | t }}</option>
           }
         </select>
       </label>
 
       <label class="field">
-        <span>Telefon @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'Telefon' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="tel" name="phone" [(ngModel)]="profile.phone" autocomplete="tel" />
       </label>
 
       <label class="field">
-        <span>E-Mail @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+        <span>{{ 'E-Mail' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
         <input type="email" name="email" [(ngModel)]="profile.email" autocomplete="email" />
       </label>
 
       <label class="field">
-        <span>Website</span>
+        <span>{{ 'Website' | t }}</span>
         <input type="url" name="website" [(ngModel)]="profile.website" autocomplete="url" placeholder="https://" />
       </label>
 
       <label class="field">
-        <span>USt-IdNr. @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung, sofern keine Steuernummer angegeben ist">*</span> }</span>
+        <span>{{ 'USt-IdNr.' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung, sofern keine Steuernummer angegeben ist' | t">*</span> }</span>
         <input type="text" name="vatId" [(ngModel)]="profile.vatId" />
       </label>
 
       <fieldset class="field field-wide profile-fieldset">
-        <legend>Zahlungsdaten für Rechnungen</legend>
+        <legend>{{ 'Zahlungsdaten für Rechnungen' | t }}</legend>
         <p class="fieldset-hint">
-          Diese Angaben erscheinen auf deinen Rechnungen (PDF + XRechnung). Ohne USt-IdNr.
-          genügt die Steuernummer; IBAN/BIC sind die Zahlungsdaten für deine Kunden.
+          {{ 'Diese Angaben erscheinen auf deinen Rechnungen (PDF + XRechnung). Ohne USt-IdNr. genügt die Steuernummer; IBAN/BIC sind die Zahlungsdaten für deine Kunden.' | t }}
         </p>
         <div class="fieldset-grid">
           <label class="field">
-            <span>Steuernummer @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung, sofern keine USt-IdNr. angegeben ist">*</span> }</span>
-            <input type="text" name="taxNumber" [(ngModel)]="profile.taxNumber" placeholder="z. B. 151/815/08151" />
+            <span>{{ 'Steuernummer' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung, sofern keine USt-IdNr. angegeben ist' | t">*</span> }</span>
+            <input type="text" name="taxNumber" [(ngModel)]="profile.taxNumber" [placeholder]="'z. B. 151/815/08151' | t" />
           </label>
           <label class="field">
-            <span>IBAN @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" title="Pflicht für XRechnung">*</span> }</span>
+            <span>{{ 'IBAN' | t }} @if (isGermanCompany()) { <span style="color:#b45309;font-weight:800;cursor:help" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
             <input type="text" name="iban" [(ngModel)]="profile.iban" autocomplete="off" placeholder="DE.." />
           </label>
           <label class="field">
-            <span>BIC</span>
+            <span>{{ 'BIC' | t }}</span>
             <input type="text" name="bic" [(ngModel)]="profile.bic" autocomplete="off" />
           </label>
           <label class="field">
-            <span>Bank</span>
+            <span>{{ 'Bank' | t }}</span>
             <input type="text" name="bankName" [(ngModel)]="profile.bankName" />
           </label>
         </div>
@@ -94,8 +93,7 @@
       @if (isGermanCompany()) {
         <p class="field field-wide" style="margin:-.5rem 0 0;font-size:.78rem;color:#92400e;">
           <span style="color:#b45309;font-weight:800">*</span>
-          Pflicht für die XRechnung (elektronischer Rechnungsversand) – das Profil bleibt auch ohne
-          diese Angaben speicherbar, sie werden erst beim XRechnung-Export benötigt.
+          {{ 'Pflicht für die XRechnung (elektronischer Rechnungsversand) – das Profil bleibt auch ohne diese Angaben speicherbar, sie werden erst beim XRechnung-Export benötigt.' | t }}
         </p>
       }
 
@@ -108,7 +106,7 @@
 
       <div class="profile-actions">
         <button type="submit" class="btn-primary" [disabled]="saving()">
-          {{ saving() ? 'Speichern …' : 'Speichern' }}
+          {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
         </button>
       </div>
     </form>

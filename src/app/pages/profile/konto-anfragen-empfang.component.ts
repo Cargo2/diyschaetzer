@@ -6,6 +6,8 @@ import {
   RoomType
 } from '../../models/bathroom-wizard.model';
 import { CompanyProfileService } from '../../services/company-profile.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Konto → „Anfragen empfangen" (contractorGuard + {@link leadSubscriptionGuard}:
@@ -19,12 +21,13 @@ import { CompanyProfileService } from '../../services/company-profile.service';
 @Component({
   selector: 'app-konto-anfragen-empfang',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './konto-anfragen-empfang.component.html',
   styleUrl: './profile-page.component.css'
 })
 export class KontoAnfragenEmpfangComponent implements OnInit {
   private readonly companyProfile = inject(CompanyProfileService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -43,7 +46,7 @@ export class KontoAnfragenEmpfangComponent implements OnInit {
       this.profile = await this.companyProfile.load();
       this.leadZipAreasInput = this.profile.leadZipAreas.join(', ');
     } catch {
-      this.errorMsg.set('Die Einstellungen konnten nicht geladen werden.');
+      this.errorMsg.set(this.i18n.t('Die Einstellungen konnten nicht geladen werden.'));
     } finally {
       this.loading.set(false);
     }
@@ -56,9 +59,9 @@ export class KontoAnfragenEmpfangComponent implements OnInit {
     try {
       this.profile.leadZipAreas = this.parseZipAreas(this.leadZipAreasInput);
       await this.companyProfile.save(this.profile);
-      this.successMsg.set('Einstellungen gespeichert.');
+      this.successMsg.set(this.i18n.t('Einstellungen gespeichert.'));
     } catch {
-      this.errorMsg.set('Speichern fehlgeschlagen. Bitte versuche es erneut.');
+      this.errorMsg.set(this.i18n.t('Speichern fehlgeschlagen. Bitte versuche es erneut.'));
     } finally {
       this.saving.set(false);
     }
