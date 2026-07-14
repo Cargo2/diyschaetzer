@@ -5,6 +5,24 @@ import { CompanyProfileService } from '../../services/company-profile.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
 
 /**
+ * Kuratierte Länderliste für „Land des Firmensitzes" (Aufgabe X1). Nur Betriebe mit
+ * Sitz in Deutschland brauchen eine XRechnung – die Auswahl steuert die
+ * XRechnung-Pflichtfeld-Kennzeichnung im Firmenprofil und in den Rechnungen.
+ */
+export const COUNTRY_OPTIONS: { label: string; value: string }[] = [
+  { label: 'Deutschland', value: 'DE' },
+  { label: 'Österreich', value: 'AT' },
+  { label: 'Schweiz', value: 'CH' },
+  { label: 'Polen', value: 'PL' },
+  { label: 'Tschechien', value: 'CZ' },
+  { label: 'Niederlande', value: 'NL' },
+  { label: 'Belgien', value: 'BE' },
+  { label: 'Frankreich', value: 'FR' },
+  { label: 'Luxemburg', value: 'LU' },
+  { label: 'Dänemark', value: 'DK' }
+];
+
+/**
  * Konto → „Firmenprofil" (contractorGuard). Enthält NUR die Firmenstammdaten
  * (Name, Anschrift, Kontakt, USt-IdNr.). Der Firmenname erscheint als Kopf-/
  * Fußzeile im Export; nach dem Speichern wird der Branding-Cache aufgefrischt.
@@ -29,6 +47,17 @@ export class KontoFirmenprofilComponent implements OnInit {
   readonly errorMsg = signal<string | null>(null);
   readonly successMsg = signal<string | null>(null);
   profile: CompanyProfile = emptyCompanyProfile();
+  readonly countryOptions = COUNTRY_OPTIONS;
+
+  /**
+   * Live-reaktiv auf das aktuell gewählte Formularland (nicht das gespeicherte
+   * Profil): steuert, ob die XRechnung-Pflichtfeld-Sternchen angezeigt werden.
+   * Leer/undefined gilt als Deutschland (Altbestand vor Migration 0023).
+   */
+  isGermanCompany(): boolean {
+    const code = (this.profile.countryCode ?? '').trim().toUpperCase();
+    return code === '' || code === 'DE';
+  }
 
   async ngOnInit(): Promise<void> {
     try {

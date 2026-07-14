@@ -31,6 +31,8 @@ export interface InvoiceSellerSource {
   street?: string;
   postalCode?: string;
   city?: string;
+  /** Land des Firmensitzes (ISO 3166-1 alpha-2). Steuert die XRechnung-Pflicht. */
+  countryCode?: string;
   phone?: string;
   email?: string;
   website?: string;
@@ -255,6 +257,16 @@ export function sanitizeContractorInvoice(invoice: ContractorInvoice): Contracto
 
 function isFilled(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+/**
+ * Aufgabe X1: Nur Betriebe mit Sitz in Deutschland müssen eine XRechnung liefern.
+ * Ein leeres/fehlendes Länderkürzel gilt als Deutschland (Altbestand vor Migration
+ * `0023_company_profile_country`, wo `countryCode` noch nicht gepflegt war).
+ */
+export function isGermanInvoiceSeller(seller: ContractorInvoiceSeller): boolean {
+  const code = (seller.countryCode ?? '').trim().toUpperCase();
+  return code === '' || code === 'DE';
 }
 
 /** § 14 UStG / XRechnung: Leistungsdatum ODER vollständiger Leistungszeitraum. */

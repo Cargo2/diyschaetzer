@@ -8,6 +8,8 @@ export interface CompanyProfile {
   street: string;
   postalCode: string;
   city: string;
+  /** Land des Firmensitzes (ISO 3166-1 alpha-2, z. B. 'DE'). Steuert die XRechnung-Pflicht. */
+  countryCode: string;
   phone: string;
   email: string;
   website: string;
@@ -49,6 +51,7 @@ export function emptyCompanyProfile(): CompanyProfile {
     street: '',
     postalCode: '',
     city: '',
+    countryCode: 'DE',
     phone: '',
     email: '',
     website: '',

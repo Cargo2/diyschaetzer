@@ -43,6 +43,7 @@ describe('SupabaseCompanyProfileRepository', () => {
           street: 'Hauptstr. 1',
           postal_code: '12345',
           city: 'Musterstadt',
+          country_code: 'AT',
           phone: '0123',
           email: 'info@mueller.de',
           website: 'https://mueller.de',
@@ -66,6 +67,7 @@ describe('SupabaseCompanyProfileRepository', () => {
       street: 'Hauptstr. 1',
       postalCode: '12345',
       city: 'Musterstadt',
+      countryCode: 'AT',
       phone: '0123',
       email: 'info@mueller.de',
       website: 'https://mueller.de',
@@ -85,6 +87,30 @@ describe('SupabaseCompanyProfileRepository', () => {
     });
   });
 
+  it('defaults country_code to DE when the row does not have it (pre-migration data)', async () => {
+    const repo = setup(
+      makeClient({
+        userId: 'user-1',
+        row: {
+          id: 'user-1',
+          company_name: '',
+          contact_name: '',
+          street: '',
+          postal_code: '',
+          city: '',
+          phone: '',
+          email: '',
+          website: '',
+          vat_id: ''
+        }
+      })
+    );
+
+    const profile = await repo.load();
+
+    expect(profile?.countryCode).toBe('DE');
+  });
+
   it('returns null when no profile row exists', async () => {
     const repo = setup(makeClient({ userId: 'user-1', row: null }));
     expect(await repo.load()).toBeNull();
@@ -102,6 +128,7 @@ describe('SupabaseCompanyProfileRepository', () => {
       street: '',
       postalCode: '',
       city: '',
+      countryCode: 'CH',
       phone: '',
       email: '',
       website: '',
@@ -128,6 +155,7 @@ describe('SupabaseCompanyProfileRepository', () => {
       lead_contact_channel: 'phone',
       id: 'user-9',
       company_name: 'X GmbH',
+      country_code: 'CH',
       vat_id: 'DE999',
       tax_number: '151/815/08151',
       iban: 'DE89370400440532013000',
@@ -148,6 +176,7 @@ describe('SupabaseCompanyProfileRepository', () => {
         street: '',
         postalCode: '',
         city: '',
+        countryCode: 'DE',
         phone: '',
         email: '',
         website: '',

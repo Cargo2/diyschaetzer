@@ -128,7 +128,7 @@ export class ContractorInvoiceService {
       street: profile.street ?? '',
       postalCode: profile.postalCode ?? '',
       city: profile.city ?? '',
-      countryCode: 'DE',
+      countryCode: (profile.countryCode ?? 'DE').trim().toUpperCase() || 'DE',
       phone: profile.phone ?? '',
       email: profile.email ?? '',
       website: profile.website ?? '',

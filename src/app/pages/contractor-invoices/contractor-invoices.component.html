@@ -86,19 +86,25 @@
               [format]="'pdf'"
               [document]="exportDocumentFn"
             />
-            <button
-              type="button"
-              class="btn-light"
-              [disabled]="xrBlocked()"
-              [title]="xrBlocked() ? 'Für die XRechnung fehlen: ' + xrMissingFields().join(', ') : 'XRechnung (XML) herunterladen'"
-              (click)="downloadXml()"
-            >
-              XRechnung (XML)
-            </button>
+            @if (xrApplicable()) {
+              <button
+                type="button"
+                class="btn-light"
+                [disabled]="xrBlocked()"
+                [title]="xrBlocked() ? 'Für die XRechnung fehlen: ' + xrMissingFields().join(', ') : 'XRechnung (XML) herunterladen'"
+                (click)="downloadXml()"
+              >
+                XRechnung (XML)
+              </button>
+            }
           </div>
         </div>
 
-        @if (xrBlocked()) {
+        @if (!xrApplicable()) {
+          <p class="invoices-message info" role="status">
+            XRechnung ist nur für Betriebe mit Sitz in Deutschland verfügbar.
+          </p>
+        } @else if (xrBlocked()) {
           <p class="invoices-message warning" role="note">
             <strong>Für die XRechnung fehlen:</strong> {{ xrMissingFields().join(', ') }}.
             @if (xrCustomerEmailMissing()) {
@@ -124,21 +130,21 @@
           <fieldset class="meta-block">
             <legend>Rechnungsempfänger</legend>
             <label class="meta-field">
-              <span>Name / Firma <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" placeholder="Kundenname" [class.xr-missing]="isBlank(invoice.customer.name)" />
+              <span>Name / Firma @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" placeholder="Kundenname" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.name)" />
             </label>
             <label class="meta-field">
-              <span>Straße &amp; Nr. <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-              <input type="text" [(ngModel)]="invoice.customer.street" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="isBlank(invoice.customer.street)" />
+              <span>Straße &amp; Nr. @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.customer.street" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.street)" />
             </label>
             <div class="meta-row">
               <label class="meta-field meta-narrow">
-                <span>PLZ <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="text" [(ngModel)]="invoice.customer.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [class.xr-missing]="isBlank(invoice.customer.postalCode)" />
+                <span>PLZ @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="text" [(ngModel)]="invoice.customer.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.postalCode)" />
               </label>
               <label class="meta-field">
-                <span>Ort <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="text" [(ngModel)]="invoice.customer.city" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="isBlank(invoice.customer.city)" />
+                <span>Ort @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="text" [(ngModel)]="invoice.customer.city" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.city)" />
               </label>
               <label class="meta-field meta-narrow">
                 <span>Land</span>
@@ -146,32 +152,34 @@
               </label>
             </div>
             <label class="meta-field">
-              <span>E-Mail <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" placeholder="kunde@beispiel.de" inputmode="email" [class.xr-missing]="isBlank(invoice.customer.email)" />
-              <small class="meta-hint">Elektronische Adresse des Empfängers – Pflichtangabe der XRechnung (BT-49).</small>
+              <span>E-Mail @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" placeholder="kunde@beispiel.de" inputmode="email" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.email)" />
+              @if (xrApplicable()) {
+                <small class="meta-hint">Elektronische Adresse des Empfängers – Pflichtangabe der XRechnung (BT-49).</small>
+              }
             </label>
           </fieldset>
 
           <fieldset class="meta-block">
             <legend>Rechnungsdaten</legend>
             <label class="meta-field">
-              <span>Rechnungsnummer <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-              <input type="text" [(ngModel)]="invoice.invoiceNumber" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="isBlank(invoice.invoiceNumber)" />
+              <span>Rechnungsnummer @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.invoiceNumber" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceNumber)" />
             </label>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Rechnungsdatum <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="date" [(ngModel)]="invoice.invoiceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="isBlank(invoice.invoiceDate)" />
+                <span>Rechnungsdatum @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="date" [(ngModel)]="invoice.invoiceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceDate)" />
               </label>
               <label class="meta-field">
-                <span>Zahlbar bis <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="date" [(ngModel)]="invoice.dueDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="isBlank(invoice.dueDate)" />
+                <span>Zahlbar bis @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="date" [(ngModel)]="invoice.dueDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.dueDate)" />
               </label>
             </div>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Leistungsdatum <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="date" [(ngModel)]="invoice.serviceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrServiceDateMissing()" />
+                <span>Leistungsdatum @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="date" [(ngModel)]="invoice.serviceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
                 <span>Status</span>
@@ -184,18 +192,20 @@
             </div>
             <div class="meta-row">
               <label class="meta-field">
-                <span>Leistungszeitraum von <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="date" [(ngModel)]="invoice.servicePeriodStart" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrServiceDateMissing()" />
+                <span>Leistungszeitraum von @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="date" [(ngModel)]="invoice.servicePeriodStart" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
-                <span>bis <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-                <input type="date" [(ngModel)]="invoice.servicePeriodEnd" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrServiceDateMissing()" />
+                <span>bis @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+                <input type="date" [(ngModel)]="invoice.servicePeriodEnd" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
             </div>
             <label class="meta-field">
-              <span>Käuferreferenz / Leitweg-ID (BT-10) <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
-              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" placeholder="n/a (bei Behörden: Leitweg-ID)" [class.xr-missing]="isBlank(invoice.buyerReference)" />
-              <small class="meta-hint">Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".</small>
+              <span>Käuferreferenz / Leitweg-ID (BT-10) @if (xrApplicable()) { <span class="xr-star" title="Pflicht für XRechnung">*</span> }</span>
+              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" placeholder="n/a (bei Behörden: Leitweg-ID)" [class.xr-missing]="xrApplicable() && isBlank(invoice.buyerReference)" />
+              @if (xrApplicable()) {
+                <small class="meta-hint">Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".</small>
+              }
               @if (buyerReferenceLooksMalformed()) {
                 <small class="meta-hint meta-hint-warning">
                   Sieht nach einer Leitweg-ID aus, entspricht aber nicht dem üblichen Format
@@ -206,7 +216,9 @@
           </fieldset>
         </div>
 
-        <p class="xr-legend"><span class="xr-star">*</span> Pflicht für die XRechnung (XML).</p>
+        @if (xrApplicable()) {
+          <p class="xr-legend"><span class="xr-star">*</span> Pflicht für die XRechnung (XML).</p>
+        }
 
         <div class="seller-note">
           <p>

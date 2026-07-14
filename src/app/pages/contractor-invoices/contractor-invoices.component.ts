@@ -12,6 +12,7 @@ import {
   invoiceNetAfterDiscount,
   invoiceNetTotal,
   invoiceVatAmount,
+  isGermanInvoiceSeller,
   isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
   listMissingXRechnungSellerFields,
@@ -73,6 +74,15 @@ export class ContractorInvoicesComponent implements OnInit {
   /** Editierbare Arbeitskopie der aktuellen Rechnung. */
   invoice: ContractorInvoice | null = null;
   confirmingDeleteId: string | null = null;
+
+  /**
+   * Aufgabe X1: XRechnung ist nur für Betriebe mit Sitz in Deutschland relevant
+   * (Verkäufer-Snapshot der Rechnung). Nicht-deutsche Betriebe sollen nicht mit
+   * Pflichtfeld-Warnungen gegängelt werden – die gesamte XRechnung-UI blendet aus.
+   */
+  xrApplicable(): boolean {
+    return this.invoice !== null && isGermanInvoiceSeller(this.invoice.seller);
+  }
 
   /** Fehlende XRechnung-Pflichtfelder (leer = Download freigegeben). */
   xrMissingFields(): string[] {
@@ -250,7 +260,7 @@ export class ContractorInvoicesComponent implements OnInit {
 
   /** Lädt die aktuelle Rechnung als XRechnung-XML herunter. */
   downloadXml(): void {
-    if (!this.invoice || this.xrBlocked()) {
+    if (!this.invoice || !this.xrApplicable() || this.xrBlocked()) {
       return;
     }
     this.xrechnung.download(sanitizeContractorInvoice(this.invoice));

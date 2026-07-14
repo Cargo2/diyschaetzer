@@ -157,6 +157,22 @@ describe('ContractorInvoiceService.buildFromOffer', () => {
   });
 });
 
+describe('ContractorInvoiceService.sellerFromProfile (Aufgabe X1: Verkäuferland)', () => {
+  const service = new ContractorInvoiceService();
+
+  it('defaults to DE when the profile has no countryCode (legacy)', () => {
+    expect(service.sellerFromProfile(profile()).countryCode).toBe('DE');
+  });
+
+  it('normalizes a lowercase/whitespace countryCode', () => {
+    expect(service.sellerFromProfile({ ...profile(), countryCode: ' at ' }).countryCode).toBe('AT');
+  });
+
+  it('passes through a non-German countryCode', () => {
+    expect(service.sellerFromProfile({ ...profile(), countryCode: 'CH' }).countryCode).toBe('CH');
+  });
+});
+
 describe('ContractorInvoiceService.nextInvoiceNumber', () => {
   const service = new ContractorInvoiceService();
 

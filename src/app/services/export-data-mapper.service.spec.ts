@@ -1,6 +1,12 @@
 import { COMMERCIAL_CONFIG, DEFAULT_WHITE_LABEL_CONFIG } from '../config/commercial.config';
 import { DEFAULT_FEATURE_ACCESS } from '../models/commercial.model';
 import {
+  ContractorInvoice,
+  emptyInvoiceCustomer,
+  emptyInvoiceSeller,
+  normalizeContractorInvoice
+} from '../models/contractor-invoice.model';
+import {
   ESTIMATE_EXPORT_LEGAL_NOTICE,
   ExportOfferGroup
 } from '../models/export-document.model';
@@ -9,6 +15,41 @@ import { createNeutralProductMonetization } from '../models/monetization.model';
 import { CostComparisonViewModel } from './cost-comparison.service';
 import { ExportDataMapperService } from './export-data-mapper.service';
 import { ProjectAggregationResult } from './project-aggregation.service';
+
+function invoiceWithSeller(countryCode: string, vatPercent = 0): ContractorInvoice {
+  return normalizeContractorInvoice({
+    id: 'inv-1',
+    projectName: 'Sanierung',
+    invoiceNumber: 'RE-2026-001',
+    invoiceDate: '2026-07-14',
+    dueDate: '2026-07-28',
+    buyerReference: 'n/a',
+    status: 'draft',
+    vatPercent,
+    sections: [
+      {
+        id: 's0',
+        kind: 'custom',
+        title: 'Leistungen',
+        lines: [
+          {
+            id: 'l0',
+            label: 'Position',
+            description: '',
+            quantity: 1,
+            unit: 'pauschal',
+            unitPrice: 100,
+            isActive: true,
+            isOptional: false,
+            origin: 'custom'
+          }
+        ]
+      }
+    ],
+    customer: emptyInvoiceCustomer(),
+    seller: { ...emptyInvoiceSeller(), countryCode }
+  } as ContractorInvoice);
+}
 
 describe('commercial preparation', () => {
   it('keeps monetization and future commercial features neutral by default', () => {
@@ -259,5 +300,22 @@ describe('ExportDataMapperService', () => {
     expect(result.totals.netTotal).toBe(2035);
     expect(result.totals.vatAmount).toBe(386.65);
     expect(result.totals.grossTotal).toBe(2421.65);
+  });
+
+  describe('buildContractorInvoiceExportData taxNote (Aufgabe X1: § 19-Hinweis nur für DE)', () => {
+    it('adds the § 19 UStG notice for a German seller at 0 % VAT', () => {
+      const result = service.buildContractorInvoiceExportData(invoiceWithSeller('DE', 0));
+      expect(result.taxNote).toContain('§ 19 UStG');
+    });
+
+    it('omits the notice for a non-German seller at 0 % VAT', () => {
+      const result = service.buildContractorInvoiceExportData(invoiceWithSeller('AT', 0));
+      expect(result.taxNote).toBeNull();
+    });
+
+    it('omits the notice when the German seller charges VAT', () => {
+      const result = service.buildContractorInvoiceExportData(invoiceWithSeller('DE', 19));
+      expect(result.taxNote).toBeNull();
+    });
   });
 });

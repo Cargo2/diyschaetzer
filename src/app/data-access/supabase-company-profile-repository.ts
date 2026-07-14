@@ -12,6 +12,7 @@ interface CompanyProfileRow {
   street: string;
   postal_code: string;
   city: string;
+  country_code: string;
   phone: string;
   email: string;
   website: string;
@@ -80,6 +81,7 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       street: profile.street,
       postal_code: profile.postalCode,
       city: profile.city,
+      country_code: profile.countryCode,
       phone: profile.phone,
       email: profile.email,
       website: profile.website,
@@ -109,6 +111,7 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       street: row.street,
       postalCode: row.postal_code,
       city: row.city,
+      countryCode: row.country_code ?? 'DE',
       phone: row.phone,
       email: row.email,
       website: row.website,

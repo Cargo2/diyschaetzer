@@ -29,7 +29,8 @@ import {
   invoiceGrossTotal,
   invoiceNetAfterDiscount,
   invoiceNetTotal,
-  invoiceVatAmount
+  invoiceVatAmount,
+  isGermanInvoiceSeller
 } from '../models/contractor-invoice.model';
 import { BathroomWizardData, ROOM_TYPE_DEFAULT_NAMES } from '../models/bathroom-wizard.model';
 import { MaterialListViewModel } from '../models/material-list.model';
@@ -257,6 +258,9 @@ export class ExportDataMapperService {
       { id: 'offer', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
     ];
 
+    // Aufgabe X1: bewusst UNVERÄNDERT. Das Angebot hat keinen Verkäufer-Snapshot
+    // (das kommt erst bei der Rechnung, § 14 UStG) – die § 19-Prüfung kann hier
+    // nicht ans Verkäuferland (isGermanInvoiceSeller) gebunden werden.
     const taxNote = offer.vatPercent === 0
       ? 'Gemäß § 19 UStG (Kleinunternehmerregelung) wird keine Umsatzsteuer berechnet.'
       : null;
@@ -308,7 +312,9 @@ export class ExportDataMapperService {
       { id: 'invoice', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
     ];
 
-    const taxNote = invoice.vatPercent === 0
+    // Aufgabe X1: § 19-Hinweis nur für Betriebe mit Sitz in Deutschland (§ 19 UStG ist
+    // deutsches Recht) – der Verkäufer-Snapshot der Rechnung trägt das Land.
+    const taxNote = invoice.vatPercent === 0 && isGermanInvoiceSeller(invoice.seller)
       ? 'Gemäß § 19 UStG (Kleinunternehmerregelung) wird keine Umsatzsteuer berechnet.'
       : null;
 

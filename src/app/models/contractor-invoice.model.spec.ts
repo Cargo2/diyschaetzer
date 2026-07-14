@@ -4,6 +4,7 @@ import {
   ContractorInvoiceCustomer,
   ContractorInvoiceSeller,
   hasXRechnungServiceDate,
+  isGermanInvoiceSeller,
   isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
   listMissingXRechnungSellerFields
@@ -212,6 +213,30 @@ describe('listMissingXRechnungFields', () => {
 describe('listMissingXRechnungSellerFields', () => {
   it('returns an empty list for a complete seller', () => {
     expect(listMissingXRechnungSellerFields(completeSeller())).toEqual([]);
+  });
+});
+
+describe('isGermanInvoiceSeller', () => {
+  it('returns true for countryCode DE', () => {
+    expect(isGermanInvoiceSeller({ ...completeSeller(), countryCode: 'DE' })).toBe(true);
+  });
+
+  it('is case-insensitive and trims whitespace', () => {
+    expect(isGermanInvoiceSeller({ ...completeSeller(), countryCode: ' de ' })).toBe(true);
+  });
+
+  it('returns false for a non-German countryCode', () => {
+    expect(isGermanInvoiceSeller({ ...completeSeller(), countryCode: 'AT' })).toBe(false);
+  });
+
+  it('treats an empty countryCode as Germany (legacy data before migration 0023)', () => {
+    expect(isGermanInvoiceSeller({ ...completeSeller(), countryCode: '' })).toBe(true);
+  });
+
+  it('treats an undefined countryCode as Germany (legacy data)', () => {
+    const seller = { ...completeSeller() } as ContractorInvoiceSeller;
+    delete (seller as Partial<ContractorInvoiceSeller>).countryCode;
+    expect(isGermanInvoiceSeller(seller)).toBe(true);
   });
 });
 
