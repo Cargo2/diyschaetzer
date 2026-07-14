@@ -1,0 +1,35 @@
+# .htaccess für app.fliesen-kosten.de (Profi-App-Subdomain).
+#
+# Diese Subdomain liefert NIE prerendertes Marketing-HTML aus (das würde einen
+# Hydration-Mismatch riskieren, da die App hier immer clientseitig/CSR laufen soll)
+# und wird bewusst NICHT von Suchmaschinen indexiert (siehe robots.txt daneben).
+# Dieselbe dist/project3/browser/-Ausgabe wird auf drei Hosts deployt (siehe
+# .github/workflows/main.yml, flies.yml, app.yml); diese Datei überschreibt beim
+# Deploy auf app.* das Standard-.htaccess aus public/.
+
+<IfModule mod_headers.c>
+  # Zusätzlich zur robots.txt: per HTTP-Header noindex/nofollow erzwingen,
+  # auch für Crawler, die robots.txt ignorieren oder Header auswerten.
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Echte Asset-Dateien (JS/CSS/Bilder/Fonts/PWA-Dateien etc.) direkt ausliefern,
+  # wenn sie existieren. Bewusst KEIN genereller "-f"-Check wie im Standard-.htaccess
+  # (public/.htaccess), da der Prerender-Build auch .html-Dateien (Startseite,
+  # Ratgeber-/Kostenseiten) als echte Dateien ablegt – die sollen auf app.* aber
+  # NICHT direkt ausgeliefert werden, sondern immer auf die CSR-Shell fallen.
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteCond %{REQUEST_URI} \.(js|mjs|css|map|ico|svg|png|jpg|jpeg|webp|avif|gif|woff|woff2|ttf|txt|xml|json|webmanifest|pdf)$ [NC]
+  RewriteRule ^ - [L]
+
+  # Alles andere (inkl. existierender prerenderter .html-Dateien wie index.html
+  # oder /ratgeber/<slug>/index.html) auf die Client-Shell umleiten. So landet
+  # auf app.* immer die CSR-App – auch künftige PWA-Dateien (ngsw.json,
+  # ngsw-worker.js, manifest.webmanifest) bleiben über die Assets-Regel oben
+  # weiterhin direkt erreichbar.
+  RewriteRule ^ index.csr.html [L]
+</IfModule>

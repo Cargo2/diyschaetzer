@@ -1,0 +1,124 @@
+name: FliesenApp
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netcup-app
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: App-Host-Secrets prüfen
+        id: secret-check
+        env:
+          FTP_HOST: ${{ secrets.NETCUP_APP_FTP_HOST }}
+        run: |
+          set -euo pipefail
+          if [ -z "$FTP_HOST" ]; then
+            echo "::notice::App-Host-Secrets fehlen – Deploy übersprungen (NETCUP_APP_FTP_HOST ist leer)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Node.js einrichten
+        if: steps.secret-check.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        if: steps.secret-check.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Supabase-Konfiguration injizieren
+        if: steps.secret-check.outputs.skip != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL" || { echo "::error::SUPABASE_URL fehlt"; exit 1; }
+          test -n "$SUPABASE_ANON_KEY" || { echo "::error::SUPABASE_ANON_KEY fehlt"; exit 1; }
+          cat > src/environments/environment.ts <<EOF
+          import { AppEnvironment } from './environment.model';
+
+          export const environment: AppEnvironment = {
+            production: true,
+            supabase: {
+              url: '${SUPABASE_URL}',
+              anonKey: '${SUPABASE_ANON_KEY}'
+            }
+          };
+          EOF
+
+      - name: Angular-Anwendung bauen
+        if: steps.secret-check.outputs.skip != 'true'
+        run: npm run build -- --configuration production
+
+      - name: Build-Ausgabe prüfen
+        if: steps.secret-check.outputs.skip != 'true'
+        run: test -f dist/project3/browser/index.html
+
+      - name: App-Subdomain-Overrides einspielen
+        if: steps.secret-check.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          cp deploy/app-subdomain/robots.txt dist/project3/browser/robots.txt
+          cp deploy/app-subdomain/.htaccess dist/project3/browser/.htaccess
+          grep -q "Disallow: /" dist/project3/browser/robots.txt
+          grep -q "index.csr.html" dist/project3/browser/.htaccess
+
+      - name: SFTP-Client installieren
+        if: steps.secret-check.outputs.skip != 'true'
+        run: sudo apt-get update && sudo apt-get install --yes lftp
+
+      - name: Auf netcup veröffentlichen
+        if: steps.secret-check.outputs.skip != 'true'
+        env:
+          FTP_HOST: ${{ secrets.NETCUP_APP_FTP_HOST }}
+          FTP_PORT: ${{ secrets.NETCUP_APP_FTP_PORT }}
+          FTP_USER: ${{ secrets.NETCUP_APP_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.NETCUP_APP_FTP_PASSWORD }}
+          REMOTE_PATH: ${{ secrets.NETCUP_APP_REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "$FTP_HOST" || { echo "::error::NETCUP_APP_FTP_HOST fehlt"; exit 1; }
+          test -n "$FTP_USER" || { echo "::error::NETCUP_APP_FTP_USER fehlt"; exit 1; }
+          test -n "$FTP_PASSWORD" || { echo "::error::NETCUP_APP_FTP_PASSWORD fehlt"; exit 1; }
+          test -n "$REMOTE_PATH" || { echo "::error::NETCUP_APP_REMOTE_PATH fehlt"; exit 1; }
+          FTP_PORT="${FTP_PORT:-21}"
+          lftp <<EOF
+          set cmd:fail-exit yes
+          set net:max-retries 2
+          set net:timeout 30
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:ssl-auth TLS
+          set ssl:verify-certificate yes
+          set ssl:check-hostname no
+
+          open -p "$FTP_PORT" "ftp://$FTP_HOST"
+          user "$FTP_USER" "$FTP_PASSWORD"
+          pwd
+          cls -la
+          mirror --reverse --delete --verbose \
+            dist/project3/browser/ \
+            "$REMOTE_PATH"
+          bye
+          EOF
