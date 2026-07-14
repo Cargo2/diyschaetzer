@@ -1,13 +1,13 @@
 <div class="app-shell" [class.drawer-open]="nav.menuOpen()">
   <!-- Nur < 768px sichtbar: schmale Topbar mit Marke + Hamburger. -->
   <header class="app-topbar">
-    <a routerLink="/projekt-dashboard" class="app-topbar-brand" (click)="nav.closeMenu()">Fliesenprojekt</a>
+    <a routerLink="/projekt-dashboard" class="app-topbar-brand" (click)="nav.closeMenu()">{{ 'Fliesenprojekt' | t }}</a>
 
     <button
       type="button"
       class="app-topbar-toggle"
       [attr.aria-expanded]="nav.menuOpen()"
-      [attr.aria-label]="nav.menuOpen() ? 'Menü schließen' : 'Menü öffnen'"
+      [attr.aria-label]="nav.menuOpen() ? ('Menü schließen' | t) : ('Menü öffnen' | t)"
       (click)="nav.toggleMenu()"
     >
       <span class="app-topbar-toggle-bars" aria-hidden="true">
@@ -22,18 +22,18 @@
 
   <aside class="app-sidebar" [class.open]="nav.menuOpen()">
     <a routerLink="/projekt-dashboard" class="app-sidebar-brand" (click)="nav.closeMenu()">
-      Fliesenprojekt
+      {{ 'Fliesenprojekt' | t }}
     </a>
 
-    <nav class="app-sidebar-nav" aria-label="Hauptnavigation">
+    <nav class="app-sidebar-nav" [attr.aria-label]="'Hauptnavigation' | t">
       <div class="nav-group">
-        <p class="nav-eyebrow">Projekt</p>
+        <p class="nav-eyebrow">{{ 'Projekt' | t }}</p>
 
         <a routerLink="/projekt-dashboard" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-          Projekt-Dashboard
+          {{ 'Projekt-Dashboard' | t }}
         </a>
         <a routerLink="/raum-anlegen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-          Raum anlegen
+          {{ 'Raum anlegen' | t }}
         </a>
 
         @if (nav.resultsAvailable()) {
@@ -43,22 +43,22 @@
             class="nav-link"
             (click)="nav.closeMenu()"
           >
-            Zusammenfassung
+            {{ 'Zusammenfassung' | t }}
           </a>
         } @else {
           <button
             type="button"
             class="nav-link disabled"
-            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            [attr.title]="'Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden.' | t"
             (click)="nav.openResultsPage(nav.isContractor() ? '/zusammenfassung_raum' : '/zusammenfassung')"
           >
-            Zusammenfassung
+            {{ 'Zusammenfassung' | t }}
           </button>
         }
 
         @if (nav.resultsAvailable()) {
           <a routerLink="/materialliste" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Materialliste
+            {{ 'Materialliste' | t }}
             @if (nav.isContractor()) {
               {{ nav.roomName() }}
             }
@@ -67,10 +67,10 @@
           <button
             type="button"
             class="nav-link disabled"
-            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            [attr.title]="'Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden.' | t"
             (click)="nav.openResultsPage('/materialliste')"
           >
-            Materialliste
+            {{ 'Materialliste' | t }}
             @if (nav.isContractor()) {
               {{ nav.roomName() }}
             }
@@ -80,17 +80,17 @@
 
       @if (nav.isAuthenticated() && nav.isContractor()) {
         <div class="nav-group">
-          <p class="nav-eyebrow">Angebote</p>
+          <p class="nav-eyebrow">{{ 'Angebote' | t }}</p>
 
           <a routerLink="/angebote" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Angebote
+            {{ 'Angebote' | t }}
           </a>
           <a routerLink="/rechnungen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Rechnungen
+            {{ 'Rechnungen' | t }}
           </a>
           @if (nav.hasAssignedLeads()) {
             <a routerLink="/anfragen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-              Anfragen
+              {{ 'Anfragen' | t }}
               @if (nav.leadsCount(); as count) {
                 <span class="nav-badge">{{ count }}</span>
               }
@@ -99,20 +99,20 @@
         </div>
 
         <div class="nav-group">
-          <p class="nav-eyebrow">Konto</p>
+          <p class="nav-eyebrow">{{ 'Konto' | t }}</p>
 
           <a routerLink="/konto/firmenprofil" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Firmenprofil
+            {{ 'Firmenprofil' | t }}
           </a>
           <a routerLink="/konto/preise" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Eigene Preise
+            {{ 'Eigene Preise' | t }}
           </a>
           <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
             @if (nav.hasActiveSubscription()) {
-              Premium
-              <span class="abo-dot" title="Lead-Abo aktiv" aria-label="Aktiv"></span>
+              {{ 'Premium' | t }}
+              <span class="abo-dot" [attr.title]="'Lead-Abo aktiv' | t" [attr.aria-label]="'Aktiv' | t"></span>
             } @else {
-              Premium freischalten
+              {{ 'Premium freischalten' | t }}
             }
           </a>
           @if (nav.hasActiveSubscription()) {
@@ -122,30 +122,30 @@
               class="nav-link"
               (click)="nav.closeMenu()"
             >
-              Anfragen empfangen
+              {{ 'Anfragen empfangen' | t }}
             </a>
           } @else {
             <button
               type="button"
               class="nav-link disabled"
-              title="Erfordert aktives Lead-Abo"
+              [attr.title]="'Erfordert aktives Lead-Abo' | t"
               (click)="nav.goToPremium()"
             >
-              Anfragen empfangen
+              {{ 'Anfragen empfangen' | t }}
             </button>
           }
           <a routerLink="/feedback" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Feedback
+            {{ 'Feedback' | t }}
           </a>
         </div>
       }
 
       @if (nav.isAdmin()) {
         <div class="nav-group">
-          <p class="nav-eyebrow">Admin</p>
+          <p class="nav-eyebrow">{{ 'Admin' | t }}</p>
 
           <a routerLink="/admin" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            Admin
+            {{ 'Admin' | t }}
           </a>
         </div>
       }
@@ -154,19 +154,33 @@
     <div class="app-sidebar-footer">
       @if (nav.isAuthenticated()) {
         <p class="app-user-email">{{ nav.userEmail() }}</p>
-        <button type="button" class="nav-link logout-link" (click)="logout()">Abmelden</button>
+        <button type="button" class="nav-link logout-link" (click)="logout()">{{ 'Abmelden' | t }}</button>
       } @else {
         <a routerLink="/login" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-          Anmelden
+          {{ 'Anmelden' | t }}
         </a>
       }
 
-      <nav class="app-micro-footer" aria-label="Rechtliches">
-        <a [href]="legalUrls.impressum">Impressum</a>
-        <a [href]="legalUrls.datenschutz">Datenschutz</a>
-        <a [href]="legalUrls.kontakt">Kontakt</a>
+      <label class="lang-switch">
+        <span class="lang-switch-label">{{ 'Sprache wählen' | t }}</span>
+        <select
+          class="lang-select"
+          [attr.aria-label]="'Sprache wählen' | t"
+          [value]="i18n.lang()"
+          (change)="onLangChange($any($event.target).value)"
+        >
+          <option value="de">Deutsch</option>
+          <option value="pl">Polski</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+
+      <nav class="app-micro-footer" [attr.aria-label]="'Rechtliches' | t">
+        <a [href]="legalUrls.impressum">{{ 'Impressum' | t }}</a>
+        <a [href]="legalUrls.datenschutz">{{ 'Datenschutz' | t }}</a>
+        <a [href]="legalUrls.kontakt">{{ 'Kontakt' | t }}</a>
         <button type="button" class="footer-link-button" (click)="nav.openCookieSettings()">
-          Cookie-Einstellungen
+          {{ 'Cookie-Einstellungen' | t }}
         </button>
       </nav>
     </div>
