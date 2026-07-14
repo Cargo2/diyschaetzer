@@ -46,6 +46,15 @@ export function resolveHostMode(
   return overrideOn ? 'app' : 'standalone';
 }
 
+/**
+ * Hinweistext für Cross-Domain-Login-CTAs: das anonyme lokale Projekt
+ * (localStorage) ist an die Marketing-Domain gebunden und bleibt nach dem
+ * Wechsel zur App-Domain dort erhalten, statt „mitzuwandern". Nur relevant,
+ * solange {@link AppHostService.crossDomainEnabled} true ist.
+ */
+export const CROSS_DOMAIN_PROJECT_HINT =
+  'Dein lokal gespeichertes Projekt bleibt auf diesem Gerät unter fliesen-kosten.de verfügbar.';
+
 const FORCE_APP_HOST_KEY = 'force_app_host';
 
 @Injectable({ providedIn: 'root' })

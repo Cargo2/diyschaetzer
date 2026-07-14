@@ -16,7 +16,7 @@ import { LocalProjectService } from '../../services/local-project.service';
 import { RoomLimitService } from '../../services/room-limit.service';
 import { ShareService } from '../../services/share.service';
 import { WizardStateService } from '../../services/wizard-state.service';
-import { AppHostService } from '../../services/app-host.service';
+import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-host.service';
 
 @Component({
   selector: 'app-summary-page',
@@ -247,6 +247,9 @@ import { AppHostService } from '../../services/app-host.service';
                     – ein geteilter Link
                     speichert eine eingefrorene Momentaufnahme dieser Kalkulation.
                   </p>
+                  @if (showCrossDomainProjectHint()) {
+                    <p class="share-hint">{{ crossDomainProjectHint }}</p>
+                  }
                 }
                 @if (shareError()) {
                   <p class="share-error" role="alert">{{ shareError() }}</p>
@@ -1063,6 +1066,12 @@ export class SummaryPageComponent {
   private readonly shareService = inject(ShareService);
   /** Zwei-Domain-Betrieb: entscheidet über relative vs. absolute Login-Links. */
   readonly host = inject(AppHostService);
+  /** Hinweistext für den Login-CTA (Cross-Domain, anonymes lokales Projekt). */
+  readonly crossDomainProjectHint = CROSS_DOMAIN_PROJECT_HINT;
+  /** true, wenn Cross-Domain aktiv ist UND das lokale Projekt bereits Räume hat. */
+  readonly showCrossDomainProjectHint = computed(
+    () => this.host.crossDomainEnabled && this.localProject.rooms().length > 0
+  );
 
   readonly roomLimitReached = this.roomLimit.limitReached;
   readonly roomLimitHint = this.roomLimit.hint;

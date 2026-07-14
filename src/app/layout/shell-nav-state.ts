@@ -70,6 +70,15 @@ export function injectShellNavState() {
   /** „Aktiv"-Punkt bei „Premium" + Freischaltung von „Anfragen empfangen". */
   const hasActiveSubscription = subscriptionStatus.isActive;
 
+  /**
+   * true, sobald irgendein lokal gespeichertes Projekt Räume hat – Grundlage für
+   * den Cross-Domain-Hinweis am Login-Link (das anonyme localStorage-Projekt
+   * „wandert" beim Wechsel auf die App-Domain nicht mit).
+   */
+  const hasSavedRooms = computed(() =>
+    localProject.projects().some((project) => project.rooms.length > 0)
+  );
+
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger/Drawer). Auf Desktop ohne Wirkung. */
   const menuOpen = signal(false);
 
@@ -135,6 +144,7 @@ export function injectShellNavState() {
     hasAssignedLeads,
     leadsCount,
     hasActiveSubscription,
+    hasSavedRooms,
     menuOpen,
     toggleMenu,
     closeMenu,

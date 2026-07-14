@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { injectShellNavState } from '../shell-nav-state';
+import { CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-host.service';
 
 /**
  * Marketing-Shell (WP1): das heutige Topmenü + Footer + `<main class="content-stage">`
@@ -41,6 +42,18 @@ export class MarketingShellComponent {
   readonly hasAssignedLeads = this.nav.hasAssignedLeads;
   /** „Aktiv"-Punkt bei „Premium" + Freischaltung von „Anfragen empfangen". */
   readonly hasActiveSubscription = this.nav.hasActiveSubscription;
+
+  /**
+   * Titel-Attribut für den „Anmelden"-Link: Hinweis, dass das anonyme lokale
+   * Projekt bei Cross-Domain-Login auf dieser Domain bleibt. `null` (= kein
+   * Attribut im DOM), solange Cross-Domain inaktiv ist oder kein Raum gespeichert
+   * wurde – Markup bleibt für den Prerender sonst unverändert.
+   */
+  readonly loginHintTitle = computed(() =>
+    this.host.crossDomainEnabled && this.nav.hasSavedRooms()
+      ? CROSS_DOMAIN_PROJECT_HINT
+      : null
+  );
 
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger). Auf Desktop ohne Wirkung. */
   readonly menuOpen = this.nav.menuOpen;

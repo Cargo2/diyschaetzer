@@ -169,7 +169,7 @@
         } @else {
           <!-- Login: im Cross-Domain-Betrieb absolut auf die App-Domain, sonst relativ (wie heute). -->
           @if (host.crossDomainEnabled) {
-            <a [href]="host.loginUrl()" class="tab-button" (click)="closeMenu()">
+            <a [href]="host.loginUrl()" class="tab-button" [attr.title]="loginHintTitle()" (click)="closeMenu()">
               Anmelden
             </a>
           } @else {
