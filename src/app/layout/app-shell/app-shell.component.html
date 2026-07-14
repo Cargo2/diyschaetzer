@@ -1,0 +1,178 @@
+<div class="app-shell" [class.drawer-open]="nav.menuOpen()">
+  <!-- Nur < 768px sichtbar: schmale Topbar mit Marke + Hamburger. -->
+  <header class="app-topbar">
+    <a routerLink="/projekt-dashboard" class="app-topbar-brand" (click)="nav.closeMenu()">Fliesenprojekt</a>
+
+    <button
+      type="button"
+      class="app-topbar-toggle"
+      [attr.aria-expanded]="nav.menuOpen()"
+      [attr.aria-label]="nav.menuOpen() ? 'Menü schließen' : 'Menü öffnen'"
+      (click)="nav.toggleMenu()"
+    >
+      <span class="app-topbar-toggle-bars" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+    </button>
+  </header>
+
+  @if (nav.menuOpen()) {
+    <div class="app-drawer-backdrop" (click)="nav.closeMenu()"></div>
+  }
+
+  <aside class="app-sidebar" [class.open]="nav.menuOpen()">
+    <a routerLink="/projekt-dashboard" class="app-sidebar-brand" (click)="nav.closeMenu()">
+      Fliesenprojekt
+    </a>
+
+    <nav class="app-sidebar-nav" aria-label="Hauptnavigation">
+      <div class="nav-group">
+        <p class="nav-eyebrow">Projekt</p>
+
+        <a routerLink="/projekt-dashboard" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+          Projekt-Dashboard
+        </a>
+        <a routerLink="/raum-anlegen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+          Raum anlegen
+        </a>
+
+        @if (nav.resultsAvailable()) {
+          <a
+            [routerLink]="nav.isContractor() ? '/zusammenfassung_raum' : '/zusammenfassung'"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="nav.closeMenu()"
+          >
+            Zusammenfassung
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="nav-link disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="nav.openResultsPage(nav.isContractor() ? '/zusammenfassung_raum' : '/zusammenfassung')"
+          >
+            Zusammenfassung
+          </button>
+        }
+
+        @if (nav.resultsAvailable()) {
+          <a routerLink="/materialliste" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Materialliste
+            @if (nav.isContractor()) {
+              {{ nav.roomName() }}
+            }
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="nav-link disabled"
+            title="Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden."
+            (click)="nav.openResultsPage('/materialliste')"
+          >
+            Materialliste
+            @if (nav.isContractor()) {
+              {{ nav.roomName() }}
+            }
+          </button>
+        }
+      </div>
+
+      @if (nav.isAuthenticated() && nav.isContractor()) {
+        <div class="nav-group">
+          <p class="nav-eyebrow">Angebote</p>
+
+          <a routerLink="/angebote" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Angebote
+          </a>
+          <a routerLink="/rechnungen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Rechnungen
+          </a>
+          @if (nav.hasAssignedLeads()) {
+            <a routerLink="/anfragen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              Anfragen
+              @if (nav.leadsCount(); as count) {
+                <span class="nav-badge">{{ count }}</span>
+              }
+            </a>
+          }
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-eyebrow">Konto</p>
+
+          <a routerLink="/konto/firmenprofil" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Firmenprofil
+          </a>
+          <a routerLink="/konto/preise" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Eigene Preise
+          </a>
+          <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            @if (nav.hasActiveSubscription()) {
+              Premium
+              <span class="abo-dot" title="Lead-Abo aktiv" aria-label="Aktiv"></span>
+            } @else {
+              Premium freischalten
+            }
+          </a>
+          @if (nav.hasActiveSubscription()) {
+            <a
+              routerLink="/konto/anfragen-empfang"
+              routerLinkActive="active"
+              class="nav-link"
+              (click)="nav.closeMenu()"
+            >
+              Anfragen empfangen
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              title="Erfordert aktives Lead-Abo"
+              (click)="nav.goToPremium()"
+            >
+              Anfragen empfangen
+            </button>
+          }
+          <a routerLink="/feedback" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Feedback
+          </a>
+        </div>
+      }
+
+      @if (nav.isAdmin()) {
+        <div class="nav-group">
+          <p class="nav-eyebrow">Admin</p>
+
+          <a routerLink="/admin" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            Admin
+          </a>
+        </div>
+      }
+    </nav>
+
+    <div class="app-sidebar-footer">
+      @if (nav.isAuthenticated()) {
+        <p class="app-user-email">{{ nav.userEmail() }}</p>
+        <button type="button" class="nav-link logout-link" (click)="logout()">Abmelden</button>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+          Anmelden
+        </a>
+      }
+
+      <nav class="app-micro-footer" aria-label="Rechtliches">
+        <a [href]="legalUrls.impressum">Impressum</a>
+        <a [href]="legalUrls.datenschutz">Datenschutz</a>
+        <a [href]="legalUrls.kontakt">Kontakt</a>
+        <button type="button" class="footer-link-button" (click)="nav.openCookieSettings()">
+          Cookie-Einstellungen
+        </button>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="content-stage">
+    <router-outlet />
+  </main>
+</div>

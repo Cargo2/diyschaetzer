@@ -1,15 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { AppHostService } from '../services/app-host.service';
 
 /**
  * Lässt nur angemeldete Profis (`contractor`) durch. Wartet die initiale
  * Auth-Prüfung ab, damit ein Direktaufruf (Reload auf /profil) nicht
  * fälschlich umgeleitet wird.
  */
-export const contractorGuard: CanActivateFn = async () => {
+export const contractorGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  const host = inject(AppHostService);
 
   await auth.ready;
 
@@ -19,6 +21,11 @@ export const contractorGuard: CanActivateFn = async () => {
   // Bereits angemeldet, aber kein Profi → auf die Startseite (nicht erneut zum Login).
   if (auth.isAuthenticated()) {
     return router.createUrlTree(['/']);
+  }
+  // Cross-Domain-Betrieb: Login liegt auf der App-Domain → absolut dorthin.
+  if (host.crossDomainEnabled) {
+    globalThis.location.assign(host.loginUrl(state.url));
+    return false;
   }
   return router.createUrlTree(['/login']);
 };

@@ -3,6 +3,8 @@ import { wizardCompletedGuard } from './guards/wizard-completed.guard';
 import { contractorGuard } from './guards/contractor.guard';
 import { leadSubscriptionGuard } from './guards/lead-subscription.guard';
 import { adminGuard } from './guards/admin.guard';
+import { appHostMatchGuard } from './guards/app-host-match.guard';
+import { appRedirectGuard } from './guards/app-redirect.guard';
 import { GuideComponent } from './pages/guide/guide.component';
 import { HomeComponent } from './pages/home/home.component';
 import { MaterialListComponent } from './pages/material-list/material-list.component';
@@ -13,15 +15,26 @@ import { ImpressumComponent } from './pages/legal/impressum.component';
 import { DatenschutzComponent } from './pages/legal/datenschutz.component';
 import { KontaktComponent } from './pages/legal/kontakt.component';
 import { AuthPageComponent } from './pages/auth/auth-page.component';
+import { MarketingShellComponent } from './layout/marketing-shell/marketing-shell.component';
 
-export const routes: Routes = [
+/**
+ * Marketing-Routen (WP1) – die heutigen Routen UNVERÄNDERT (gleiche Reihenfolge/
+ * Guards/Lazy-Imports), jetzt als children der MarketingShell. Neu vorangestellt:
+ * `appRedirectGuard` auf den App-only-Routen (login/konto/feedback/angebote/
+ * rechnungen/anfragen/admin) – leitet im Cross-Domain-Betrieb auf die App-Domain
+ * um, im `standalone`-Modus ein No-Op.
+ *
+ * ⚠️ Wizard-/App-Routen existieren in BEIDEN Bäumen (hier + app-area/app-area.routes.ts).
+ * Bei Änderungen synchron halten mit `app-area/app-area.routes.ts`.
+ */
+export const MARKETING_ROUTES: Routes = [
   { path: '', component: HomeComponent },
-  { path: 'login', component: AuthPageComponent },
+  { path: 'login', canActivate: [appRedirectGuard], component: AuthPageComponent },
   {
     // Profi-Konto: Firmendaten / Preise / Premium / Anfragen-Empfang als
     // getrennte Unterseiten. contractorGuard schützt alle Kind-Routen.
     path: 'konto',
-    canActivate: [contractorGuard],
+    canActivate: [appRedirectGuard, contractorGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'firmenprofil' },
       {
@@ -59,13 +72,13 @@ export const routes: Routes = [
   },
   {
     path: 'feedback',
-    canActivate: [contractorGuard],
+    canActivate: [appRedirectGuard, contractorGuard],
     loadComponent: () =>
       import('./pages/feedback/feedback-page.component').then((m) => m.FeedbackPageComponent)
   },
   {
     path: 'angebote',
-    canActivate: [contractorGuard],
+    canActivate: [appRedirectGuard, contractorGuard],
     loadComponent: () =>
       import('./pages/contractor-offers/contractor-offers.component').then(
         (m) => m.ContractorOffersComponent
@@ -73,7 +86,7 @@ export const routes: Routes = [
   },
   {
     path: 'rechnungen',
-    canActivate: [contractorGuard],
+    canActivate: [appRedirectGuard, contractorGuard],
     loadComponent: () =>
       import('./pages/contractor-invoices/contractor-invoices.component').then(
         (m) => m.ContractorInvoicesComponent
@@ -81,7 +94,7 @@ export const routes: Routes = [
   },
   {
     path: 'anfragen',
-    canActivate: [contractorGuard],
+    canActivate: [appRedirectGuard, contractorGuard],
     loadComponent: () =>
       import('./pages/contractor-leads/contractor-leads.component').then(
         (m) => m.ContractorLeadsComponent
@@ -95,7 +108,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [adminGuard],
+    canActivate: [appRedirectGuard, adminGuard],
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.ADMIN_ROUTES)
   },
   { path: 'raum-anlegen', component: WizardPageComponent },
@@ -167,4 +180,22 @@ export const routes: Routes = [
   { path: 'datenschutz', component: DatenschutzComponent },
   { path: 'kontakt', component: KontaktComponent },
   { path: '**', redirectTo: '' }
+];
+
+/**
+ * Zwei-Baum-Routing (WP1, Host-Erkennung):
+ * - Auf dem App-Host (bzw. Dev-Override) matcht der App-Baum (`appHostMatchGuard`
+ *   → `AppHostService.isAppHost`) und lädt die schlanke App-Shell.
+ * - Sonst (Marketing/standalone/Prerender – `canMatch` false) greift die
+ *   MarketingShell mit den heutigen Routen. Auf dem Server ist `isAppHost` immer
+ *   false, das prerenderte HTML bleibt der Marketing-Baum.
+ * app.routes.server.ts NICHT anfassen: App-Pfade fallen unter `** → Client`.
+ */
+export const routes: Routes = [
+  {
+    path: '',
+    canMatch: [appHostMatchGuard],
+    loadChildren: () => import('./app-area/app-area.routes').then((m) => m.APP_AREA_ROUTES)
+  },
+  { path: '', component: MarketingShellComponent, children: MARKETING_ROUTES }
 ];

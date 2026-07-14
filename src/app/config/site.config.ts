@@ -21,3 +21,13 @@ export function absoluteUrl(path: string): string {
   const normalized = path.startsWith('/') ? path : `/${path}`;
   return `${SITE_URL}${normalized === '/' ? '' : normalized}`;
 }
+
+/**
+ * Zwei-Domain-Betrieb (WP1): Marketing (fliesen-kosten.de) vs. App-Bereich
+ * (app.fliesen-kosten.de). EIN Build; die Host-Erkennung (AppHostService)
+ * entscheidet zur Laufzeit, welcher Routen-Baum/Shell greift.
+ */
+export const APP_URL = 'https://app.fliesen-kosten.de';
+export const MARKETING_HOSTNAMES = ['fliesen-kosten.de', 'www.fliesen-kosten.de'];
+/** Go-Live-Schalter: erst auf true stellen, wenn app.* deployt ist. */
+export const APP_DOMAIN_LIVE = false;

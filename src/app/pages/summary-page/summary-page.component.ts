@@ -16,6 +16,7 @@ import { LocalProjectService } from '../../services/local-project.service';
 import { RoomLimitService } from '../../services/room-limit.service';
 import { ShareService } from '../../services/share.service';
 import { WizardStateService } from '../../services/wizard-state.service';
+import { AppHostService } from '../../services/app-host.service';
 
 @Component({
   selector: 'app-summary-page',
@@ -237,7 +238,13 @@ import { WizardStateService } from '../../services/wizard-state.service';
                 </div>
                 @if (!canShare()) {
                   <p class="share-hint">
-                    Zum Teilen bitte <a routerLink="/login">anmelden</a> – ein geteilter Link
+                    Zum Teilen bitte
+                    @if (host.crossDomainEnabled) {
+                      <a [href]="host.loginUrl()">anmelden</a>
+                    } @else {
+                      <a routerLink="/login">anmelden</a>
+                    }
+                    – ein geteilter Link
                     speichert eine eingefrorene Momentaufnahme dieser Kalkulation.
                   </p>
                 }
@@ -1054,6 +1061,8 @@ export class SummaryPageComponent {
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
   private readonly shareService = inject(ShareService);
+  /** Zwei-Domain-Betrieb: entscheidet über relative vs. absolute Login-Links. */
+  readonly host = inject(AppHostService);
 
   readonly roomLimitReached = this.roomLimit.limitReached;
   readonly roomLimitHint = this.roomLimit.hint;

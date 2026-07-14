@@ -1,0 +1,334 @@
+/* App-Shell (Phase 18, WP2): Sidebar-Navigation für den App-Baum. */
+:host {
+  display: block;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ── Sidebar (Desktop: sticky linke Spalte) ─────────────────────── */
+.app-sidebar {
+  grid-column: 1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-right: 1px solid rgba(19, 23, 17, 0.08);
+  overflow-y: auto;
+}
+
+.app-sidebar-brand {
+  display: flex;
+  align-items: center;
+  padding: 1.1rem 1.1rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--verde-deep);
+  text-decoration: none;
+}
+
+.app-sidebar-nav {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 0.3rem 0.75rem 1rem;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-eyebrow {
+  margin: 0.4rem 0.6rem 0.3rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  width: 100%;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.nav-link:hover {
+  background: rgba(17, 87, 74, 0.07);
+  color: var(--verde-deep);
+}
+
+.nav-link.active {
+  background: var(--verde-deep);
+  color: #f2f8f4;
+}
+
+.nav-link.disabled {
+  color: #b3ab93;
+  cursor: not-allowed;
+}
+
+.nav-link.disabled:hover {
+  background: transparent;
+  color: #b3ab93;
+}
+
+.nav-badge {
+  margin-left: auto;
+  min-width: 1.3rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--copper);
+  color: #fff7ee;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.abo-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+}
+
+/* ── Sidebar-Fuß: Konto/Logout + Mikro-Footer ───────────────────── */
+.app-sidebar-footer {
+  padding: 0.9rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(19, 23, 17, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.app-user-email {
+  margin: 0 0 0.1rem;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.logout-link {
+  color: var(--copper);
+}
+
+.app-micro-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  margin-top: 0.35rem;
+  padding: 0 0.75rem;
+}
+
+.app-micro-footer a,
+.footer-link-button {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-link-button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+.app-micro-footer a:hover,
+.footer-link-button:hover {
+  color: var(--copper);
+}
+
+/* ── Mobile Topbar (nur < 768px sichtbar) + Drawer-Mechanik ─────── */
+.app-topbar {
+  display: none;
+}
+
+.app-topbar-brand {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--verde-deep);
+  text-decoration: none;
+}
+
+.app-topbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(17, 87, 74, 0.18);
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.app-topbar-toggle-bars {
+  position: relative;
+  display: block;
+  width: 1.3rem;
+  height: 0.85rem;
+}
+
+.app-topbar-toggle-bars span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--verde-deep);
+  transition: transform 220ms ease, opacity 180ms ease, top 220ms ease;
+}
+
+.app-topbar-toggle-bars span:nth-child(1) {
+  top: 0;
+}
+
+.app-topbar-toggle-bars span:nth-child(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.app-topbar-toggle-bars span:nth-child(3) {
+  top: 100%;
+  transform: translateY(-100%);
+}
+
+.app-shell.drawer-open .app-topbar-toggle-bars span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.app-shell.drawer-open .app-topbar-toggle-bars span:nth-child(2) {
+  opacity: 0;
+}
+
+.app-shell.drawer-open .app-topbar-toggle-bars span:nth-child(3) {
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.app-drawer-backdrop {
+  display: none;
+}
+
+/* ── Content-Stage: spiegelt die Breitenregeln der MarketingShell,
+   damit Seiten (bringen eigene Innenbreiten mit) nicht plötzlich anders
+   laufen. Admin-Ausnahme analog `.content-stage:has(app-admin-shell)`. ── */
+.content-stage {
+  grid-column: 2;
+  min-width: 0;
+  width: 100%;
+  padding: 2rem max(4%, calc((100% - 86rem) / 2));
+}
+
+.content-stage:has(app-admin-shell) {
+  padding-inline: 10%;
+}
+
+/* ── Tablet: Sidebar schmaler ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .content-stage {
+    margin-top: 0;
+    padding-block: 1.4rem;
+  }
+}
+
+/* ── Handy: Sidebar wird Off-Canvas-Drawer, Topbar sichtbar ──────── */
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--card);
+    border-bottom: 1px solid rgba(19, 23, 17, 0.08);
+    /* Safe-Area: unter der Notch/Statusleiste bzw. an gerundeten Rändern nicht kleben. */
+    padding: max(0.6rem, env(safe-area-inset-top)) max(0.9rem, env(safe-area-inset-right)) 0.6rem
+      max(0.9rem, env(safe-area-inset-left));
+  }
+
+  .app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: min(82%, 20rem);
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 24px 0 48px -16px rgba(10, 53, 47, 0.3);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .app-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(7, 36, 31, 0.45);
+  }
+
+  .content-stage {
+    grid-column: 1;
+    padding-inline: 4%;
+    padding-block: 1.2rem;
+  }
+
+  .content-stage:has(app-admin-shell) {
+    padding-inline: 4%;
+  }
+}
