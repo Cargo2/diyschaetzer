@@ -127,6 +127,35 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
   am owner-scoped `company_profiles` und werden als Snapshot in `invoice_data` eingefroren. XRechnung-XML wird
   rein clientseitig erzeugt (kein Server-Fetch, keine neue Dependency).
 
+## Teilen-Link-Tracking + Annahme (Migration 0024, `shared_offers`)
+
+Erweitert die geteilten Angebote (0017) um leichtes Aufruf-Tracking und eine öffentliche,
+set-once Angebots-Annahme. **Kein** neuer öffentlicher Schreibpfad über RLS – aller anonyme
+Zugriff läuft ausschließlich über SECURITY-DEFINER-Punktfunktionen per Token (Zeilen-UUID).
+
+- **Neue Spalten** auf `shared_offers` (additiv): `offer_id` (FK → `contractor_offers`,
+  `on delete set null`), `viewed_at`, `last_viewed_at`, `view_count`, `accepted_at`,
+  `accepted_by_name`. Partieller Unique-Index `(owner_id, offer_id) where offer_id is not null`
+  ⇒ **ein stabiler Token je Angebot** (Alt-Zeilen ohne `offer_id` unberührt).
+- **RLS**: einzige neue Policy ist `shared_offers_update_own` (**owner-scoped UPDATE**, `using`
+  **und** `with check` auf `auth.uid() = owner_id`). Select/Insert/Delete unverändert aus 0017;
+  **keine** permissive anon/authenticated-Policy.
+- **`get_shared_offer_page(uuid)`** (`stable`, `security definer`, fixer `search_path = public`):
+  Punktabfrage per Token, liefert `jsonb_build_object('data', …, 'accepted_at', …, 'accepted_by_name', …)`
+  oder `null`. Legacy `get_shared_offer(uuid)` (0017) bleibt unverändert (gecachte Bundles).
+- **`ping_shared_offer(uuid)`** (`security definer`, fixer `search_path`): ein einzelnes UPDATE,
+  Aufruf-Zähler **gedrosselt auf 10 Minuten** und hart gedeckelt (`least(…, 100000)`);
+  unbekannter Token = **no-op** (0 Zeilen, kein Fehler → keine Enumeration/Fehlerorakel).
+- **`accept_shared_offer(uuid, text)`** (`security definer`, fixer `search_path`): **Namenslänge
+  serverseitig validiert** (`btrim` 2..120, sonst `raise 'invalid_name'`); **set-once** über
+  `update … where accepted_at is null` – ein zweiter Aufruf überschreibt **nie**, sondern liefert
+  die erste Annahme. Bei erfolgreicher Erst-Annahme mit verknüpftem `offer_id` wird
+  `contractor_offers.status = 'accepted'` gesetzt (Wert liegt im Check-Constraint aus 0016).
+  Rückgabe = aktueller Annahme-Stand, `null` bei unbekanntem Token.
+- Alle drei RPCs: `revoke all … from public` + `grant execute … to anon, authenticated` (Muster 0017).
+  Schutz beruht auf der **UUID-Token-Entropie** (kein Listing, nur Punktabfrage) und
+  serverseitiger Validierung/Set-once-Logik – nicht auf clientseitigen Checks.
+
 ---
 
 ## Vor öffentlichem Livegang (Kurzliste)
