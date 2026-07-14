@@ -231,6 +231,11 @@
   line-height: 1.3;
 }
 
+.meta-hint-warning {
+  color: #92400e;
+  display: block;
+}
+
 .seller-note {
   font-size: .82rem;
   color: #6b7280;

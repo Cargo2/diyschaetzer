@@ -12,6 +12,7 @@ import {
   invoiceNetAfterDiscount,
   invoiceNetTotal,
   invoiceVatAmount,
+  isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
   listMissingXRechnungSellerFields,
   normalizeContractorInvoice,
@@ -87,6 +88,16 @@ export class ContractorInvoicesComponent implements OnInit {
   /** § 14 UStG: Leistungsdatum ODER vollständiger Leistungszeitraum ist Pflicht. */
   xrServiceDateMissing(): boolean {
     return this.invoice !== null && !hasXRechnungServiceDate(this.invoice);
+  }
+
+  /** Fehlt dem Rechnungsempfänger die E-Mail (BT-49, Pflicht für den XRechnung-Versand). */
+  xrCustomerEmailMissing(): boolean {
+    return this.invoice !== null && this.isBlank(this.invoice.customer.email);
+  }
+
+  /** Soft-Validierung Käuferreferenz: sieht nach einer Leitweg-ID aus, entspricht aber nicht dem Format. */
+  buyerReferenceLooksMalformed(): boolean {
+    return this.invoice !== null && isLikelyMalformedLeitwegId(this.invoice.buyerReference);
   }
 
   isBlank(value: string | null | undefined): boolean {

@@ -101,6 +101,9 @@
         @if (xrBlocked()) {
           <p class="invoices-message warning" role="note">
             <strong>Für die XRechnung fehlen:</strong> {{ xrMissingFields().join(', ') }}.
+            @if (xrCustomerEmailMissing()) {
+              Die E-Mail des Kunden braucht XRechnung für die elektronische Zustellung (BT-49).
+            }
             @if (xrSellerIncomplete()) {
               Absender-/Bank-/Steuerdaten kannst du im
               <a routerLink="/konto/firmenprofil">Firmenprofil ergänzen</a> –
@@ -193,6 +196,12 @@
               <span>Käuferreferenz / Leitweg-ID (BT-10) <span class="xr-star" title="Pflicht für XRechnung">*</span></span>
               <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" placeholder="n/a (bei Behörden: Leitweg-ID)" [class.xr-missing]="isBlank(invoice.buyerReference)" />
               <small class="meta-hint">Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".</small>
+              @if (buyerReferenceLooksMalformed()) {
+                <small class="meta-hint meta-hint-warning">
+                  Sieht nach einer Leitweg-ID aus, entspricht aber nicht dem üblichen Format
+                  (z. B. 04011000-1234512345-06).
+                </small>
+              }
             </label>
           </fieldset>
         </div>

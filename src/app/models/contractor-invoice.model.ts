@@ -345,10 +345,33 @@ export function listMissingXRechnungFields(invoice: ContractorInvoice): string[]
     missing.push('Ort (Kunde)');
   }
   if (!isFilled(invoice.customer.email)) {
-    missing.push('E-Mail (Kunde)');
+    missing.push('E-Mail des Kunden (Pflicht für XRechnung-Versand)');
   }
   if (!hasBillableLine(invoice)) {
     missing.push('Mindestens eine aktive Position');
   }
   return missing;
+}
+
+/**
+ * Grobe Formstruktur einer Leitweg-ID: Grobadressierung (2–12 Ziffern) –
+ * Feinadressierung (1–30 alphanumerische Zeichen) – zweistellige Prüfziffer,
+ * z. B. `04011000-1234512345-06`.
+ */
+const LEITWEG_ID_PATTERN = /^\d{2,12}-[A-Za-z0-9]{1,30}-\d{2}$/;
+
+/**
+ * Soft-Validierung für die Käuferreferenz (BT-10): erkennt Werte, die wie eine
+ * **beabsichtigte** Leitweg-ID aussehen (enthalten Ziffern und Bindestriche),
+ * aber nicht dem üblichen Leitweg-ID-Format entsprechen. Dient nur einem
+ * Warnhinweis im Editor – blockt den Export nicht, da B2B-Rechnungen keine
+ * echte Leitweg-ID brauchen (dafür genügt „n/a" oder eine freie Referenz).
+ */
+export function isLikelyMalformedLeitwegId(value: string): boolean {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed || trimmed.toLowerCase() === 'n/a') {
+    return false;
+  }
+  const looksIntended = /\d/.test(trimmed) && trimmed.includes('-');
+  return looksIntended && !LEITWEG_ID_PATTERN.test(trimmed);
 }

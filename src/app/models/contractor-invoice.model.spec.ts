@@ -4,6 +4,7 @@ import {
   ContractorInvoiceCustomer,
   ContractorInvoiceSeller,
   hasXRechnungServiceDate,
+  isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
   listMissingXRechnungSellerFields
 } from './contractor-invoice.model';
@@ -129,7 +130,7 @@ describe('listMissingXRechnungFields', () => {
     ['street', 'Straße (Kunde)'],
     ['postalCode', 'PLZ (Kunde)'],
     ['city', 'Ort (Kunde)'],
-    ['email', 'E-Mail (Kunde)']
+    ['email', 'E-Mail des Kunden (Pflicht für XRechnung-Versand)']
   ] as const)('reports "%s" missing as "%s" for the customer', (field, expected) => {
     const invoice = completeInvoice({ customer: { ...completeCustomer(), [field]: '' } });
     expect(listMissingXRechnungFields(invoice)).toContain(expected);
@@ -211,5 +212,35 @@ describe('listMissingXRechnungFields', () => {
 describe('listMissingXRechnungSellerFields', () => {
   it('returns an empty list for a complete seller', () => {
     expect(listMissingXRechnungSellerFields(completeSeller())).toEqual([]);
+  });
+});
+
+describe('isLikelyMalformedLeitwegId', () => {
+  it('does not warn for an empty value', () => {
+    expect(isLikelyMalformedLeitwegId('')).toBe(false);
+    expect(isLikelyMalformedLeitwegId('   ')).toBe(false);
+  });
+
+  it('does not warn for the default "n/a" (any casing)', () => {
+    expect(isLikelyMalformedLeitwegId('n/a')).toBe(false);
+    expect(isLikelyMalformedLeitwegId('N/A')).toBe(false);
+  });
+
+  it('does not warn for free text without a hyphen structure', () => {
+    expect(isLikelyMalformedLeitwegId('Bestellung 12345')).toBe(false);
+  });
+
+  it('does not warn for text with a hyphen but no digits', () => {
+    expect(isLikelyMalformedLeitwegId('Projekt-Nord')).toBe(false);
+  });
+
+  it('does not warn for a correctly formatted Leitweg-ID', () => {
+    expect(isLikelyMalformedLeitwegId('04011000-1234512345-06')).toBe(false);
+  });
+
+  it('warns for a value that looks like an intended Leitweg-ID but has the wrong shape', () => {
+    expect(isLikelyMalformedLeitwegId('04011000-1234512345')).toBe(true);
+    expect(isLikelyMalformedLeitwegId('LWID-04011000-1234512345-06')).toBe(true);
+    expect(isLikelyMalformedLeitwegId('04011000-1234512345-006')).toBe(true);
   });
 });
