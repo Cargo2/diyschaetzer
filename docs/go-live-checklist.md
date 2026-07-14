@@ -76,3 +76,22 @@ Details: [`docs/deploy-app-subdomain.md`](./deploy-app-subdomain.md).
       Rechnung daraus ableiten).
 - [ ] Geteilte Links auf der Hauptdomain testen: `/angebot/:token` und
       `/geteilt/:token` (read-only, ohne Login erreichbar).
+
+## E. Sprachmodus + Teilen-Link-Ausbau (14.07.2026)
+
+- [x] Migrationen `0023_company_profile_country.sql` + `0024_shared_offer_tracking.sql`
+      per `npx supabase db push` angewendet (14.07.2026).
+- [ ] **Muttersprachler-Review** der polnischen (und englischen) Dictionaries
+      unter `src/app/i18n/dict/` vor aktiver Bewerbung des Sprachmodus
+      (alle Dateien tragen den Hinweis „Maschinell übersetzt").
+- [ ] Live-Test Sprachmodus: auf `app.fliesen-kosten.de` unten in der Sidebar
+      auf Polski/English umschalten → Sidebar, Wizard, Konto- und
+      Editor-Seiten übersetzt; PDF/XRechnung/geteilte Angebotsseite bleiben
+      deutsch; `fliesen-kosten.de` bleibt komplett deutsch.
+- [ ] Live-Test Teilen-Link: gespeichertes Angebot teilen (zweimal → gleiche
+      URL), Link anonym öffnen (Tracking „Zuletzt angesehen" erscheint im
+      Editor), als Kunde mit Namen annehmen → Banner + Status „Angenommen"
+      im Editor → Anzahlungsrechnung (30 %) erzeugen und PDF prüfen.
+- [ ] Live-Test Ländergating: Firmenprofil-Land auf AT stellen → XRechnung-
+      Hinweise/Button verschwinden (Rechnungen + Profil), PDF bleibt; zurück
+      auf DE → alles wieder da.
