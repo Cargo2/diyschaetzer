@@ -8,14 +8,14 @@
     <div class="space-y-8">
       <header class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div class="space-y-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">{{ step.eyebrow }}</p>
-          <h1 class="text-3xl font-extrabold leading-tight text-stone-950 sm:text-4xl">{{ step.title }}</h1>
-          <p class="max-w-3xl text-sm leading-6 text-stone-600 sm:text-base">{{ step.description }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">{{ step.eyebrow | t }}</p>
+          <h1 class="text-3xl font-extrabold leading-tight text-stone-950 sm:text-4xl">{{ step.title | t }}</h1>
+          <p class="max-w-3xl text-sm leading-6 text-stone-600 sm:text-base">{{ step.description | t }}</p>
         </div>
 
         <div class="w-full max-w-xs rounded-[1.1rem] border border-stone-200 bg-stone-950 p-4 text-stone-50 shadow-[0_20px_40px_rgba(28,25,23,0.12)]">
           <div class="mb-3 flex items-center justify-between text-sm">
-            <span class="text-stone-300">Fortschritt</span>
+            <span class="text-stone-300">{{ 'Fortschritt' | t }}</span>
             <strong>{{ currentStepIndex() + 1 }} / {{ steps.length }}</strong>
           </div>
           <div class="h-2 rounded-full bg-white/10">
@@ -40,21 +40,21 @@
                       [class.hover:border-emerald-300]="state.room.roomType !== option.value"
                       (click)="selectRoomType(option.value)"
                     >
-                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
 
                 <label class="block rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                  <span class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Raumname</span>
+                  <span class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Raumname' | t }}</span>
                   <input
                     type="text"
                     maxlength="80"
                     class="mt-3 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base font-semibold text-stone-900 outline-none"
                     [ngModel]="state.room.roomName"
                     (ngModelChange)="updateRoomName($event)"
-                    placeholder="z. B. Bad OG oder Terrasse Südseite"
+                    [placeholder]="'z. B. Bad OG oder Terrasse Südseite' | t"
                   />
                 </label>
 
@@ -67,17 +67,16 @@
                       (ngModelChange)="toggleRoomOutdoor($event)"
                     />
                     <span>
-                      <span class="block font-semibold text-stone-900">Außenbereich</span>
-                      <span class="block text-sm leading-6 text-stone-600">Liegt dieser Bereich im Freien, z. B. Terrasse, Balkon oder Außentreppe?</span>
+                      <span class="block font-semibold text-stone-900">{{ 'Außenbereich' | t }}</span>
+                      <span class="block text-sm leading-6 text-stone-600">{{ 'Liegt dieser Bereich im Freien, z. B. Terrasse, Balkon oder Außentreppe?' | t }}</span>
                     </span>
                   </label>
                 }
 
                 @if (state.room.isOutdoor) {
                   <div class="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
-                    <strong class="block">Außenbereich</strong>
-                    Frostsichere, witterungsbeständige Outdoor-Fliesen oder Feinsteinzeug-Terrassenplatten werden empfohlen.
-                    Achte außerdem auf Rutschhemmung, Gefälle und eine funktionierende Entwässerung.
+                    <strong class="block">{{ 'Außenbereich' | t }}</strong>
+                    {{ 'Frostsichere, witterungsbeständige Outdoor-Fliesen oder Feinsteinzeug-Terrassenplatten werden empfohlen. Achte außerdem auf Rutschhemmung, Gefälle und eine funktionierende Entwässerung.' | t }}
                   </div>
                 }
               </div>
@@ -87,11 +86,11 @@
               <div class="space-y-6 rounded-[1.75rem] border border-stone-200 bg-stone-50 p-6">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Raumgröße</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Raumgröße' | t }}</p>
                     <div class="mt-2 text-4xl font-black text-stone-950">{{ formattedSize() }} m²</div>
                   </div>
                   <label class="text-sm text-stone-500">
-                    Direkt eingeben
+                    {{ 'Direkt eingeben' | t }}
                     <input
                       type="number"
                       min="1"
@@ -115,8 +114,8 @@
                 />
 
                 <div class="flex justify-between text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-                  <span>1,0 m²</span>
-                  <span>100,0 m²</span>
+                  <span>{{ '1,0 m²' | t }}</span>
+                  <span>{{ '100,0 m²' | t }}</span>
                 </div>
               </div>
             }
@@ -133,16 +132,16 @@
                       [class.border-stone-200]="state.sinkOption !== option.value"
                       (click)="selectSinkOption(option.value)"
                     >
-                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
 
                 @if (state.sinkOption && state.sinkOption !== 'no_sink') {
                   <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Optional</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Soll ein Unterschrank berücksichtigt werden?</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Optional' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Soll ein Unterschrank berücksichtigt werden?' | t }}</h2>
                     <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
                       @for (option of vanityCabinetOptions; track option.value) {
                         <button
@@ -154,8 +153,8 @@
                           [class.border-stone-200]="state.vanityCabinet !== option.value"
                           (click)="selectVanityCabinet(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
@@ -176,8 +175,8 @@
                       [class.border-stone-200]="state.showerBathOption !== option.value"
                       (click)="selectShowerBathOption(option.value)"
                     >
-                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
@@ -185,8 +184,8 @@
                 <div class="grid gap-6 xl:grid-cols-2">
                   @if (hasShowerSelection()) {
                     <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
-                      <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Dusche ist geplant?</h2>
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Zusatzfrage' | t }}</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Welche Dusche ist geplant?' | t }}</h2>
                       <div class="option-grid mt-5 grid gap-3">
                         @for (option of showerTypeOptions; track option.value) {
                           <button
@@ -198,8 +197,8 @@
                             [class.border-stone-200]="state.showerType !== option.value"
                             (click)="selectShowerType(option.value)"
                           >
-                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                            <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                           </button>
                         }
                       </div>
@@ -208,8 +207,8 @@
 
                   @if (hasBathtubSelection()) {
                     <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
-                      <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Badewanne ist geplant?</h2>
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Zusatzfrage' | t }}</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Welche Badewanne ist geplant?' | t }}</h2>
                       <div class="option-grid mt-5 grid gap-3">
                         @for (option of bathtubTypeOptions; track option.value) {
                           <button
@@ -221,8 +220,8 @@
                             [class.border-stone-200]="state.bathtubType !== option.value"
                             (click)="selectBathtubType(option.value)"
                           >
-                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                            <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                           </button>
                         }
                       </div>
@@ -243,8 +242,8 @@
                     [class.border-stone-200]="state.heatingOption !== option.value"
                     (click)="selectHeatingOption(option.value)"
                   >
-                    <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                   </button>
                 }
               </div>
@@ -261,8 +260,8 @@
                     [class.border-stone-200]="state.toiletOption !== option.value"
                     (click)="selectToiletOption(option.value)"
                   >
-                    <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                    <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                   </button>
                 }
               </div>
@@ -280,15 +279,15 @@
                       [class.border-stone-200]="state.tilingScope !== option.value"
                       (click)="selectTilingScope(option.value)"
                     >
-                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
 
                 <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
-                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesenqualität möchtest du ungefähr?</h2>
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Zusatzfrage' | t }}</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Welche Fliesenqualität möchtest du ungefähr?' | t }}</h2>
                   <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                     @for (option of tileQualityOptions; track option.value) {
                       <button
@@ -300,16 +299,16 @@
                         [class.border-stone-200]="state.tileQuality !== option.value"
                         (click)="selectTileQuality(option.value)"
                       >
-                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                       </button>
                     }
                   </div>
                 </div>
 
                 <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
-                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesengröße ist für den Boden geplant?</h2>
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Zusatzfrage' | t }}</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Welche Fliesengröße ist für den Boden geplant?' | t }}</h2>
                   <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                     @for (option of tileSizeOptions; track option.value) {
                       <button
@@ -321,8 +320,8 @@
                         [class.border-stone-200]="state.floorTileSize !== option.value"
                         (click)="selectFloorTileSize(option.value)"
                       >
-                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                       </button>
                     }
                   </div>
@@ -334,22 +333,22 @@
               <div class="space-y-6">
                 <div class="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Flaechenbasis</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Waende und Teilbereiche</h2>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">Bodenflaeche: {{ formatArea(state.bathroomSizeM2) }} m²</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Flaechenbasis' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Waende und Teilbereiche' | t }}</h2>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">{{ 'Bodenflaeche:' | t }} {{ formatArea(state.bathroomSizeM2) }} m²</p>
                   </div>
                   <button
                     type="button"
                     class="rounded-2xl bg-emerald-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
                     (click)="addWall()"
                   >
-                    Wand hinzufuegen
+                    {{ 'Wand hinzufuegen' | t }}
                   </button>
                 </div>
 
                 <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Zusatzfrage</p>
-                  <h2 class="mt-2 text-xl font-bold text-stone-900">Welche Fliesengröße ist für die Wände geplant?</h2>
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Zusatzfrage' | t }}</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Welche Fliesengröße ist für die Wände geplant?' | t }}</h2>
                   <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                     @for (option of tileSizeOptions; track option.value) {
                       <button
@@ -361,8 +360,8 @@
                         [class.border-stone-200]="state.wallTileSize !== option.value"
                         (click)="selectWallTileSize(option.value)"
                       >
-                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                       </button>
                     }
                   </div>
@@ -370,7 +369,7 @@
 
                 @if (state.walls.length === 0) {
                   <div class="rounded-3xl border border-dashed border-stone-300 bg-white p-6 text-sm leading-6 text-stone-600">
-                    Noch keine Wand erfasst. Bei "Noch unklar" ist das optional; bei Wandfliesen kannst du hier einzelne Waende oder Bereiche hinzufuegen.
+                    {{ 'Noch keine Wand erfasst. Bei "Noch unklar" ist das optional; bei Wandfliesen kannst du hier einzelne Waende oder Bereiche hinzufuegen.' | t }}
                   </div>
                 }
 
@@ -380,20 +379,20 @@
                       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <h2 class="text-xl font-bold text-stone-950">{{ wall.name }}</h2>
-                          <p class="mt-1 text-sm text-stone-500">Netto-Fliesenflaeche: {{ formatArea(wall.tileAreaM2) }} m²</p>
+                          <p class="mt-1 text-sm text-stone-500">{{ 'Netto-Fliesenflaeche:' | t }} {{ formatArea(wall.tileAreaM2) }} m²</p>
                         </div>
                         <button
                           type="button"
                           class="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
                           (click)="removeWall(wall.id)"
                         >
-                          Wand entfernen
+                          {{ 'Wand entfernen' | t }}
                         </button>
                       </div>
 
                       <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label class="text-sm font-medium text-stone-700">
-                          Name der Wand
+                          {{ 'Name der Wand' | t }}
                           <input
                             type="text"
                             class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
@@ -403,7 +402,7 @@
                         </label>
 
                         <label class="text-sm font-medium text-stone-700">
-                          Breite der Wand in m
+                          {{ 'Breite der Wand in m' | t }}
                           <input
                             type="number"
                             min="0.1"
@@ -416,7 +415,7 @@
                         </label>
 
                         <label class="text-sm font-medium text-stone-700">
-                          Wandhoehe in m
+                          {{ 'Wandhoehe in m' | t }}
                           <input
                             type="number"
                             min="0.1"
@@ -429,7 +428,7 @@
                         </label>
 
                         <label class="text-sm font-medium text-stone-700">
-                          Bis zu welcher Hoehe soll gefliest werden?
+                          {{ 'Bis zu welcher Hoehe soll gefliest werden?' | t }}
                           <input
                             type="number"
                             min="0"
@@ -444,45 +443,45 @@
 
                       @if (wall.tileHeightM > wall.heightM) {
                         <p class="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-                          Die Fliesenhoehe darf nicht groesser als die Wandhoehe sein.
+                          {{ 'Die Fliesenhoehe darf nicht groesser als die Wandhoehe sein.' | t }}
                         </p>
                       }
 
                       <div class="mt-6 rounded-3xl border border-stone-200 bg-stone-50 p-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <h3 class="font-bold text-stone-900">Aussparungen</h3>
+                          <h3 class="font-bold text-stone-900">{{ 'Aussparungen' | t }}</h3>
                           <button
                             type="button"
                             class="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-emerald-700"
                             (click)="addOpening(wall.id)"
                           >
-                            Aussparung hinzufuegen
+                            {{ 'Aussparung hinzufuegen' | t }}
                           </button>
                         </div>
 
                         @if (wall.openings.length === 0) {
-                          <p class="mt-4 text-sm text-stone-500">Keine Aussparungen erfasst.</p>
+                          <p class="mt-4 text-sm text-stone-500">{{ 'Keine Aussparungen erfasst.' | t }}</p>
                         }
 
                         <div class="mt-4 space-y-4">
                           @for (opening of wall.openings; track opening.id) {
                             <div class="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
                               <label class="text-sm font-medium text-stone-700">
-                                Typ
+                                {{ 'Typ' | t }}
                                 <select
                                   class="mt-2 block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none focus:border-emerald-700"
                                   [ngModel]="opening.type"
                                   (ngModelChange)="updateOpening(wall.id, opening.id, 'type', $event)"
                                 >
-                                  <option value="door">Tuer</option>
-                                  <option value="window">Fenster</option>
-                                  <option value="niche">Nische</option>
-                                  <option value="other">Sonstige</option>
+                                  <option value="door">{{ 'Tuer' | t }}</option>
+                                  <option value="window">{{ 'Fenster' | t }}</option>
+                                  <option value="niche">{{ 'Nische' | t }}</option>
+                                  <option value="other">{{ 'Sonstige' | t }}</option>
                                 </select>
                               </label>
 
                               <label class="text-sm font-medium text-stone-700">
-                                Breite in m
+                                {{ 'Breite in m' | t }}
                                 <input
                                   type="number"
                                   min="0.1"
@@ -495,7 +494,7 @@
                               </label>
 
                               <label class="text-sm font-medium text-stone-700">
-                                Hoehe in m
+                                {{ 'Hoehe in m' | t }}
                                 <input
                                   type="number"
                                   min="0.1"
@@ -514,7 +513,7 @@
                                   class="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
                                   (click)="removeOpening(wall.id, opening.id)"
                                 >
-                                  Aussparung entfernen
+                                  {{ 'Aussparung entfernen' | t }}
                                 </button>
                               </div>
                             </div>
@@ -524,21 +523,21 @@
 
                       @if (hasAreaWarning(wall)) {
                         <p class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-                          Die Aussparungen sind groesser als die zu fliesende Wandflaeche.
+                          {{ 'Die Aussparungen sind groesser als die zu fliesende Wandflaeche.' | t }}
                         </p>
                       }
 
                       <div class="mt-5 grid gap-3 md:grid-cols-3">
                         <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Bruttoflaeche</p>
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">{{ 'Bruttoflaeche' | t }}</p>
                           <strong class="mt-2 block text-lg text-stone-950">{{ formatArea(wall.grossAreaM2) }} m²</strong>
                         </div>
                         <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Aussparungen</p>
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">{{ 'Aussparungen' | t }}</p>
                           <strong class="mt-2 block text-lg text-stone-950">{{ formatArea(wall.openingsAreaM2) }} m²</strong>
                         </div>
                         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Netto-Fliesenflaeche</p>
+                          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">{{ 'Netto-Fliesenflaeche' | t }}</p>
                           <strong class="mt-2 block text-lg text-emerald-950">{{ formatArea(wall.tileAreaM2) }} m²</strong>
                         </div>
                       </div>
@@ -551,8 +550,8 @@
             @case ('preparation') {
               <div class="space-y-6">
                   <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Alter Belag</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Ist aktuell ein alter Boden- oder Wandbelag vorhanden?</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Alter Belag' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Ist aktuell ein alter Boden- oder Wandbelag vorhanden?' | t }}</h2>
                     <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                       @for (option of existingCoveringOptions; track option.value) {
                         <button
@@ -564,8 +563,8 @@
                           [class.border-stone-200]="state.preparation.existingCovering.location !== option.value"
                           (click)="selectExistingCovering(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
@@ -573,8 +572,8 @@
 
                   @if (shouldShowCoveringRemoval()) {
                     <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Rückbau</p>
-                      <h2 class="mt-2 text-xl font-bold text-stone-900">Soll der alte Belag entfernt werden?</h2>
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Rückbau' | t }}</p>
+                      <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Soll der alte Belag entfernt werden?' | t }}</h2>
                       <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
                         @for (option of workStatusOptions; track option.value) {
                           <button
@@ -586,14 +585,14 @@
                             [class.border-stone-200]="state.preparation.existingCovering.removeRequired !== option.value"
                             (click)="selectExistingCoveringRemoval(option.value)"
                           >
-                            <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                            <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                           </button>
                         }
                       </div>
                       @if (state.preparation.existingCovering.removeRequired === 'no') {
                         <p class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                          Das Überfliesen vorhandener Beläge ist nicht immer möglich. Der Untergrund muss tragfähig, eben und geeignet sein.
+                          {{ 'Das Überfliesen vorhandener Beläge ist nicht immer möglich. Der Untergrund muss tragfähig, eben und geeignet sein.' | t }}
                         </p>
                       }
                     </div>
@@ -601,8 +600,8 @@
 
                   @if (shouldShowSanitaryRemoval()) {
                   <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Sanitärobjekte</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Müssen alte Sanitärobjekte entfernt werden?</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Sanitärobjekte' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Müssen alte Sanitärobjekte entfernt werden?' | t }}</h2>
                     <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
                       @for (option of workStatusOptions; track option.value) {
                         <button
@@ -614,8 +613,8 @@
                           [class.border-stone-200]="state.preparation.oldSanitaryObjects.removeRequired !== option.value"
                           (click)="selectOldSanitaryRemoval(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
@@ -623,8 +622,8 @@
                   }
 
                   <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Untergrund</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Ist der vorhandene Untergrund für das Fliesenlegen geeignet?</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Untergrund' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Ist der vorhandene Untergrund für das Fliesenlegen geeignet?' | t }}</h2>
                     <div class="option-grid mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                       @for (option of substrateOptions; track option.value) {
                         <button
@@ -636,16 +635,16 @@
                           [class.border-stone-200]="state.preparation.substrate.condition !== option.value"
                           (click)="selectSubstrateCondition(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
                   </div>
 
                   <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Grundierung</p>
-                    <h2 class="mt-2 text-xl font-bold text-stone-900">Soll eine Grundierung berücksichtigt werden?</h2>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Grundierung' | t }}</p>
+                    <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Soll eine Grundierung berücksichtigt werden?' | t }}</h2>
                     <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
                       @for (option of workStatusOptions; track option.value) {
                         <button
@@ -657,8 +656,8 @@
                           [class.border-stone-200]="state.preparation.substrate.primerRequired !== option.value"
                           (click)="selectPrimerRequired(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
@@ -666,8 +665,8 @@
 
                 @if (shouldShowDisposal()) {
                 <div class="rounded-3xl border border-stone-200 bg-stone-50 p-5">
-                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Entsorgung</p>
-                  <h2 class="mt-2 text-xl font-bold text-stone-900">Soll Entsorgung berücksichtigt werden?</h2>
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">{{ 'Entsorgung' | t }}</p>
+                  <h2 class="mt-2 text-xl font-bold text-stone-900">{{ 'Soll Entsorgung berücksichtigt werden?' | t }}</h2>
                   <div class="option-grid mt-5 grid gap-3 md:grid-cols-3">
                     @for (option of workStatusOptions; track option.value) {
                       <button
@@ -679,8 +678,8 @@
                         [class.border-stone-200]="state.preparation.disposal.required !== option.value"
                         (click)="selectDisposalRequired(option.value)"
                       >
-                        <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                        <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                        <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                       </button>
                     }
                   </div>
@@ -689,7 +688,7 @@
 
                 @if (state.preparation.waterproofing.required === 'yes') {
                   <p class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-                    Für Nassbereiche wie Dusche oder Badewanne wird eine Abdichtung berücksichtigt.
+                    {{ 'Für Nassbereiche wie Dusche oder Badewanne wird eine Abdichtung berücksichtigt.' | t }}
                   </p>
                 }
               </div>
@@ -709,9 +708,9 @@
                       (click)="toggleScope(option.key)"
                     >
                       <p class="font-semibold text-stone-900">
-                        <span class="mr-2">{{ isScopeIncluded(option.key) ? '✓' : '□' }}</span>{{ option.title }}
+                        <span class="mr-2">{{ isScopeIncluded(option.key) ? '✓' : '□' }}</span>{{ option.title | t }}
                       </p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
@@ -730,8 +729,8 @@
                       [class.border-stone-200]="state.extrasSelection !== option.value"
                       (click)="selectExtrasSelection(option.value)"
                     >
-                      <p class="text-lg font-bold text-stone-900">{{ option.title }}</p>
-                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                      <p class="text-lg font-bold text-stone-900">{{ option.title | t }}</p>
+                      <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                     </button>
                   }
                 </div>
@@ -749,8 +748,8 @@
                           [class.border-stone-200]="!isExtraSelected(option.value)"
                           (click)="toggleExtra(option.value)"
                         >
-                          <p class="font-semibold text-stone-900">{{ option.title }}</p>
-                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description }}</p>
+                          <p class="font-semibold text-stone-900">{{ option.title | t }}</p>
+                          <p class="mt-2 text-sm leading-6 text-stone-600">{{ option.description | t }}</p>
                         </button>
                       }
                     </div>
@@ -782,7 +781,7 @@
             [disabled]="currentStepIndex() === 0"
             (click)="previousStep()"
           >
-            Zurück
+            {{ 'Zurück' | t }}
           </button>
 
           <button
@@ -792,10 +791,10 @@
           >
             {{
               currentStepIndex() === steps.length - 1
-                ? 'Zur Zusammenfassung'
+                ? ('Zur Zusammenfassung' | t)
                 : currentStepIndex() === steps.length - 2
-                  ? 'Zur Zusammenfassung'
-                  : 'Weiter'
+                  ? ('Zur Zusammenfassung' | t)
+                  : ('Weiter' | t)
             }}
           </button>
         </div>

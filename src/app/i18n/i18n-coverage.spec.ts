@@ -3,6 +3,26 @@ import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PL_DICT } from './dict/pl';
 import { EN_DICT } from './dict/en';
+import {
+  WIZARD_STEPS,
+  ROOM_TYPE_OPTIONS,
+  SINK_OPTIONS,
+  VANITY_CABINET_OPTIONS,
+  SHOWER_BATH_OPTIONS,
+  SHOWER_TYPE_OPTIONS,
+  BATHTUB_TYPE_OPTIONS,
+  HEATING_OPTIONS,
+  TOILET_OPTIONS,
+  TILING_OPTIONS,
+  TILE_QUALITY_OPTIONS,
+  TILE_SIZE_OPTIONS,
+  EXTRAS_SELECTION_OPTIONS,
+  EXTRA_OPTIONS,
+  EXISTING_COVERING_OPTIONS,
+  WORK_STATUS_OPTIONS,
+  SUBSTRATE_OPTIONS,
+  SCOPE_OPTIONS
+} from '../components/wizard/wizard.component';
 
 /**
  * Coverage-Spec: hält die Dictionaries und die gewrappten Templates ehrlich.
@@ -31,7 +51,40 @@ const SCANNED_FILES = [
  * (dynamisch übersetzte Inhalte, z. B. Wizard-Schritt-Titel). T2 trägt hier die
  * Wizard-Arrays ein, z. B. `{ source: WIZARD_STEPS, field: 'title' }`.
  */
-const DYNAMIC_SOURCES: { source: readonly Record<string, unknown>[]; field: string }[] = [];
+/** Wandelt ein beliebiges Wizard-Konstanten-Array (ohne Index-Signatur) in die generische Quellform um. */
+function asRecordArray(source: readonly object[]): readonly Record<string, unknown>[] {
+  return source as unknown as readonly Record<string, unknown>[];
+}
+
+const WIZARD_OPTION_SOURCES: readonly (readonly Record<string, unknown>[])[] = [
+  ROOM_TYPE_OPTIONS,
+  SINK_OPTIONS,
+  VANITY_CABINET_OPTIONS,
+  SHOWER_BATH_OPTIONS,
+  SHOWER_TYPE_OPTIONS,
+  BATHTUB_TYPE_OPTIONS,
+  HEATING_OPTIONS,
+  TOILET_OPTIONS,
+  TILING_OPTIONS,
+  TILE_QUALITY_OPTIONS,
+  TILE_SIZE_OPTIONS,
+  EXTRAS_SELECTION_OPTIONS,
+  EXTRA_OPTIONS,
+  EXISTING_COVERING_OPTIONS,
+  WORK_STATUS_OPTIONS,
+  SUBSTRATE_OPTIONS,
+  SCOPE_OPTIONS
+].map(asRecordArray);
+
+const DYNAMIC_SOURCES: { source: readonly Record<string, unknown>[]; field: string }[] = [
+  { source: asRecordArray(WIZARD_STEPS), field: 'eyebrow' },
+  { source: asRecordArray(WIZARD_STEPS), field: 'title' },
+  { source: asRecordArray(WIZARD_STEPS), field: 'description' },
+  ...WIZARD_OPTION_SOURCES.flatMap((source) => [
+    { source, field: 'title' },
+    { source, field: 'description' }
+  ])
+];
 
 /** Allowlist für Dictionary-Keys, die nur dynamisch (nicht per Regex greifbar) genutzt werden. */
 const DYNAMIC_KEYS: readonly string[] = [];
