@@ -1,0 +1,209 @@
+<section class="lp">
+  <header class="lp-hero">
+    <p class="eyebrow">Für Fliesenleger-Fachbetriebe</p>
+    <h1>Angebote in Minuten, bestätigte Anfragen, mehr Sichtbarkeit in deiner Region</h1>
+    <p class="lp-lead">
+      Heimwerker rechnen bei uns ihr Fliesenprojekt durch und fragen am Ende gezielt einen
+      Fachbetrieb an. Aus dem Rechner-Ergebnis klickst du editierbare Angebote mit deinen eigenen
+      Preisen zusammen, machst daraus Rechnungen samt XRechnung, erhältst per E-Mail bestätigte
+      Anfragen aus deinen PLZ-Gebieten und wirst Interessenten direkt im Kostenrechner angezeigt.
+    </p>
+  </header>
+
+  <section class="lp-band lp-features">
+    <h2>Alles, was dein Betrieb braucht</h2>
+    <div class="lp-cards">
+      <article class="lp-card">
+        <span class="lp-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+            <path d="M14 3v5h5" />
+            <path d="M9 13h6M9 17h4" />
+          </svg>
+        </span>
+        <h3>Angebote in wenigen Klicks</h3>
+        <p>
+          Aus dem Rechner-Ergebnis wird per Klick ein editierbares Angebot mit deinen eigenen
+          Preisen – als PDF, mit Versionen und Teilen-Link. Free: bis zu 3 gespeicherte Angebote,
+          Premium: unbegrenzt.
+        </p>
+      </article>
+
+      <article class="lp-card">
+        <span class="lp-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2h9l3 3v15l-2.5-1.5L13 20l-2.5-1.5L8 20l-2-1.2V2z" />
+            <path d="M9 7h6M9 11h6M9 15h4" />
+          </svg>
+        </span>
+        <h3>Rechnungen direkt aus dem Angebot</h3>
+        <p>
+          Ein Klick macht aus dem Angebot eine Rechnung – fortlaufende Rechnungsnummern,
+          Pflichtangaben nach § 14 UStG, PDF-Download, Zahlungsziel &amp; Bankverbindung automatisch
+          aus deinem Firmenprofil.
+        </p>
+      </article>
+
+      <article class="lp-card lp-card-highlight">
+        <span class="lp-card-badge">Pflicht ab 2027</span>
+        <span class="lp-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+          </svg>
+        </span>
+        <h3>XRechnung inklusive</h3>
+        <p>
+          Die E-Rechnung wird ab 2027 für B2B-Geschäfte in Deutschland schrittweise zur Pflicht
+          (ab 2028 für alle Betriebe). Mit dem XRechnung-Export (EN 16931) bist du heute schon
+          bereit – ein Klick, fertig.
+        </p>
+      </article>
+
+      <article class="lp-card">
+        <span class="lp-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 7 9 6 9-6" />
+          </svg>
+        </span>
+        <h3>Lead-Generierung</h3>
+        <p>
+          Per E-Mail bestätigte Kundenanfragen aus deinen PLZ-Gebieten – jede Anfrage geht an
+          maximal 3 Betriebe. <span class="lp-tag">Premium</span>
+        </p>
+      </article>
+
+      <article class="lp-card">
+        <span class="lp-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" />
+            <circle cx="12" cy="10" r="2.5" />
+          </svg>
+        </span>
+        <h3>Regionale Sichtbarkeit</h3>
+        <p>
+          Dein Betrieb erscheint mit Kontaktdaten direkt im Kostenrechner deiner Region.
+          <span class="lp-tag">Premium</span>
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="lp-cta-band">
+    <div class="lp-cta-band-text">
+      <strong>1. Monat gratis, danach 29,99 € / Monat</strong>
+      <span>zzgl. USt., monatlich kündbar</span>
+    </div>
+    <a
+      [routerLink]="ctaLink()"
+      [queryParams]="ctaQueryParams()"
+      [fragment]="ctaFragment()"
+      class="lp-cta lp-cta-onband"
+    >
+      {{ isContractor() ? 'Zum Premium-Abo im Profil' : 'Als Betrieb registrieren' }}
+    </a>
+  </section>
+
+  <section class="lp-band">
+    <h2>Free vs. Premium</h2>
+    <div class="lp-compare-wrap">
+      <table class="lp-compare">
+        <thead>
+          <tr>
+            <th>Leistung</th>
+            <th>Free</th>
+            <th class="col-premium">Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Angebote erstellen &amp; speichern</th>
+            <td>3 Angebote</td>
+            <td class="col-premium">unbegrenzt</td>
+          </tr>
+          <tr>
+            <th scope="row">Rechnungen &amp; XRechnung (EN 16931)</th>
+            <td>ja (für bis zu 3 Angebote)</td>
+            <td class="col-premium">ja, unbegrenzt</td>
+          </tr>
+          <tr>
+            <th scope="row">Bestätigte Kundenanfragen</th>
+            <td class="no">—</td>
+            <td class="col-premium yes">ja</td>
+          </tr>
+          <tr>
+            <th scope="row">Regionale Anzeige im Kostenrechner</th>
+            <td class="no">—</td>
+            <td class="col-premium yes">ja</td>
+          </tr>
+          <tr>
+            <th scope="row">Preis</th>
+            <td>0 €</td>
+            <td class="col-premium">1. Monat gratis, dann 29,99 € / Monat</td>
+          </tr>
+          <tr>
+            <th scope="row">Laufzeit</th>
+            <td>—</td>
+            <td class="col-premium">monatlich kündbar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lp-band">
+    <h2>In 3 Schritten dabei</h2>
+    <ol class="lp-steps">
+      <li>
+        <span class="lp-step-num">1</span>
+        <div>
+          <strong>Als Betrieb registrieren</strong>
+          <p>Lege ein Profi-Konto an und hinterlege dein Firmenprofil mit PLZ-Gebieten und Raumarten.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-step-num">2</span>
+        <div>
+          <strong>Premium freischalten</strong>
+          <p>Schließe das Abo im Profil-Abschnitt „Premium" bequem über PayPal ab – der 1. Monat ist gratis, danach 29,99 €/Monat.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-step-num">3</span>
+        <div>
+          <strong>Angebote, Anfragen &amp; Sichtbarkeit nutzen</strong>
+          <p>Erstelle unbegrenzt Angebote, empfange bestätigte Anfragen und werde in deiner Region angezeigt.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="lp-band">
+    <h2>Häufige Fragen</h2>
+    <div class="lp-faq">
+      @for (item of faq; track item.question) {
+        <details>
+          <summary>{{ item.question }}</summary>
+          <p>{{ item.answer }}</p>
+        </details>
+      }
+    </div>
+  </section>
+
+  <section class="lp-final">
+    <h2>Bereit für mehr Angebote und Anfragen?</h2>
+    <p>
+      Starte mit einem Profi-Konto und schalte Premium in wenigen Minuten frei. Alle Details zu
+      Leistung und Kündigung findest du in den
+      <a routerLink="/agb-betriebe">AGB für Betriebe</a>.
+    </p>
+    <a
+      [routerLink]="ctaLink()"
+      [queryParams]="ctaQueryParams()"
+      [fragment]="ctaFragment()"
+      class="lp-cta"
+    >
+      {{ isContractor() ? 'Zum Premium-Abo im Profil' : 'Als Betrieb registrieren' }}
+    </a>
+  </section>
+</section>

@@ -3,7 +3,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SummaryAssumptionsComponent } from '../../components/summary-assumptions/summary-assumptions.component';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
+import { ContractorDirectoryComponent } from '../../components/contractor-directory/contractor-directory.component';
+import { LeadFormComponent } from '../../components/lead-form/lead-form.component';
 import { ExportDocumentData } from '../../models/export-document.model';
+import { ROOM_TYPE_DEFAULT_NAMES } from '../../models/bathroom-wizard.model';
+import { LeadProjectSnapshot } from '../../models/lead.model';
 import { CostComparisonService } from '../../services/cost-comparison.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { MaterialListService } from '../../services/material-list.service';
@@ -16,7 +20,14 @@ import { WizardStateService } from '../../services/wizard-state.service';
 @Component({
   selector: 'app-summary-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, SummaryAssumptionsComponent, PremiumExportButtonComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    SummaryAssumptionsComponent,
+    PremiumExportButtonComponent,
+    ContractorDirectoryComponent,
+    LeadFormComponent
+  ],
   template: `
     @if (wizardCompleted()) {
       <div class="summary-page">
@@ -64,6 +75,8 @@ import { WizardStateService } from '../../services/wizard-state.service';
             </div>
           }
         </section>
+
+        <app-contractor-directory />
 
         @let material = materialList();
         @let tile = material.tileCalculation;
@@ -368,6 +381,8 @@ import { WizardStateService } from '../../services/wizard-state.service';
             </div>
           }
         </section>
+
+        <app-lead-form [snapshot]="leadSnapshot()" />
       </div>
     } @else {
       <section class="empty-panel">
@@ -1068,6 +1083,23 @@ export class SummaryPageComponent {
       this.materialList()
     )
   );
+
+  /**
+   * Personenfreier SNAPSHOT der Rechner-Eckdaten für die Lead-Anfrage (Welle 1) –
+   * kein Live-Verweis, ausschließlich aus den vorhandenen Summary-Signals.
+   */
+  readonly leadSnapshot = computed<LeadProjectSnapshot>(() => {
+    const payload = this.payload();
+    const comparison = this.costComparison();
+    const roomType = payload.room.roomType;
+    return {
+      roomName: payload.room.roomName?.trim() || 'Raum',
+      roomType: roomType ? ROOM_TYPE_DEFAULT_NAMES[roomType] : '—',
+      areaM2: this.materialList().tileCalculation.baseTileAreaM2,
+      diyTotal: comparison.diy.totalCost,
+      professionalTotal: comparison.professional.totalCost
+    };
+  });
 
   // Export-Factories: werden erst beim Klick ausgewertet (aktueller Stand).
   readonly buildRoomSummaryDocument = (): ExportDocumentData =>

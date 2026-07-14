@@ -5,7 +5,8 @@ export type ExportDocumentType =
   | 'material_list'
   | 'project_material_list'
   | 'professional_comparison'
-  | 'contractor_offer';
+  | 'contractor_offer'
+  | 'contractor_invoice';
 
 export interface ExportDocumentTotals {
   netTotal?: number;
@@ -69,6 +70,35 @@ export interface ExportOfferMeta {
   validUntil: string;
 }
 
+/**
+ * Kopf-/Pflichtdaten einer Rechnung (§ 14 UStG) für den PDF-Export
+ * (nur bei `documentType: 'contractor_invoice'`).
+ */
+export interface ExportInvoiceMeta {
+  invoiceNumber: string;
+  invoiceDate: string;
+  /** Leistungsdatum (leer, wenn Zeitraum genutzt wird). */
+  serviceDate: string;
+  servicePeriodStart: string;
+  servicePeriodEnd: string;
+  dueDate: string;
+  buyerReference: string;
+  status: string;
+  // Verkäufer (Absender)
+  sellerName: string;
+  sellerAddressLines: string[];
+  sellerVatId: string;
+  sellerTaxNumber: string;
+  sellerContactLines: string[];
+  // Käufer (Empfänger)
+  customerName: string;
+  customerAddressLines: string[];
+  // Zahlung
+  iban: string;
+  bic: string;
+  bankName: string;
+}
+
 export interface ExportDocumentData {
   documentType: ExportDocumentType;
   title: string;
@@ -82,6 +112,8 @@ export interface ExportDocumentData {
   branding?: ExportBrandingData;
   /** Angebotskopf (nur bei `documentType: 'contractor_offer'`). */
   offerMeta?: ExportOfferMeta;
+  /** Rechnungskopf/Pflichtangaben (nur bei `documentType: 'contractor_invoice'`). */
+  invoiceMeta?: ExportInvoiceMeta;
   /** Einleitungstext über den Sektionen. */
   introText?: string | null;
   /** Schlusstext unter den Summen. */
@@ -96,3 +128,7 @@ export const ESTIMATE_EXPORT_LEGAL_NOTICE =
 /** Rechtshinweis für das vom Fachbetrieb selbst erstellte Angebot. */
 export const OFFER_EXPORT_LEGAL_NOTICE =
   'Freibleibendes Angebot, gültig vorbehaltlich Zwischenverkauf. Alle Preise verstehen sich netto zzgl. der gesetzlichen Mehrwertsteuer, sofern nicht anders angegeben.';
+
+/** Rechtshinweis für die vom Fachbetrieb erstellte Rechnung. */
+export const INVOICE_EXPORT_LEGAL_NOTICE =
+  'Rechnung gemäß § 14 UStG. Bitte geben Sie bei Zahlung die Rechnungsnummer als Verwendungszweck an.';

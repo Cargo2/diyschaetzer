@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { CookieNoticeComponent } from './components/cookie-notice/cookie-notice.component';
+import { ConsentBannerComponent } from './components/consent-banner/consent-banner.component';
+import { ConsentService } from './services/consent.service';
 import { ROOM_TYPE_DEFAULT_NAMES } from './models/bathroom-wizard.model';
 import { WizardStateService } from './services/wizard-state.service';
 import { AuthService } from './services/auth.service';
@@ -9,10 +10,12 @@ import { LocalProjectService } from './services/local-project.service';
 import { ProjectSessionSyncService } from './services/project-session-sync.service';
 import { CatalogService } from './services/catalog.service';
 import { ProfileAssumptionDefaultsService } from './services/profile-assumption-defaults.service';
+import { AssignedLeadsBadgeService } from './services/assigned-leads-badge.service';
+import { SubscriptionStatusService } from './services/subscription-status.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, CookieNoticeComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ConsentBannerComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -20,6 +23,7 @@ export class App {
   private readonly wizardState = inject(WizardStateService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly consent = inject(ConsentService);
   private readonly localProject = inject(LocalProjectService);
   // Beim App-Start instanziieren, damit der Login→DB-Sync (Phase 12, Block 4) aktiv ist.
   private readonly projectSessionSync = inject(ProjectSessionSyncService);
@@ -27,8 +31,22 @@ export class App {
   private readonly catalog = inject(CatalogService);
   // Profil-Standardannahmen früh laden, damit sie vor den Kalkulationen greifen.
   private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
+  // Nav-Badges für Profis: „Anfragen" nur bei Zuteilung, Abo-Status für „Konto".
+  private readonly assignedLeadsBadge = inject(AssignedLeadsBadgeService);
+  private readonly subscriptionStatus = inject(SubscriptionStatusService);
 
   readonly resultsAvailable = this.wizardState.resultsAvailable;
+
+  constructor() {
+    // Nach dem Login eines Profis die Nav-Badges einmal laden (Anfragen-Zuteilung
+    // + Abo-Status). Guards in den Services verhindern Calls beim Prerender/offline.
+    effect(() => {
+      if (this.auth.isAuthenticated() && this.auth.isContractor()) {
+        void this.assignedLeadsBadge.refresh();
+        void this.subscriptionStatus.refresh();
+      }
+    });
+  }
 
   /**
    * Name des aktuell bearbeiteten/ausgewählten Raums (für den dynamischen Menüpunkt).
@@ -57,11 +75,14 @@ export class App {
   /** Auth-Zustand für die Kopfzeile. */
   readonly authConfigured = this.auth.isConfigured;
   readonly isAuthenticated = this.auth.isAuthenticated;
-  readonly userEmail = this.auth.userEmail;
-  /** Firmenprofil-Link nur für angemeldete Profis. */
+  /** Konto-Dropdown/Anfragen-Menüpunkt nur für angemeldete Profis. */
   readonly isContractor = this.auth.isContractor;
   /** Admin-Link nur für angemeldete Admins. */
   readonly isAdmin = computed(() => this.auth.profile()?.role === 'admin');
+  /** „Anfragen"-Menüpunkt nur, wenn dem Profi mindestens eine Anfrage zugeteilt ist. */
+  readonly hasAssignedLeads = this.assignedLeadsBadge.hasAssignedLeads;
+  /** „Aktiv"-Punkt bei „Premium" + Freischaltung von „Anfragen empfangen". */
+  readonly hasActiveSubscription = this.subscriptionStatus.isActive;
 
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger). Auf Desktop ohne Wirkung. */
   readonly menuOpen = signal(false);
@@ -70,8 +91,19 @@ export class App {
     this.menuOpen.update((open) => !open);
   }
 
+  /** Öffnet den Consent-Dialog aus dem Footer heraus (jederzeitiger Widerruf). */
+  openCookieSettings(): void {
+    this.consent.openSettings();
+  }
+
   closeMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  /** Disabled „Anfragen empfangen" (ohne Abo) verweist auf die Freischaltung. */
+  goToPremium(): void {
+    this.closeMenu();
+    void this.router.navigate(['/konto/premium']);
   }
 
   openResultsPage(path: '/materialliste' | '/zusammenfassung' | '/zusammenfassung_raum'): void {
@@ -94,6 +126,9 @@ export class App {
     try {
       await this.auth.signOut();
     } finally {
+      // Nav-Badges zurücksetzen, damit sie nach dem Abmelden nicht stehen bleiben.
+      this.assignedLeadsBadge.reset();
+      this.subscriptionStatus.reset();
       void this.router.navigateByUrl('/');
     }
   }

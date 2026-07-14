@@ -1,0 +1,131 @@
+@if (canSubmitLeads()) {
+  <section class="lead-box" aria-labelledby="lead-heading">
+    <div class="lead-head">
+      <p class="lead-eyebrow">Angebote von Fliesenlegern erhalten</p>
+      <h2 id="lead-heading">Kostenlos passende Fachbetriebe anfragen</h2>
+      <p class="lead-lead">
+        Wir geben deine Anfrage an <strong>bis zu 3 passende Fliesenleger-Betriebe</strong> weiter –
+        unverbindlich und kostenlos. Die Eckdaten deines Raums hängen wir automatisch an.
+      </p>
+    </div>
+
+    @if (submitted()) {
+      <div class="lead-success" role="status">
+        <strong>Fast geschafft – bitte E-Mail bestätigen.</strong>
+        <p>
+          Wir haben dir eine E-Mail geschickt. Bestätige darin deine Anfrage, damit wir sie an
+          passende Betriebe weitergeben dürfen. Ohne Bestätigung wird nichts weitergegeben.
+        </p>
+      </div>
+    } @else {
+      <form class="lead-form" (ngSubmit)="submit()" novalidate>
+        <!-- Honeypot: unsichtbar für Menschen, für Bots ein Köder. Kein display:none
+             am Input allein – visually-hidden-Wrapper + aus dem Tab-/AT-Fluss genommen. -->
+        <div class="visually-hidden" aria-hidden="true">
+          <label>
+            Bitte dieses Feld leer lassen
+            <input
+              type="text"
+              name="website"
+              tabindex="-1"
+              autocomplete="off"
+              [(ngModel)]="website"
+            />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Name<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <input
+            type="text"
+            name="name"
+            autocomplete="name"
+            [(ngModel)]="name"
+            [disabled]="submitting()"
+            required
+          />
+        </label>
+
+        <label class="field field-narrow">
+          <span>PLZ<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <input
+            type="text"
+            name="postalCode"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            maxlength="5"
+            placeholder="12345"
+            [(ngModel)]="postalCode"
+            [disabled]="submitting()"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>E-Mail<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <input
+            type="email"
+            name="email"
+            autocomplete="email"
+            [(ngModel)]="email"
+            [disabled]="submitting()"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>Telefon (optional)</span>
+          <input
+            type="tel"
+            name="phone"
+            autocomplete="tel"
+            [(ngModel)]="phone"
+            [disabled]="submitting()"
+          />
+        </label>
+
+        <label class="field">
+          <span>Gewünschter Zeitraum</span>
+          <select name="timeframe" [(ngModel)]="timeframe" [disabled]="submitting()">
+            @for (option of timeframeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field field-wide">
+          <span>Nachricht (optional)</span>
+          <textarea
+            name="message"
+            rows="3"
+            maxlength="500"
+            placeholder="Besonderheiten, Wünsche, Erreichbarkeit …"
+            [(ngModel)]="message"
+            [disabled]="submitting()"
+          ></textarea>
+        </label>
+
+        <label class="consent">
+          <input
+            type="checkbox"
+            name="consent"
+            [(ngModel)]="consent"
+            [disabled]="submitting()"
+          />
+          <span class="consent-text">{{ consentTextPrefix
+            }}<a routerLink="/datenschutz" fragment="leads">Datenschutzerklärung</a>.</span>
+        </label>
+
+        @if (errorMessage()) {
+          <p class="lead-message error" role="alert">{{ errorMessage() }}</p>
+        }
+
+        <div class="lead-actions">
+          <button type="submit" [disabled]="!canSubmit()">
+            {{ submitting() ? 'Wird gesendet …' : 'Anfrage absenden' }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+}

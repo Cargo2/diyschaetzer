@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import {
   ContractorOffer,
   ContractorOfferSection,
@@ -27,11 +28,29 @@ import { CompanyProfileService } from '../../services/company-profile.service';
 import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
 import { ProfessionalLineItemUnit } from '../../services/professional-offer.service';
 import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
+import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
+import { ContractorInvoiceService } from '../../services/contractor-invoice.service';
 import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
+import { SubscriptionStatusService } from '../../services/subscription-status.service';
+
+/** Ohne aktives Abo gespeicherte Angebote/Versionen (spiegelt den DB-Trigger). */
+const FREE_OFFER_LIMIT = 3;
+/** Verständliche Meldung für erreichte Grenze – als Badge-Hinweis und Fehlertext. */
+const OFFER_LIMIT_MESSAGE =
+  'Limit erreicht – lösche ein Angebot oder schalte Premium frei.';
+
+/** Erkennt den serverseitigen Trigger-Fehler `offer_limit_reached` (aus Migration 0020). */
+function isOfferLimitError(error: unknown): boolean {
+  const message =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : String(error);
+  return message.includes('offer_limit_reached');
+}
 
 /**
  * Profi-Angebotsmodul (Phase 13). Nur über den contractorGuard erreichbar.
@@ -41,7 +60,7 @@ import { PremiumExportButtonComponent } from '../../components/premium-export-bu
 @Component({
   selector: 'app-contractor-offers',
   standalone: true,
-  imports: [FormsModule, PremiumExportButtonComponent],
+  imports: [FormsModule, RouterLink, PremiumExportButtonComponent],
   templateUrl: './contractor-offers.component.html',
   styleUrl: './contractor-offers.component.css'
 })
@@ -54,6 +73,25 @@ export class ContractorOffersComponent implements OnInit {
   private readonly shareService = inject(ContractorOfferShareService);
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly branding = inject(ContractorBrandingService);
+  private readonly subscriptionStatus = inject(SubscriptionStatusService);
+  private readonly invoiceRepository = inject(CONTRACTOR_INVOICE_REPOSITORY);
+  private readonly invoiceService = inject(ContractorInvoiceService);
+  private readonly router = inject(Router);
+
+  /** Für die Vorlage sichtbarer Grenzwert-Hinweis. */
+  readonly offerLimitMessage = OFFER_LIMIT_MESSAGE;
+  readonly freeOfferLimit = FREE_OFFER_LIMIT;
+
+  /** `true`, wenn ein aktives (oder Probe-)Abo besteht → kein Limit, kein Badge. */
+  readonly isSubscribed = this.subscriptionStatus.isActive;
+  /** Gesamtzahl gespeicherter Angebote/Versionen (projektübergreifend, aus der DB). */
+  readonly offerCount = signal(0);
+  /** Free-Badge „X von 3" nur ohne aktives Abo. */
+  readonly showLimitBadge = computed(() => !this.isSubscribed());
+  /** Grenze erreicht (nur ohne Abo). Blockt das ANLEGEN neuer Angebote/Versionen. */
+  readonly limitReached = computed(
+    () => !this.isSubscribed() && this.offerCount() >= FREE_OFFER_LIMIT
+  );
 
   /** Profil-Standardwerte (Texte/Materialaufschlag), die neue Angebote vorbefüllen. */
   private offerDefaults: ContractorOfferDefaults = {};
@@ -74,6 +112,9 @@ export class ContractorOffersComponent implements OnInit {
   readonly projectChanged = signal(false);
   /** Alle Versionen des aktiven Projekts (aus der DB). */
   readonly offersList = signal<ContractorOffer[]>([]);
+  /** Läuft die Übernahme „Als Rechnung"? */
+  readonly creatingInvoice = signal(false);
+  readonly invoiceError = signal<string | null>(null);
 
   /** Teilen-Link des aktuellen Angebots (nach dem Erzeugen). */
   readonly shareUrl = signal<string | null>(null);
@@ -111,7 +152,28 @@ export class ContractorOffersComponent implements OnInit {
     await this.profileDefaults.ready;
     await this.loadOfferDefaults();
     await this.loadOffers();
+    // Abo-Status + Gesamtzahl der Angebote für die Free-Limit-Anzeige laden.
+    await this.subscriptionStatus.ensureLoaded();
+    await this.refreshOfferCount();
     this.loading.set(false);
+  }
+
+  /**
+   * Blockt das ANLEGEN eines neuen Angebots/einer neuen Version bei erreichter
+   * Grenze. Ein bereits gespeichertes Angebot (loadedFromDb) darf weiter
+   * überschrieben werden – das ist ein Update, kein neuer Insert.
+   */
+  newOfferBlocked(): boolean {
+    return this.limitReached() && !this.loadedFromDb();
+  }
+
+  /** Lädt die Gesamtzahl gespeicherter Angebote neu (No-op bei Backend-Fehler). */
+  private async refreshOfferCount(): Promise<void> {
+    try {
+      this.offerCount.set(await this.repository.countMine());
+    } catch {
+      // Zählung nicht verfügbar: Badge zeigt den letzten bekannten Stand.
+    }
   }
 
   /** Lädt die Profil-Standardwerte (Texte + Materialaufschlag) für neue Angebote. */
@@ -230,7 +292,8 @@ export class ContractorOffersComponent implements OnInit {
 
   /** Legt eine neue Version als Kopie der aktuellen an (noch nicht gespeichert). */
   newVersion(): void {
-    if (!this.offer) {
+    // Ohne Abo bei erreichter Grenze keine neue Version anlegen (wäre ein Insert).
+    if (!this.offer || this.limitReached()) {
       return;
     }
     this.resetFeedback();
@@ -259,6 +322,7 @@ export class ContractorOffersComponent implements OnInit {
       return;
     }
     await this.loadOffers();
+    await this.refreshOfferCount();
   }
 
   statusLabel(status: ContractorOfferStatus | undefined): string {
@@ -284,6 +348,12 @@ export class ContractorOffersComponent implements OnInit {
     if (!this.offer) {
       return;
     }
+    // Neues Angebot bei erreichter Free-Grenze gar nicht erst senden.
+    if (this.newOfferBlocked()) {
+      this.resetFeedback();
+      this.saveError.set(OFFER_LIMIT_MESSAGE);
+      return;
+    }
     this.resetFeedback();
     this.saving.set(true);
     // Eingaben bereinigen (leere Zahlenfelder → 0) und den bereinigten Stand anzeigen.
@@ -293,8 +363,15 @@ export class ContractorOffersComponent implements OnInit {
       this.loadedFromDb.set(true);
       this.saveSuccess.set('Angebot gespeichert.');
       await this.refreshList();
-    } catch {
-      this.saveError.set('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+      await this.refreshOfferCount();
+    } catch (error) {
+      // Serverseitigen Trigger-Fehler in dieselbe verständliche Meldung übersetzen.
+      if (isOfferLimitError(error)) {
+        this.saveError.set(OFFER_LIMIT_MESSAGE);
+        await this.refreshOfferCount();
+      } else {
+        this.saveError.set('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+      }
     } finally {
       this.saving.set(false);
     }
@@ -340,6 +417,42 @@ export class ContractorOffersComponent implements OnInit {
       } catch {
         // Clipboard nicht verfügbar – der Link steht sichtbar zum manuellen Kopieren.
       }
+    }
+  }
+
+  // ---- Als Rechnung übernehmen (M12) ---------------------------------------
+
+  /**
+   * Erzeugt aus dem **gespeicherten** Angebot eine Rechnung (nur aktive
+   * Pflichtpositionen), übergibt sie an /rechnungen und navigiert dorthin.
+   */
+  async createInvoiceFromOffer(): Promise<void> {
+    if (!this.offer || !this.loadedFromDb()) {
+      return;
+    }
+    this.invoiceError.set(null);
+    this.creatingInvoice.set(true);
+    try {
+      const profile = await this.companyProfile.load();
+      let existingNumbers: string[] = [];
+      try {
+        existingNumbers = (await this.invoiceRepository.listMine()).map(
+          (invoice) => invoice.invoiceNumber
+        );
+      } catch {
+        // Ohne Nummernliste startet der Vorschlag bei 001 – editierbar auf /rechnungen.
+      }
+      const invoice = this.invoiceService.buildFromOffer(
+        sanitizeContractorOffer(this.offer),
+        profile,
+        existingNumbers
+      );
+      this.invoiceService.setPending(invoice);
+      await this.router.navigate(['/rechnungen']);
+    } catch {
+      this.invoiceError.set('Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.');
+    } finally {
+      this.creatingInvoice.set(false);
     }
   }
 

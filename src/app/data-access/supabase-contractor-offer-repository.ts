@@ -53,6 +53,23 @@ export class SupabaseContractorOfferRepository implements ContractorOfferReposit
     return ((data as ContractorOfferRow[]) ?? []).map((row) => this.map(row));
   }
 
+  async countMine(): Promise<number> {
+    const client = this.requireClient();
+    const userId = await this.currentUserId();
+    if (!userId) {
+      return 0;
+    }
+    // RLS scoped die Zeilen bereits auf den eigenen Nutzer; head+count vermeidet
+    // das Übertragen der Daten selbst.
+    const { count, error } = await client
+      .from('contractor_offers')
+      .select('id', { count: 'exact', head: true });
+    if (error) {
+      throw error;
+    }
+    return count ?? 0;
+  }
+
   async save(offer: ContractorOffer): Promise<void> {
     const client = this.requireClient();
     const userId = await this.currentUserId();

@@ -114,6 +114,74 @@
   cursor: default;
 }
 
+.toggle-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-field input {
+  width: auto;
+}
+
+.room-types {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+}
+
+.room-types legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  padding: 0 0.35rem;
+}
+
+.checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 1rem;
+  font-size: 0.92rem;
+}
+
+.checkbox-item input {
+  width: auto;
+}
+
+.profile-fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.9rem 1rem 1.1rem;
+  margin: 0.25rem 0 0;
+}
+
+.profile-fieldset legend {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+  padding: 0 0.4rem;
+}
+
+.fieldset-hint {
+  margin: 0 0 0.9rem;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.45;
+}
+
+.fieldset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 560px) {
+  .fieldset-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .profile-section {
   margin-top: 2.5rem;
   padding-top: 1.5rem;

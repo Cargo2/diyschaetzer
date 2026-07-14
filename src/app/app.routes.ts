@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { wizardCompletedGuard } from './guards/wizard-completed.guard';
 import { contractorGuard } from './guards/contractor.guard';
+import { leadSubscriptionGuard } from './guards/lead-subscription.guard';
 import { adminGuard } from './guards/admin.guard';
 import { GuideComponent } from './pages/guide/guide.component';
 import { HomeComponent } from './pages/home/home.component';
@@ -12,12 +13,50 @@ import { ImpressumComponent } from './pages/legal/impressum.component';
 import { DatenschutzComponent } from './pages/legal/datenschutz.component';
 import { KontaktComponent } from './pages/legal/kontakt.component';
 import { AuthPageComponent } from './pages/auth/auth-page.component';
-import { ProfilePageComponent } from './pages/profile/profile-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: AuthPageComponent },
-  { path: 'profil', component: ProfilePageComponent, canActivate: [contractorGuard] },
+  {
+    // Profi-Konto: Firmendaten / Preise / Premium / Anfragen-Empfang als
+    // getrennte Unterseiten. contractorGuard schützt alle Kind-Routen.
+    path: 'konto',
+    canActivate: [contractorGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'firmenprofil' },
+      {
+        path: 'firmenprofil',
+        loadComponent: () =>
+          import('./pages/profile/konto-firmenprofil.component').then(
+            (m) => m.KontoFirmenprofilComponent
+          )
+      },
+      {
+        path: 'preise',
+        loadComponent: () =>
+          import('./pages/profile/konto-preise.component').then((m) => m.KontoPreiseComponent)
+      },
+      {
+        path: 'premium',
+        loadComponent: () =>
+          import('./pages/profile/konto-premium.component').then((m) => m.KontoPremiumComponent)
+      },
+      {
+        // Nur mit aktivem Lead-Abo erreichbar; sonst Redirect auf /konto/premium.
+        path: 'anfragen-empfang',
+        canActivate: [leadSubscriptionGuard],
+        loadComponent: () =>
+          import('./pages/profile/konto-anfragen-empfang.component').then(
+            (m) => m.KontoAnfragenEmpfangComponent
+          )
+      }
+    ]
+  },
+  {
+    // Alte Profil-Route (Bookmarks/Deep-Links) → Konto. `#abo` → Premium-Abschnitt.
+    path: 'profil',
+    redirectTo: (data) => (data.fragment === 'abo' ? '/konto/premium' : '/konto/firmenprofil')
+  },
   {
     path: 'feedback',
     canActivate: [contractorGuard],
@@ -31,6 +70,28 @@ export const routes: Routes = [
       import('./pages/contractor-offers/contractor-offers.component').then(
         (m) => m.ContractorOffersComponent
       )
+  },
+  {
+    path: 'rechnungen',
+    canActivate: [contractorGuard],
+    loadComponent: () =>
+      import('./pages/contractor-invoices/contractor-invoices.component').then(
+        (m) => m.ContractorInvoicesComponent
+      )
+  },
+  {
+    path: 'anfragen',
+    canActivate: [contractorGuard],
+    loadComponent: () =>
+      import('./pages/contractor-leads/contractor-leads.component').then(
+        (m) => m.ContractorLeadsComponent
+      )
+  },
+  // Double-Opt-in-Bestätigung: öffentlich (kein Guard), rein clientseitig – nie prerendern.
+  {
+    path: 'lead-bestaetigen/:token',
+    loadComponent: () =>
+      import('./pages/lead-confirm/lead-confirm.component').then((m) => m.LeadConfirmComponent)
   },
   {
     path: 'admin',
@@ -89,6 +150,18 @@ export const routes: Routes = [
     path: 'vorlage/fliesen-verlegen-material-werkzeug',
     loadComponent: () =>
       import('./pages/templates/material-template.component').then((m) => m.MaterialTemplateComponent)
+  },
+  {
+    path: 'fuer-fliesenleger',
+    loadComponent: () =>
+      import('./pages/fuer-fliesenleger/fuer-fliesenleger.component').then(
+        (m) => m.FuerFliesenlegerComponent
+      )
+  },
+  {
+    path: 'agb-betriebe',
+    loadComponent: () =>
+      import('./pages/legal/agb-betriebe.component').then((m) => m.AgbBetriebeComponent)
   },
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },

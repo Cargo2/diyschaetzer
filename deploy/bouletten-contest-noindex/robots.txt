@@ -1,0 +1,5 @@
+# Crawlen bewusst ERLAUBT, damit Suchmaschinen das noindex (Meta + X-Robots-Tag)
+# tatsächlich sehen und die Domain aus dem Index entfernen.
+# Kein Sitemap-Verweis – diese Domain soll nicht ranken.
+User-agent: *
+Disallow:

@@ -22,12 +22,21 @@ describe('commercial preparation', () => {
       sponsoredLabelRequired: false,
       commissionNote: null
     });
-    // Affiliate ist bewusst aktiviert (Shop-Icons mit hinterlegtem Link); alle
-    // übrigen kommerziellen Flags bleiben neutral/aus.
+    // Affiliate ist bewusst aktiviert (Shop-Icons mit hinterlegtem Link), der
+    // Lead-Funnel (leadsEnabled) sowie das Contractor-Abo (contractorSubscriptionEnabled)
+    // sind bewusst eingeschaltet (wirken nur mit Supabase und für angemeldete Profis);
+    // alle übrigen kommerziellen Flags bleiben neutral/aus.
     expect(COMMERCIAL_CONFIG.affiliateEnabled).toBe(true);
+    expect(COMMERCIAL_CONFIG.leadsEnabled).toBe(true);
+    expect(COMMERCIAL_CONFIG.contractorSubscriptionEnabled).toBe(true);
+    const intentionallyEnabled = new Set([
+      'affiliateEnabled',
+      'leadsEnabled',
+      'contractorSubscriptionEnabled'
+    ]);
     expect(
       Object.entries(COMMERCIAL_CONFIG)
-        .filter(([key]) => key !== 'affiliateEnabled')
+        .filter(([key]) => !intentionallyEnabled.has(key))
         .every(([, enabled]) => !enabled)
     ).toBe(true);
     const pdfAccess = DEFAULT_FEATURE_ACCESS.find((access) => access.feature === 'pdf_export');

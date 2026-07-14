@@ -1,0 +1,17 @@
+# Alt-/Testdomain: aus dem Suchindex heraushalten.
+# WICHTIG: NICHT per robots.txt sperren – sonst kann Google das noindex nicht lesen.
+# Stattdessen Crawlen erlauben und auf JEDE Antwort den noindex-Header setzen.
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+# Alte, tief verlinkte App-URLs sollen ebenfalls die noindex-Platzhalterseite
+# ausliefern (statt 404), damit auch sie den noindex-Header bekommen.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+ErrorDocument 404 /index.html

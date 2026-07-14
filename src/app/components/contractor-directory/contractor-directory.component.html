@@ -1,0 +1,85 @@
+@if (canShow()) {
+  <section class="directory-box" aria-labelledby="directory-heading">
+    <button
+      type="button"
+      class="directory-trigger"
+      [attr.aria-expanded]="open()"
+      aria-controls="directory-panel"
+      (click)="open.update((value) => !value)"
+    >
+      <span>
+        <small>Fachbetriebe finden</small>
+        <strong id="directory-heading">Betriebe in deiner Region</strong>
+      </span>
+      <i [class.open]="open()">⌄</i>
+    </button>
+
+    @if (open()) {
+      <div id="directory-panel" class="directory-panel">
+        <p class="directory-lead">
+          Gib deine Postleitzahl ein und sieh Premium-Fachbetriebe, die in deinem Gebiet
+          Fliesen verlegen. Die PLZ übernehmen wir gleich in die Anfrage unten.
+        </p>
+
+        <form class="directory-search" (ngSubmit)="search()" novalidate>
+          <label class="directory-field">
+            <span>Postleitzahl</span>
+            <input
+              type="text"
+              name="directoryPostalCode"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              maxlength="5"
+              placeholder="12345"
+              [(ngModel)]="postalCode"
+              [ngModelOptions]="{ standalone: true }"
+            />
+          </label>
+          <button type="submit" [disabled]="!canSearch()">
+            {{ loading() ? 'Suche …' : 'Betriebe anzeigen' }}
+          </button>
+        </form>
+
+        @if (error()) {
+          <p class="directory-message error" role="alert">
+            Die Betriebe konnten nicht geladen werden. Bitte versuche es erneut.
+          </p>
+        } @else if (results(); as list) {
+          @if (list.length > 0) {
+            <div class="directory-grid">
+              @for (entry of list; track entry.companyName) {
+                <article class="directory-card">
+                  <h3>{{ entry.companyName }}</h3>
+                  @if (entry.city) {
+                    <p class="directory-city">{{ entry.city }}</p>
+                  }
+                  @if (entry.leadRoomTypes.length > 0) {
+                    <ul class="directory-chips">
+                      @for (type of entry.leadRoomTypes; track type) {
+                        <li>{{ roomTypeLabel(type) }}</li>
+                      }
+                    </ul>
+                  }
+                  <div class="directory-contact">
+                    @if (entry.phone) {
+                      <a [href]="'tel:' + entry.phone">{{ entry.phone }}</a>
+                    }
+                    @if (entry.website) {
+                      <a [href]="websiteHref(entry.website)" target="_blank" rel="noopener">
+                        Website
+                      </a>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <p class="directory-empty" role="status">
+              Noch kein Premium-Betrieb in deiner Region – stelle trotzdem eine Anfrage.
+            </p>
+          }
+        }
+      </div>
+    }
+  </section>
+}

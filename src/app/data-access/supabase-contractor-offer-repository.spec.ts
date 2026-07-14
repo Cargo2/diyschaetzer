@@ -136,4 +136,25 @@ describe('SupabaseContractorOfferRepository', () => {
     const repo = setup(makeClient({ userId: null }));
     await expect(repo.save(makeOffer())).rejects.toThrow();
   });
+
+  it('counts all own offers via a head+count select', async () => {
+    let capturedOptions: unknown = null;
+    const repo = setup({
+      auth: { getUser: async () => ({ data: { user: { id: 'user-1' } } }) },
+      from: () => ({
+        select: (_columns: string, options: unknown) => {
+          capturedOptions = options;
+          return Promise.resolve({ count: 3, error: null });
+        }
+      })
+    });
+
+    expect(await repo.countMine()).toBe(3);
+    expect(capturedOptions).toEqual({ count: 'exact', head: true });
+  });
+
+  it('returns 0 offers when there is no session', async () => {
+    const repo = setup(makeClient({ userId: null }));
+    expect(await repo.countMine()).toBe(0);
+  });
 });

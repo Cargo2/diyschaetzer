@@ -59,6 +59,9 @@
       <div class="offer-head">
         <h2>Schätzung: {{ activeProjectName }}</h2>
         <div class="offer-head-actions">
+          @if (showLimitBadge()) {
+            <span class="badge-limit">{{ offerCount() }} von {{ freeOfferLimit }} Angeboten (Free)</span>
+          }
           @if (loadedFromDb()) {
             <span class="badge-saved">Gespeicherter Stand</span>
           } @else if (offer) {
@@ -67,7 +70,13 @@
           <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
             Aus Projekt aktualisieren
           </button>
-          <button type="button" class="btn-primary" [disabled]="saving() || !offer || !hasRooms" (click)="save()">
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
+            [title]="newOfferBlocked() ? offerLimitMessage : ''"
+            (click)="save()"
+          >
             {{ saving() ? 'Speichern …' : 'Speichern' }}
           </button>
           @if (hasRooms && offer) {
@@ -80,9 +89,21 @@
               (click)="share()" title="Speichere zuerst, dann teilen">
               {{ sharing() ? 'Link wird erstellt …' : 'Teilen-Link' }}
             </button>
+            <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
+              (click)="createInvoiceFromOffer()"
+              [title]="loadedFromDb() ? 'Nur aktive Pflichtpositionen werden übernommen' : 'Speichere zuerst das Angebot'">
+              {{ creatingInvoice() ? 'Rechnung wird erstellt …' : 'Als Rechnung übernehmen' }}
+            </button>
           }
         </div>
       </div>
+
+      @if (limitReached()) {
+        <p class="offers-message warning offer-limit-hint" role="status">
+          {{ offerLimitMessage }}
+          <a routerLink="/konto/premium">Premium freischalten</a>
+        </p>
+      }
 
       <!-- Versionen des Projekts -->
       @if (hasRooms && offer) {
@@ -98,7 +119,8 @@
           @if (offersList().length === 0) {
             <span class="versions-empty">Noch keine gespeicherte Version.</span>
           }
-          <button type="button" class="btn-light btn-small" (click)="newVersion()">+ Neue Version</button>
+          <button type="button" class="btn-light btn-small" [disabled]="limitReached()"
+            [title]="limitReached() ? offerLimitMessage : ''" (click)="newVersion()">+ Neue Version</button>
           @if (confirmingDeleteVersionId && offer.id === confirmingDeleteVersionId) {
             <span class="confirm-delete">
               Version löschen?
@@ -130,6 +152,9 @@
       }
       @if (shareError()) {
         <p class="offers-message error" role="alert">{{ shareError() }}</p>
+      }
+      @if (invoiceError()) {
+        <p class="offers-message error" role="alert">{{ invoiceError() }}</p>
       }
       @if (shareUrl(); as url) {
         <p class="offers-message success share-link" role="status">
@@ -323,7 +348,7 @@
             <span>Gesamt</span>
             <strong>{{ eur(grossTotal()) }}</strong>
           </div>
-          <button type="button" class="btn-primary" [disabled]="saving() || !hasRooms" (click)="save()">
+          <button type="button" class="btn-primary" [disabled]="saving() || !hasRooms || newOfferBlocked()" (click)="save()">
             {{ saving() ? 'Speichern …' : 'Speichern' }}
           </button>
         </div>

@@ -99,12 +99,63 @@
       @if (authConfigured) {
         @if (isAuthenticated()) {
           @if (isContractor()) {
-            <a routerLink="/angebote" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-              Angebote
-            </a>
-            <a routerLink="/profil" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
-              Firmenprofil
-            </a>
+            <!-- Angebote-Dropdown: Angebote / Rechnungen. -->
+            <div class="tab-dropdown">
+              <a routerLink="/angebote" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                Angebote
+              </a>
+              <div class="tab-dropdown-menu">
+                <a routerLink="/angebote" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                  Angebote
+                </a>
+                <a routerLink="/rechnungen" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                  Rechnungen
+                </a>
+              </div>
+            </div>
+            @if (hasAssignedLeads()) {
+              <a routerLink="/anfragen" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                Anfragen
+              </a>
+            }
+
+            <!-- Konto-Dropdown: Firmenprofil / Eigene Preise / Premium / Anfragen empfangen. -->
+            <div class="tab-dropdown">
+              <a routerLink="/konto" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                Konto
+              </a>
+              <div class="tab-dropdown-menu">
+                <a routerLink="/konto/firmenprofil" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                  Firmenprofil
+                </a>
+                <a routerLink="/konto/preise" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                  Eigene Preise
+                </a>
+                <a routerLink="/konto/premium" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                  @if (hasActiveSubscription()) {
+                    Premium
+                    <span class="abo-dot" title="Lead-Abo aktiv" aria-label="Aktiv"></span>
+                  } @else {
+                    Premium freischalten
+                  }
+                </a>
+                @if (hasActiveSubscription()) {
+                  <a routerLink="/konto/anfragen-empfang" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
+                    Anfragen empfangen
+                  </a>
+                } @else {
+                  <button
+                    type="button"
+                    class="tab-button disabled"
+                    title="Erfordert aktives Lead-Abo"
+                    (click)="goToPremium()"
+                  >
+                    Anfragen empfangen
+                  </button>
+                }
+              </div>
+            </div>
+
             <a routerLink="/feedback" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
               Feedback
             </a>
@@ -114,7 +165,6 @@
               Admin
             </a>
           }
-          <span class="tab-account" title="Angemeldet als {{ userEmail() }}">{{ userEmail() }}</span>
           <button type="button" class="tab-button" (click)="logout()">Abmelden</button>
         } @else {
           <a routerLink="/login" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
@@ -136,9 +186,12 @@
         <a routerLink="/impressum">Impressum</a>
         <a routerLink="/datenschutz">Datenschutz</a>
         <a routerLink="/kontakt">Kontakt</a>
+        <button type="button" class="footer-link-button" (click)="openCookieSettings()">
+          Cookie-Einstellungen
+        </button>
       </nav>
     </div>
   </footer>
 
-  <app-cookie-notice />
+  <app-consent-banner />
 </section>

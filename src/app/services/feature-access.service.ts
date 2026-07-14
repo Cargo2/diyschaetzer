@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { COMMERCIAL_CONFIG } from '../config/commercial.config';
 import {
   CURRENT_USER_CONTEXT,
   DEFAULT_FEATURE_ACCESS,
@@ -51,6 +52,30 @@ export class FeatureAccessService {
 
   getPdfAccessHint(): string {
     return '';
+  }
+
+  /**
+   * Lead-Funnel (Welle 1): Das Lead-Formular am Wizard-Ende darf nur erscheinen, wenn
+   * das Feature aktiv UND ein Supabase-Backend konfiguriert ist. Ohne Supabase
+   * (Prerender/Offline: SUPABASE_CLIENT = null → auth.isConfigured = false) bleibt
+   * das Formular komplett aus dem DOM und die App läuft unverändert weiter.
+   */
+  canSubmitLeads(): boolean {
+    return COMMERCIAL_CONFIG.leadsEnabled && this.auth.isConfigured;
+  }
+
+  /**
+   * Contractor-Abo (Welle 2): Das Lead-Abo-UI (Konto-Premium-Seite „Lead-Abo", PayPal-Button,
+   * Anfragen-Banner) darf nur für angemeldete Profis erscheinen, wenn das Feature aktiv
+   * UND ein Supabase-Backend konfiguriert ist. Ohne Supabase (Prerender/Offline) oder
+   * für Nicht-Profis bleibt das gesamte Abo-UI aus dem DOM.
+   */
+  canManageSubscription(): boolean {
+    return (
+      COMMERCIAL_CONFIG.contractorSubscriptionEnabled &&
+      this.auth.isConfigured &&
+      this.userContext.role === 'contractor'
+    );
   }
 
   setUserContextForTesting(context: UserContext): void {

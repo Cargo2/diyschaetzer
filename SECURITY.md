@@ -3,7 +3,7 @@
 Sicherheits-Checkliste, bezogen auf **diesen** Stand (diyschaetzer / Phase 12).
 Lebendes Dokument – bei jeder Backend-/Auth-Änderung mitpflegen.
 
-**Stand:** 2026-06-23 (Phase 13 abgeschlossen ohne Mailversand; Phase 14: Teilen-Link)
+**Stand:** 2026-07-11 (Lead-/Premium-Modul portiert: Leads + Double-Opt-in, PayPal-Abo, Betriebe-Verzeichnis, Angebots-Limit; Edge Functions `lead-submit`/`subscription-activate`/`paypal-webhook`; Migrationen 0018–0020. M12 Rechnungen: `contractor_invoices` mit owner-RLS + `unique(owner_id, invoice_number)`, Zahlungsdaten-Spalten am Firmenprofil; Migration 0021)
 
 Legende:
 **✅ OK** – im Code/Schema verifiziert ·
@@ -52,7 +52,7 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 | 2 | `.env` aktuell | ➖/⚠️ | Projekt nutzt Angular-`environment.*.ts`, kein `.env`. `supabase/.env` ist gitignored. **Prod** baut mit `environment.ts` (leer) → Supabase-Werte müssen beim Deploy injiziert werden (Hosting-Env / File-Replacement). Vor Livegang dokumentieren. |
 | 3 | Fremde Nutzerdaten lesbar | ✅ | RLS auf `profiles`/`projects`/`rooms` scoped alles auf `auth.uid()`; Räume erben Zugriff über Projekt-Eigentum. Phase 13 ergänzt owner-scoped Tabellen `company_profiles` (0006), `company_profiles.assumption_defaults` (0007) und **`contractor_offers`** (0008, RLS über `owner_id`). Phase 14: **`shared_calculations`** (0009) – owner-scoped Insert/Select/Delete; öffentliches Lesen nur über die SECURITY-DEFINER-Funktion (s. Pkt. 12). Phase 13 (Nachzügler): **`contractor_feedback`** (0014) – nur **Insert der eigenen Zeile durch Profis** (RLS `with check owner_id = auth.uid()` + `exists`-Profil-Rollencheck), **kein** Select/Update/Delete für Endnutzer; Admin liest/markiert ausschließlich über SECURITY-DEFINER-Funktionen (s. Pkt. 12). Prüfen, dass alle Migrationen in der **Live-DB** angewandt sind. |
 | 4 | Offene Read/Write-Rechte | ✅ | RLS auf allen Tabellen aktiv (inkl. `contractor_offers`: select/insert/update/delete nur `auth.uid() = owner_id`), keine permissiven Policies → default-deny. In der Live-DB verifizieren. |
-| 5 | Ungeschützte Admin-Routen | ➖/🔲 | Es gibt **noch keine** `/admin`-Route (Phase 15). Beim Hinzufügen: lazy-Modul + Route-Guard auf Rolle `admin` (Roadmap-Entscheidung) – und serverseitig per RLS absichern, nicht nur im Guard. |
+| 5 | Ungeschützte Admin-Routen | ✅ | `/admin` (Phase 15) ist lazy + `adminGuard`; alle Admin-Datenpfade laufen serverseitig über `is_admin()`-gated SECURITY-DEFINER-Funktionen bzw. Write-RLS (Migrationen 0010–0013, 0014). Lead-Verwaltung (`/admin/leads`) nutzt ausschließlich `admin_list_leads`/`admin_set_lead_status`/`admin_delete_lead`/`admin_assign_lead` (0018/0019) – kein direkter Tabellenzugriff. |
 | 6 | Build-Logs leaken | ✅ | Prod-Build-Log zeigt nur Bundle-Größen/Warnungen, keine Secrets (Prod-Env leer). |
 | 7 | Stack-Traces in Fehlermeldungen | ✅/➖ | Kein eigener Backend-Code. Frontend zeigt gemappte deutsche Fehlertexte ([auth-page.component.ts](src/app/pages/auth/auth-page.component.ts)); Repository-Fehler werden bewusst geschluckt. Ab Edge Functions (Phase 13) erneut prüfen. |
 | 8 | Geleakte Repos/History | ⚠️ | History gescannt: **keine** service_role/JWT-Secrets, nur der öffentliche anon-Key. Repo-Sichtbarkeit (GitHub) bestätigen; bis zum Livegang ggf. **privat** halten. |
@@ -64,11 +64,11 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 | 14 | XSS / CSS-Injection | ✅ | Angular-Default-Escaping; **kein** `innerHTML`/`bypassSecurityTrust`/`document.write` im Code. |
 | 15 | CSRF | ✅ | Supabase-Auth nutzt **Bearer-Token im `Authorization`-Header**, keine Session-Cookies → CSRF nicht anwendbar. |
 | 16 | Path-Traversal | ➖ | Keine serverseitige Dateiverarbeitung; PDF/Excel werden clientseitig erzeugt. |
-| 17 | SSRF | ➖ | Kein serverseitiges Fetch von nutzer­gelieferten URLs. Affiliate-Links sind statisch/Config. Ab Edge Functions erneut prüfen. |
+| 17 | SSRF | ✅ | Edge Functions fetchen nur **fest konfigurierte** Hosts (Resend-API, PayPal-API via `PAYPAL_ENV`), keine nutzergelieferten URLs. Affiliate-Links statisch/Config. |
 | 18 | Kaputter Passwort-Reset | 🔲 | **Noch nicht implementiert** (Login/Registrieren only). Beim Hinzufügen Supabase `resetPasswordForEmail` nutzen + Redirect-URL-Allowlist im Dashboard setzen. |
 | 19 | Zu permissives CORS | 🔲 | Von Supabase verwaltet (kein eigener Server). Erlaubte Origins / Auth-Redirect-URLs im Supabase-Dashboard vor Livegang einschränken (keine Wildcards). |
-| 20 | Webhooks ohne Signaturprüfung | ➖ | Keine Webhooks. Ab Phase 13 (Mail/Edge): eingehende Hooks signatur­verifizieren. |
-| 21 | Payment/Abo nur im Frontend | ⚠️/🔲 | `plan` liegt in `profiles` (DB), Durchsetzung aber im Frontend. Noch keine Zahlungsanbindung. Mit bezahlten Features serverseitig erzwingen (siehe Pkt. 10/23). |
+| 20 | Webhooks ohne Signaturprüfung | ✅ | `paypal-webhook` verifiziert **vor** jeder Datenänderung die Signatur über PayPals `verify-webhook-signature`, vertraut dem Event-Payload nicht (Status wird frisch per GET bei PayPal geladen) und dedupliziert über `subscription_events` (PK `event_id`). Deploy mit `--no-verify-jwt` (Absicherung = Signatur). |
+| 21 | Payment/Abo nur im Frontend | ✅/🔲 | Abo-Status wird **nie vom Client geschrieben**: `subscriptions` erlaubt Nutzern nur `select` der eigenen Zeile (0019); Schreibpfade nur in `subscription-activate` (verifiziert Plan **fail-closed**, Status, `custom_id`==User bei PayPal) und `paypal-webhook` (service_role). Serverseitige Durchsetzung: `has_active_lead_subscription()` gated `admin_assign_lead`, `list_active_contractors` und den Angebots-Limit-Trigger `enforce_offer_limit()`. 🔲 Vor Livegang: PayPal-Live-Produkt/Plan/Webhook + Secrets je Marke. |
 | 22 | IDOR | ✅ | `owner_id` wird aus der **Session** (`auth.getUser`) abgeleitet, nicht aus Nutzereingaben ([supabase-project-repository.ts](src/app/data-access/supabase-project-repository.ts)); RLS-`with check` weist gefälschte `owner_id` ab. IDs sind UUIDv4. |
 | 23 | Endpoints vertrauen Nutzer-IDs/Rollen | ✅ | **Behoben & verifiziert** ([0003](supabase/migrations/0003_protect_profile_role_plan.sql)): Trigger friert `role`/`plan` für Endnutzer ein, in Live-DB angewandt und per Verhaltenstest bestätigt (s. o.). Sonst: keine eigenen Endpoints, RLS nutzt `auth.uid()`. |
 | 24 | Logs mit Tokens/PII/Passwörtern | ✅ | App loggt keine Secrets; Repos schlucken Fehler still. Keine Passwort-Logs. Supabase-Log-Retention/PII im Dashboard im Blick behalten. |
@@ -79,6 +79,27 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 | 29 | Cookies ohne HttpOnly/Secure/SameSite | ➖/⚠️ | App setzt keine Cookies; supabase-js hält die Session im **`localStorage`** (`persistSession`). Tradeoff: XSS könnte das Token lesen – akzeptabel für SPA (XSS ist via Pkt. 14 mitigiert), bei SSR später auf Cookie-Strategie umstellbar. |
 | 30 | Unverschlüsselte sensible Daten | ✅/⚠️ | Transport via HTTPS (Supabase); At-Rest-Verschlüsselung durch Supabase/Postgres. App-Projektdaten liegen bewusst im Klartext-`localStorage` (Offline) – keine hochsensiblen Daten, keine Passwörter. |
 | 31 | Schwache Mandantentrennung | ✅ | Heute „ein Nutzer = ein Scope" über `owner_id` + RLS. White-Label/Multi-Tenant (Phase 16) noch offen – Tenant-Scoping dann neu bewerten. |
+
+---
+
+## Lead-/Abo-Modul (2026-07-10, Migrationen 0018–0020)
+
+- **`leads`**: RLS aktiv, **keine** Policies für `anon`/`authenticated` (`revoke all`) – Lesen ausschließlich
+  über SECURITY-DEFINER-Funktionen (`admin_list_leads`, `contractor_list_assigned_leads`); Insert nur per
+  `service_role` in der Edge Function `lead-submit` (Consent serverseitig erzwungen inkl. Text+Version,
+  Honeypot, Rate-Limit 3/24 h je E-Mail-Hash, **Rollback ohne erfolgreiche Opt-in-Mail**). `confirm_lead(token)`
+  nullt den Token nach Nutzung; `cleanup_expired_leads()` löscht unbestätigte Leads nach 7 Tagen (pg_cron).
+- **Max. 3 Betriebe je Lead** steht im Einwilligungstext und ist DB-seitig in `admin_assign_lead` fixiert.
+- **`subscriptions`/`subscription_events`**: Nutzer liest nur die eigene Zeile; Events-Tabelle dient der
+  Webhook-Idempotenz. PayPal-SDK lädt im Frontend **nur** nach Consent-Kategorie `external_services`
+  (Consent-Manager `services/consent.service.ts`) und nur über `paypal-sdk-loader.service.ts`.
+- **Benötigte Function-Secrets** (im Supabase-Dashboard, nie im Repo): `RESEND_API_KEY`, `LEAD_FROM_EMAIL`,
+  `PUBLIC_SITE_URL`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`, `PAYPAL_PLAN_ID`, `PAYPAL_WEBHOOK_ID`.
+- **Rechnungen (M12, Migration 0021):** `contractor_invoices` owner-scoped (RLS wie `contractor_offers`),
+  `unique(owner_id, invoice_number)` erzwingt § 14-konforme einmalige Nummern DB-seitig; kein Limit-Trigger
+  (bewusst – Rechnungen auch für Free-Betriebe). Zahlungsdaten (`tax_number`/`iban`/`bic`/`bank_name`) liegen
+  am owner-scoped `company_profiles` und werden als Snapshot in `invoice_data` eingefroren. XRechnung-XML wird
+  rein clientseitig erzeugt (kein Server-Fetch, keine neue Dependency).
 
 ---
 

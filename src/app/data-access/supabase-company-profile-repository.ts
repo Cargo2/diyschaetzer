@@ -16,9 +16,18 @@ interface CompanyProfileRow {
   email: string;
   website: string;
   vat_id: string;
+  tax_number: string;
+  iban: string;
+  bic: string;
+  bank_name: string;
   offer_intro_text: string;
   offer_outro_text: string;
   material_surcharge_percent: number;
+  leads_active: boolean;
+  lead_zip_areas: string[];
+  lead_room_types: string[];
+  lead_max_per_month: number;
+  lead_contact_channel: 'email' | 'phone';
 }
 
 /**
@@ -75,9 +84,18 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       email: profile.email,
       website: profile.website,
       vat_id: profile.vatId,
+      tax_number: profile.taxNumber,
+      iban: profile.iban,
+      bic: profile.bic,
+      bank_name: profile.bankName,
       offer_intro_text: profile.offerIntroText,
       offer_outro_text: profile.offerOutroText,
-      material_surcharge_percent: profile.materialSurchargePercent
+      material_surcharge_percent: profile.materialSurchargePercent,
+      leads_active: profile.leadsActive,
+      lead_zip_areas: profile.leadZipAreas,
+      lead_room_types: profile.leadRoomTypes,
+      lead_max_per_month: profile.leadMaxPerMonth,
+      lead_contact_channel: profile.leadContactChannel
     });
     if (error) {
       throw error;
@@ -95,9 +113,18 @@ export class SupabaseCompanyProfileRepository implements CompanyProfileRepositor
       email: row.email,
       website: row.website,
       vatId: row.vat_id,
+      taxNumber: row.tax_number ?? '',
+      iban: row.iban ?? '',
+      bic: row.bic ?? '',
+      bankName: row.bank_name ?? '',
       offerIntroText: row.offer_intro_text ?? '',
       offerOutroText: row.offer_outro_text ?? '',
-      materialSurchargePercent: Number(row.material_surcharge_percent ?? 0)
+      materialSurchargePercent: Number(row.material_surcharge_percent ?? 0),
+      leadsActive: row.leads_active ?? false,
+      leadZipAreas: row.lead_zip_areas ?? [],
+      leadRoomTypes: row.lead_room_types ?? [],
+      leadMaxPerMonth: Number(row.lead_max_per_month ?? 5),
+      leadContactChannel: row.lead_contact_channel ?? 'email'
     };
   }
 }

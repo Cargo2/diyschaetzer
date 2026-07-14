@@ -55,7 +55,9 @@ const STATIC_PATHS = [
   '/ratgeber',
   '/kontakt',
   '/vorlage/angebot-fliesen-muster',
-  '/vorlage/fliesen-verlegen-material-werkzeug'
+  '/vorlage/fliesen-verlegen-material-werkzeug',
+  '/fuer-fliesenleger',
+  '/agb-betriebe'
 ];
 
 /** Minimaler Frontmatter-Parser für unsere eigenen, einfachen Felder. */

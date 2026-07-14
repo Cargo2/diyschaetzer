@@ -47,6 +47,10 @@ describe('SupabaseCompanyProfileRepository', () => {
           email: 'info@mueller.de',
           website: 'https://mueller.de',
           vat_id: 'DE123',
+          tax_number: '151/815/08151',
+          iban: 'DE89370400440532013000',
+          bic: 'COBADEFFXXX',
+          bank_name: 'Musterbank',
           offer_intro_text: 'Guten Tag',
           offer_outro_text: 'Zahlbar in 14 Tagen',
           material_surcharge_percent: 12
@@ -66,9 +70,18 @@ describe('SupabaseCompanyProfileRepository', () => {
       email: 'info@mueller.de',
       website: 'https://mueller.de',
       vatId: 'DE123',
+      taxNumber: '151/815/08151',
+      iban: 'DE89370400440532013000',
+      bic: 'COBADEFFXXX',
+      bankName: 'Musterbank',
       offerIntroText: 'Guten Tag',
       offerOutroText: 'Zahlbar in 14 Tagen',
-      materialSurchargePercent: 12
+      materialSurchargePercent: 12,
+      leadsActive: false,
+      leadZipAreas: [],
+      leadRoomTypes: [],
+      leadMaxPerMonth: 5,
+      leadContactChannel: 'email'
     });
   });
 
@@ -93,15 +106,33 @@ describe('SupabaseCompanyProfileRepository', () => {
       email: '',
       website: '',
       vatId: 'DE999',
+      taxNumber: '151/815/08151',
+      iban: 'DE89370400440532013000',
+      bic: 'COBADEFFXXX',
+      bankName: 'Musterbank',
       offerIntroText: 'Hallo',
       offerOutroText: 'Danke',
-      materialSurchargePercent: 15
+      materialSurchargePercent: 15,
+      leadsActive: true,
+      leadZipAreas: ['96'],
+      leadRoomTypes: ['bathroom'],
+      leadMaxPerMonth: 7,
+      leadContactChannel: 'phone'
     });
 
     expect(captured).toMatchObject({
+      leads_active: true,
+      lead_zip_areas: ['96'],
+      lead_room_types: ['bathroom'],
+      lead_max_per_month: 7,
+      lead_contact_channel: 'phone',
       id: 'user-9',
       company_name: 'X GmbH',
       vat_id: 'DE999',
+      tax_number: '151/815/08151',
+      iban: 'DE89370400440532013000',
+      bic: 'COBADEFFXXX',
+      bank_name: 'Musterbank',
       offer_intro_text: 'Hallo',
       offer_outro_text: 'Danke',
       material_surcharge_percent: 15
@@ -121,9 +152,18 @@ describe('SupabaseCompanyProfileRepository', () => {
         email: '',
         website: '',
         vatId: '',
+        taxNumber: '',
+        iban: '',
+        bic: '',
+        bankName: '',
         offerIntroText: '',
         offerOutroText: '',
-        materialSurchargePercent: 0
+        materialSurchargePercent: 0,
+        leadsActive: false,
+        leadZipAreas: [],
+        leadRoomTypes: [],
+        leadMaxPerMonth: 5,
+        leadContactChannel: 'email'
       })
     ).rejects.toThrow();
   });

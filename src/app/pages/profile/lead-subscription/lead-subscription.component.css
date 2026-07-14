@@ -1,0 +1,137 @@
+.abo-section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.profile-header h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+
+.profile-intro {
+  color: #555;
+  margin: 0 0 1.2rem;
+  line-height: 1.5;
+}
+
+.profile-intro a {
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.profile-status {
+  color: #555;
+}
+
+.abo-status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.abo-badge {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.badge-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-overdue {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-inactive {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.abo-status-text {
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.abo-hint,
+.abo-price {
+  margin: 0 0 1rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.abo-price strong {
+  color: #1c1710;
+}
+
+.paypal-container {
+  max-width: 24rem;
+  margin-bottom: 0.5rem;
+}
+
+.consent-card,
+.setup-card {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  background: #f8fafc;
+  display: grid;
+  gap: 0.6rem;
+  max-width: 32rem;
+}
+
+.consent-card strong,
+.setup-card strong {
+  font-size: 1rem;
+}
+
+.consent-card p,
+.setup-card p {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.consent-card a {
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.consent-card .btn-primary {
+  justify-self: start;
+}
+
+.btn-primary {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-message {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.profile-message.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.profile-message.success {
+  background: #f0fdf4;
+  color: #15803d;
+}

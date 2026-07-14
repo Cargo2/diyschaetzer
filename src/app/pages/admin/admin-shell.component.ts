@@ -25,6 +25,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         <a routerLink="material" routerLinkActive="active" class="admin-tab">Materialkatalog</a>
         <a routerLink="nutzer" routerLinkActive="active" class="admin-tab">Nutzer</a>
         <a routerLink="feedback" routerLinkActive="active" class="admin-tab">Feedback</a>
+        <a routerLink="leads" routerLinkActive="active" class="admin-tab">Leads</a>
       </nav>
 
       <section class="admin-body">

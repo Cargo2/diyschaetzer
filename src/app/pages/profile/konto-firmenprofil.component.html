@@ -56,28 +56,31 @@
         <input type="text" name="vatId" [(ngModel)]="profile.vatId" />
       </label>
 
-      <p class="field field-wide subhead">
-        <strong>Angebots-Vorlagen</strong> – füllen jedes <em>neu erzeugte</em> Angebot vor
-        (pro Angebot weiterhin überschreibbar).
-      </p>
-
-      <label class="field field-wide">
-        <span>Standard-Einleitungstext</span>
-        <textarea rows="2" name="offerIntroText" [(ngModel)]="profile.offerIntroText"
-          placeholder="Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:"></textarea>
-      </label>
-
-      <label class="field field-wide">
-        <span>Standard-Schlusstext</span>
-        <textarea rows="3" name="offerOutroText" [(ngModel)]="profile.offerOutroText"
-          placeholder="Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache. Wir freuen uns auf Ihren Auftrag."></textarea>
-      </label>
-
-      <label class="field">
-        <span>Standard-Materialaufschlag (%)</span>
-        <input type="number" step="0.5" min="0" name="materialSurchargePercent"
-          [(ngModel)]="profile.materialSurchargePercent" />
-      </label>
+      <fieldset class="field field-wide profile-fieldset">
+        <legend>Zahlungsdaten für Rechnungen</legend>
+        <p class="fieldset-hint">
+          Diese Angaben erscheinen auf deinen Rechnungen (PDF + XRechnung). Ohne USt-IdNr.
+          genügt die Steuernummer; IBAN/BIC sind die Zahlungsdaten für deine Kunden.
+        </p>
+        <div class="fieldset-grid">
+          <label class="field">
+            <span>Steuernummer</span>
+            <input type="text" name="taxNumber" [(ngModel)]="profile.taxNumber" placeholder="z. B. 151/815/08151" />
+          </label>
+          <label class="field">
+            <span>IBAN</span>
+            <input type="text" name="iban" [(ngModel)]="profile.iban" autocomplete="off" placeholder="DE.." />
+          </label>
+          <label class="field">
+            <span>BIC</span>
+            <input type="text" name="bic" [(ngModel)]="profile.bic" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Bank</span>
+            <input type="text" name="bankName" [(ngModel)]="profile.bankName" />
+          </label>
+        </div>
+      </fieldset>
 
       @if (errorMsg()) {
         <p class="profile-message error" role="alert">{{ errorMsg() }}</p>
@@ -92,45 +95,5 @@
         </button>
       </div>
     </form>
-
-    <section class="profile-section">
-      <header class="profile-header">
-        <h2>Standard-Preise</h2>
-        <p class="profile-intro">
-          Hinterlege deine eigenen Einheitspreise und den Fliesen-Richtwert. Sie gelten als
-          Standard in jeder Raumkalkulation. Leer lassen = System-Standard (als Platzhalter
-          angezeigt). In der einzelnen Kalkulation geänderte Werte haben weiterhin Vorrang.
-        </p>
-      </header>
-
-      <form class="profile-form prices-form" (ngSubmit)="savePrices()">
-        @for (field of priceFields; track field.path) {
-          <label class="field">
-            <span>{{ field.label }} ({{ field.unit }})</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              [name]="field.path"
-              [placeholder]="field.systemDefault"
-              [(ngModel)]="priceValues[field.path]"
-            />
-          </label>
-        }
-
-        @if (priceErrorMsg()) {
-          <p class="profile-message error" role="alert">{{ priceErrorMsg() }}</p>
-        }
-        @if (priceSuccessMsg()) {
-          <p class="profile-message success" role="status">{{ priceSuccessMsg() }}</p>
-        }
-
-        <div class="profile-actions">
-          <button type="submit" class="btn-primary" [disabled]="savingPrices()">
-            {{ savingPrices() ? 'Speichern …' : 'Standard-Preise speichern' }}
-          </button>
-        </div>
-      </form>
-    </section>
   }
 </section>

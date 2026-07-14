@@ -119,6 +119,16 @@
   padding: 0.1rem 0.45rem;
 }
 
+.legal-note {
+  background: linear-gradient(120deg, #fdf6e9, #fbf0dc);
+  border: 1px solid rgba(180, 135, 62, 0.4);
+  border-left: 4px solid var(--gold);
+  border-radius: 0.6rem;
+  color: #6e4d18 !important;
+  margin: 0 0 1.4rem;
+  padding: 0.8rem 1rem;
+}
+
 .legal-meta {
   color: var(--ink-soft);
   font-size: 0.85rem;

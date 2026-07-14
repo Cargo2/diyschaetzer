@@ -1,0 +1,82 @@
+@if (visible()) {
+  <section class="abo-section" id="abo">
+    <header class="profile-header">
+      <h2>Lead-Abo</h2>
+      <p class="profile-intro">
+        Mit dem Lead-Abo wirst du bei der Zuteilung neuer, per E-Mail bestätigter Anfragen
+        berücksichtigt (max. 3 Betriebe je Anfrage). Ohne aktives Abo bleiben dir bereits
+        zugeteilte Anfragen erhalten, es kommen aber keine neuen dazu.
+        <a routerLink="/fuer-fliesenleger">Mehr zum Lead-Abo</a>.
+      </p>
+    </header>
+
+    @if (loading()) {
+      <p class="profile-status">Abo-Status wird geladen …</p>
+    } @else {
+      <div class="abo-status">
+        <span class="abo-badge badge-{{ badge() }}">{{ badgeLabel() }}</span>
+        @if (isActive()) {
+          <span class="abo-status-text">
+            @if (subscription()?.currentPeriodEnd) {
+              Aktiv bis {{ formatDate(subscription()!.currentPeriodEnd) }}
+            } @else {
+              Aktiv
+            }
+          </span>
+        } @else if (badge() === 'overdue') {
+          <span class="abo-status-text">
+            Zahlung überfällig – dein Zugang endet, wenn keine Zahlung eingeht.
+          </span>
+        } @else {
+          <span class="abo-status-text">Kein aktives Abo.</span>
+        }
+      </div>
+
+      @if (isActive()) {
+        <p class="abo-hint">
+          Kündigen kannst du jederzeit selbst in deinem PayPal-Konto. Das Abo bleibt bis zum
+          Ende der bezahlten Periode aktiv.
+        </p>
+      } @else {
+        <p class="abo-price">
+          <strong>29,99 € / Monat</strong> (zzgl. USt.), monatlich kündbar.
+        </p>
+
+        @if (!paymentConfigured) {
+          <div class="setup-card">
+            <strong>Zahlungsabwicklung wird eingerichtet</strong>
+            <p>
+              Die Zahlungsabwicklung wird gerade eingerichtet. Der Abo-Abschluss ist in Kürze
+              verfügbar – bitte schau später noch einmal vorbei.
+            </p>
+          </div>
+        } @else if (externalConsent()) {
+          <div #paypalContainer class="paypal-container"></div>
+          @if (activating()) {
+            <p class="profile-status">Abo wird aktiviert …</p>
+          }
+        } @else {
+          <div class="consent-card">
+            <strong>Externe Dienste zulassen</strong>
+            <p>
+              Der Abschluss läuft über den Zahlungsanbieter PayPal (externer Dienst). Bitte
+              erlaube dafür die Kategorie „Externe Dienste". Erst dann wird das PayPal-Fenster
+              geladen. Details in der
+              <a routerLink="/datenschutz">Datenschutzerklärung</a>.
+            </p>
+            <button type="button" class="btn-primary" (click)="openConsent()">
+              Externe Dienste zulassen
+            </button>
+          </div>
+        }
+      }
+
+      @if (errorMsg()) {
+        <p class="profile-message error" role="alert">{{ errorMsg() }}</p>
+      }
+      @if (successMsg()) {
+        <p class="profile-message success" role="status">{{ successMsg() }}</p>
+      }
+    }
+  </section>
+}

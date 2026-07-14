@@ -30,6 +30,11 @@ export const ADMIN_ROUTES: Routes = [
         path: 'feedback',
         loadComponent: () =>
           import('./admin-feedback.component').then((m) => m.AdminFeedbackComponent)
+      },
+      {
+        path: 'leads',
+        loadComponent: () =>
+          import('./admin-leads.component').then((m) => m.AdminLeadsComponent)
       }
     ]
   }

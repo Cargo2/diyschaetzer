@@ -4,36 +4,24 @@ import {
   PROFILE_PRICE_FIELDS,
   ProfileAssumptionDefaults
 } from '../../config/profile-price-fields';
-import { CompanyProfile, emptyCompanyProfile } from '../../models/company-profile.model';
-import { CompanyProfileService } from '../../services/company-profile.service';
-import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
 
 /**
- * Profi-Profil (Phase 13). Nur über den contractorGuard erreichbar:
- * Firmenstammdaten + Standard-Preise (Profil-Default-Annahmen).
+ * Konto → „Eigene Preise" (contractorGuard). Enthält NUR die Standard-Preise
+ * (Profil-Default-Annahmen). Leer gelassene Felder fallen auf den System-Standard
+ * zurück; in einer einzelnen Kalkulation geänderte Werte behalten Vorrang.
  */
 @Component({
-  selector: 'app-profile-page',
+  selector: 'app-konto-preise',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './profile-page.component.html',
+  templateUrl: './konto-preise.component.html',
   styleUrl: './profile-page.component.css'
 })
-export class ProfilePageComponent implements OnInit {
-  private readonly companyProfile = inject(CompanyProfileService);
-  private readonly branding = inject(ContractorBrandingService);
+export class KontoPreiseComponent implements OnInit {
   private readonly profileDefaults = inject(ProfileAssumptionDefaultsService);
 
   readonly loading = signal(true);
-
-  // Firmenstammdaten
-  readonly saving = signal(false);
-  readonly errorMsg = signal<string | null>(null);
-  readonly successMsg = signal<string | null>(null);
-  profile: CompanyProfile = emptyCompanyProfile();
-
-  // Standard-Preise (Profil-Default-Annahmen)
   readonly priceFields = PROFILE_PRICE_FIELDS;
   priceValues: Record<string, number | null> = {};
   readonly savingPrices = signal(false);
@@ -41,24 +29,8 @@ export class ProfilePageComponent implements OnInit {
   readonly priceSuccessMsg = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
-    await Promise.allSettled([this.loadProfile(), this.loadPrices()]);
+    await this.loadPrices();
     this.loading.set(false);
-  }
-
-  async save(): Promise<void> {
-    this.errorMsg.set(null);
-    this.successMsg.set(null);
-    this.saving.set(true);
-    try {
-      await this.companyProfile.save(this.profile);
-      // Branding-Cache auffrischen, damit der geänderte Firmenname sofort im Export erscheint.
-      await this.branding.refresh();
-      this.successMsg.set('Firmenprofil gespeichert.');
-    } catch {
-      this.errorMsg.set('Speichern fehlgeschlagen. Bitte versuche es erneut.');
-    } finally {
-      this.saving.set(false);
-    }
   }
 
   async savePrices(): Promise<void> {
@@ -79,14 +51,6 @@ export class ProfilePageComponent implements OnInit {
       this.priceErrorMsg.set('Speichern der Standard-Preise fehlgeschlagen.');
     } finally {
       this.savingPrices.set(false);
-    }
-  }
-
-  private async loadProfile(): Promise<void> {
-    try {
-      this.profile = await this.companyProfile.load();
-    } catch {
-      this.errorMsg.set('Das Firmenprofil konnte nicht geladen werden.');
     }
   }
 

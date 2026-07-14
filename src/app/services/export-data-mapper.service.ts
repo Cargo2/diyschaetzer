@@ -3,8 +3,10 @@ import {
   ESTIMATE_EXPORT_LEGAL_NOTICE,
   ExportDocumentData,
   ExportDocumentSection,
+  ExportInvoiceMeta,
   ExportOfferGroup,
   ExportOfferMeta,
+  INVOICE_EXPORT_LEGAL_NOTICE,
   OFFER_EXPORT_LEGAL_NOTICE
 } from '../models/export-document.model';
 import {
@@ -20,6 +22,15 @@ import {
   offerSectionSubtotal,
   offerVatAmount
 } from '../models/contractor-offer.model';
+import {
+  ContractorInvoice,
+  invoiceAsOffer,
+  invoiceDiscountAmount,
+  invoiceGrossTotal,
+  invoiceNetAfterDiscount,
+  invoiceNetTotal,
+  invoiceVatAmount
+} from '../models/contractor-invoice.model';
 import { BathroomWizardData, ROOM_TYPE_DEFAULT_NAMES } from '../models/bathroom-wizard.model';
 import { MaterialListViewModel } from '../models/material-list.model';
 import { ProjectMaterialListViewModel } from '../models/project-material-list.model';
@@ -240,31 +251,7 @@ export class ExportDataMapperService {
   }
 
   buildContractorOfferExportData(offer: ContractorOffer): ExportDocumentData {
-    // Nur renderbare Gruppen (mind. eine aktive Position); Nummerierung identisch
-    // zum Editor über die geteilten Helfer, damit „Pos. 1.003" überall gleich ist.
-    const groups: ExportOfferGroup[] = offerRenderableSections(offer).map((section) => {
-      const isSetup = section.kind === 'site_setup';
-      const pos = offerPositionNumber(offer, section);
-      const activeLines = section.lines.filter((line) => line.isActive);
-      return {
-        positionLabel: isSetup ? null : `Pos. ${pos}`,
-        title: section.title,
-        rows: activeLines.map((line) => ({
-          number: offerLineNumber(offer, section, line) ?? '',
-          label: line.label,
-          description: line.description,
-          quantity: line.quantity,
-          unit: line.unit,
-          unitPrice: line.unitPrice,
-          total: offerLineTotal(line),
-          isOptional: line.isOptional === true
-        })),
-        // Einzelne Sammelpositionen (Baustelle/Material) brauchen keine Zwischensumme.
-        subtotal: isSetup || section.kind === 'material'
-          ? null
-          : offerSectionSubtotal(section)
-      };
-    });
+    const groups = this.buildOfferGroups(offer);
 
     const sections: ExportDocumentSection[] = [
       { id: 'offer', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
@@ -313,6 +300,118 @@ export class ExportDataMapperService {
     });
   }
 
+  buildContractorInvoiceExportData(invoice: ContractorInvoice): ExportDocumentData {
+    const offerLike = invoiceAsOffer(invoice);
+    const groups = this.buildOfferGroups(offerLike);
+
+    const sections: ExportDocumentSection[] = [
+      { id: 'invoice', title: 'Leistungsverzeichnis', type: 'offer', content: groups }
+    ];
+
+    const taxNote = invoice.vatPercent === 0
+      ? 'Gemäß § 19 UStG (Kleinunternehmerregelung) wird keine Umsatzsteuer berechnet.'
+      : null;
+
+    const seller = invoice.seller;
+    const customer = invoice.customer;
+    const invoiceMeta: ExportInvoiceMeta = {
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: invoice.invoiceDate,
+      serviceDate: invoice.serviceDate ?? '',
+      servicePeriodStart: invoice.servicePeriodStart ?? '',
+      servicePeriodEnd: invoice.servicePeriodEnd ?? '',
+      dueDate: invoice.dueDate,
+      buyerReference: invoice.buyerReference,
+      status: invoice.status,
+      sellerName: seller.companyName,
+      sellerAddressLines: this.addressLines(seller.street, seller.postalCode, seller.city),
+      sellerVatId: seller.vatId,
+      sellerTaxNumber: seller.taxNumber,
+      sellerContactLines: [
+        seller.contactName,
+        seller.phone ? `Tel. ${seller.phone}` : '',
+        seller.email,
+        seller.website
+      ].filter((part) => part.trim().length > 0),
+      customerName: customer.name,
+      customerAddressLines: this.addressLines(
+        customer.street,
+        customer.postalCode,
+        customer.city
+      ),
+      iban: seller.iban,
+      bic: seller.bic,
+      bankName: seller.bankName
+    };
+
+    const discountAmount = invoiceDiscountAmount(invoice);
+    const hasDiscount = discountAmount > 0;
+
+    return this.createDocument({
+      documentType: 'contractor_invoice',
+      title: 'Rechnung',
+      subtitle: invoice.projectName,
+      projectName: invoice.projectName,
+      sections,
+      totals: {
+        netTotal: invoiceNetTotal(invoice),
+        ...(hasDiscount
+          ? {
+              discountPercent: invoice.discountPercent,
+              discountAmount: -discountAmount,
+              netAfterDiscount: invoiceNetAfterDiscount(invoice)
+            }
+          : {}),
+        vatPercent: invoice.vatPercent,
+        vatAmount: invoiceVatAmount(invoice),
+        grossTotal: invoiceGrossTotal(invoice)
+      },
+      legalNotice: INVOICE_EXPORT_LEGAL_NOTICE,
+      invoiceMeta,
+      introText: invoice.introText ?? null,
+      outroText: invoice.outroText ?? null,
+      taxNote
+    });
+  }
+
+  /**
+   * Baut die Positionsgruppen für den Leistungsverzeichnis-Export (Angebot **und**
+   * Rechnung, letztere über {@link invoiceAsOffer}). Nur renderbare Gruppen (mind.
+   * eine aktive Position); Nummerierung identisch zum Editor über die geteilten
+   * Helfer, damit „Pos. 1.003" überall gleich ist.
+   */
+  private buildOfferGroups(offer: ContractorOffer): ExportOfferGroup[] {
+    return offerRenderableSections(offer).map((section) => {
+      const isSetup = section.kind === 'site_setup';
+      const pos = offerPositionNumber(offer, section);
+      const activeLines = section.lines.filter((line) => line.isActive);
+      return {
+        positionLabel: isSetup ? null : `Pos. ${pos}`,
+        title: section.title,
+        rows: activeLines.map((line) => ({
+          number: offerLineNumber(offer, section, line) ?? '',
+          label: line.label,
+          description: line.description,
+          quantity: line.quantity,
+          unit: line.unit,
+          unitPrice: line.unitPrice,
+          total: offerLineTotal(line),
+          isOptional: line.isOptional === true
+        })),
+        // Einzelne Sammelpositionen (Baustelle/Material) brauchen keine Zwischensumme.
+        subtotal: isSetup || section.kind === 'material'
+          ? null
+          : offerSectionSubtotal(section)
+      };
+    });
+  }
+
+  /** Baut Anschriftszeilen (Straße, „PLZ Ort") ohne Leerzeilen. */
+  private addressLines(street: string, postalCode: string, city: string): string[] {
+    const cityLine = [postalCode, city].map((part) => part.trim()).filter(Boolean).join(' ');
+    return [street.trim(), cityLine].filter((line) => line.length > 0);
+  }
+
   private createDocument(
     values: Pick<
       ExportDocumentData,
@@ -325,6 +424,7 @@ export class ExportDataMapperService {
           | 'roomName'
           | 'legalNotice'
           | 'offerMeta'
+          | 'invoiceMeta'
           | 'introText'
           | 'outroText'
           | 'taxNote'

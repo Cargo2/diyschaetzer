@@ -7,6 +7,7 @@ import type {
 import {
   ExportDocumentData,
   ExportDocumentSection,
+  ExportInvoiceMeta,
   ExportOfferGroup
 } from '../models/export-document.model';
 
@@ -112,6 +113,10 @@ export class PdfDocumentBuilderService {
     content.push(...data.sections.flatMap((section) => this.section(section)));
     content.push(...this.totals(data));
 
+    if (data.invoiceMeta) {
+      content.push(...this.paymentBlock(data.invoiceMeta));
+    }
+
     if (data.taxNote) {
       content.push({ text: data.taxNote, style: 'muted', margin: [0, 8, 0, 0] });
     }
@@ -161,6 +166,9 @@ export class PdfDocumentBuilderService {
   }
 
   private header(data: ExportDocumentData, brandName: string): Content {
+    if (data.invoiceMeta) {
+      return this.invoiceHeader(data, brandName);
+    }
     if (data.offerMeta) {
       return this.offerHeader(data, brandName);
     }
@@ -236,6 +244,109 @@ export class PdfDocumentBuilderService {
         }
       ]
     };
+  }
+
+  /** Brief-Kopf für die Rechnung mit den § 14-Pflichtangaben (beidseitige Anschrift). */
+  private invoiceHeader(data: ExportDocumentData, brandName: string): Content {
+    const meta = data.invoiceMeta!;
+    const senderName = meta.sellerName || brandName;
+
+    // Absender (Verkäufer) – Name, Anschrift, Kontakt, Steuernummer/USt-IdNr.
+    const sellerStack: Content[] = [
+      { text: senderName.toUpperCase(), style: 'muted', characterSpacing: 1 }
+    ];
+    for (const line of meta.sellerAddressLines) {
+      sellerStack.push({ text: line, style: 'muted' });
+    }
+    for (const line of meta.sellerContactLines) {
+      sellerStack.push({ text: line, style: 'muted' });
+    }
+    if (meta.sellerVatId) {
+      sellerStack.push({ text: `USt-IdNr. ${meta.sellerVatId}`, style: 'muted' });
+    }
+    if (meta.sellerTaxNumber) {
+      sellerStack.push({ text: `Steuernummer ${meta.sellerTaxNumber}`, style: 'muted' });
+    }
+
+    // Empfänger (Käufer).
+    const customerStack: Content[] = [{ text: 'Rechnung an', style: 'muted' }];
+    customerStack.push({ text: meta.customerName || '—', bold: true });
+    for (const line of meta.customerAddressLines) {
+      customerStack.push({ text: line });
+    }
+
+    // Rechnungsmeta rechts.
+    const metaLines: Content[] = [
+      { text: `Rechnung Nr. ${meta.invoiceNumber}`, bold: true },
+      { text: `Rechnungsdatum: ${this.formatDate(meta.invoiceDate || data.createdAt)}` }
+    ];
+    const servicePeriod = this.servicePeriodText(meta);
+    if (servicePeriod) {
+      metaLines.push({ text: servicePeriod });
+    }
+    if (meta.dueDate) {
+      metaLines.push({ text: `Zahlbar bis: ${this.formatDate(meta.dueDate)}` });
+    }
+    if (meta.buyerReference && meta.buyerReference.toLowerCase() !== 'n/a') {
+      metaLines.push({ text: `Leitweg-ID: ${meta.buyerReference}` });
+    }
+
+    return {
+      margin: [0, 0, 0, 8],
+      stack: [
+        { stack: sellerStack },
+        {
+          margin: [0, 12, 0, 0],
+          columns: [
+            { width: '*', stack: customerStack },
+            { width: 'auto', stack: metaLines, alignment: 'right', style: 'muted' }
+          ]
+        },
+        { text: data.title, style: 'title', margin: [0, 14, 0, 0] },
+        ...(data.subtitle ? [{ text: `Projekt: ${data.subtitle}`, style: 'subtitle' }] : []),
+        {
+          margin: [0, 6, 0, 0],
+          canvas: [
+            { type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 1, lineColor: BORDER_COLOR }
+          ]
+        }
+      ]
+    };
+  }
+
+  /** Zahlungsziel + Bankverbindung unter den Summen (Rechnung). */
+  private paymentBlock(meta: ExportInvoiceMeta): Content[] {
+    const lines: string[] = [];
+    if (meta.dueDate) {
+      lines.push(`Zahlbar ohne Abzug bis ${this.formatDate(meta.dueDate)}.`);
+    }
+    const bankParts = [
+      meta.bankName ? `Bank: ${meta.bankName}` : '',
+      meta.iban ? `IBAN: ${meta.iban}` : '',
+      meta.bic ? `BIC: ${meta.bic}` : ''
+    ].filter((part) => part.length > 0);
+    if (bankParts.length > 0) {
+      lines.push(bankParts.join('   ·   '));
+    }
+    if (lines.length === 0) {
+      return [];
+    }
+    return [
+      {
+        margin: [0, 12, 0, 0],
+        stack: lines.map((line) => ({ text: line, style: 'muted' }))
+      }
+    ];
+  }
+
+  private servicePeriodText(meta: ExportInvoiceMeta): string | null {
+    if (meta.servicePeriodStart && meta.servicePeriodEnd) {
+      return `Leistungszeitraum: ${this.formatDate(meta.servicePeriodStart)} – ${this.formatDate(meta.servicePeriodEnd)}`;
+    }
+    if (meta.serviceDate) {
+      return `Leistungsdatum: ${this.formatDate(meta.serviceDate)}`;
+    }
+    return null;
   }
 
   private section(section: ExportDocumentSection): Content[] {
