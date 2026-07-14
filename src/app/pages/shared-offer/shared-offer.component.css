@@ -171,6 +171,97 @@ td {
   color: #6b7280;
 }
 
+/* ── Annahme-Block (S2: View-Ping + digitale Annahme) ── */
+.acceptance {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.accepted-banner {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  font-weight: 700;
+}
+
+.accept-form h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+.accept-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  max-width: 24rem;
+}
+
+.accept-form input {
+  font: inherit;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  color: #111827;
+}
+
+.accept-form input:focus {
+  outline: 2px solid #047857;
+  outline-offset: 1px;
+}
+
+.field-hint {
+  color: #b45309;
+  font-size: 0.8rem;
+  margin: 0.3rem 0 0;
+}
+
+.accept-btn {
+  margin-top: 0.9rem;
+  min-height: 44px;
+  padding: 0.7rem 1.4rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: #047857;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.accept-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.accept-error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+}
+
+.accept-note {
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+  max-width: 32rem;
+}
+
+@media (max-width: 640px) {
+  .accept-form .field {
+    max-width: none;
+  }
+
+  .accept-btn {
+    width: 100%;
+  }
+}
+
 /* ── Handy: Positionstabelle als Karten (Kunde öffnet den Link meist mobil) ── */
 @media (max-width: 640px) {
   .shared-offer {

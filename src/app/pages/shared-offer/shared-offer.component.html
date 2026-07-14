@@ -118,6 +118,49 @@
       @if (d.legalNotice) {
         <p class="legal">{{ d.legalNotice }}</p>
       }
+
+      <section class="acceptance">
+        @if (isAccepted()) {
+          <div class="accepted-banner">
+            ✓ Angenommen von {{ acceptedByName() }} am {{ formatDate(acceptedAt()) }}
+          </div>
+        } @else {
+          <div class="accept-form">
+            <h2>Angebot annehmen</h2>
+            <label class="field">
+              <span>Ihr Name</span>
+              <input
+                type="text"
+                name="acceptName"
+                autocomplete="name"
+                placeholder="Vor- und Nachname"
+                [ngModel]="acceptName()"
+                (ngModelChange)="acceptName.set($event)"
+                [disabled]="accepting()"
+              />
+            </label>
+            @if (acceptName().length > 0 && !nameValid()) {
+              <p class="field-hint">Bitte geben Sie 2–120 Zeichen ein.</p>
+            }
+            <button
+              type="button"
+              class="accept-btn"
+              [disabled]="!nameValid() || accepting()"
+              (click)="submitAcceptance()"
+            >
+              {{ accepting() ? 'Wird übermittelt …' : 'Angebot verbindlich annehmen' }}
+            </button>
+            @if (acceptError()) {
+              <p class="accept-error">{{ acceptError() }}</p>
+            }
+            <p class="accept-note">
+              Mit Klick auf „Angebot verbindlich annehmen" beauftragen Sie den Betrieb
+              verbindlich auf Grundlage dieses Angebots. Ihr Name wird mit Zeitstempel
+              gespeichert und dem Betrieb angezeigt.
+            </p>
+          </div>
+        }
+      </section>
     </article>
   }
 </section>
