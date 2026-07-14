@@ -220,6 +220,44 @@
   word-break: break-all;
 }
 
+/* Teilen-Tracking (dezent unter dem Teilen-Link) */
+.tracking-info {
+  margin: 0 0 1rem;
+  font-size: .82rem;
+  color: #6b7280;
+}
+
+.tracking-accepted {
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Anzahlungsrechnung (nur bei angenommenem, gespeichertem Angebot) */
+.deposit-invoice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  padding: .75rem 1rem;
+  margin: 1rem 0;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: .6rem;
+}
+
+.deposit-label {
+  font-weight: 700;
+  color: #047857;
+}
+
+.deposit-invoice input[type="number"] {
+  width: 4.5rem;
+  padding: .25rem .4rem;
+  border: 1px solid #d1d5db;
+  border-radius: .4rem;
+  text-align: right;
+}
+
 .offers-message {
   border-radius: .55rem;
   padding: .6rem .8rem;

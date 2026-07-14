@@ -86,7 +86,7 @@
               [document]="exportDocumentFn"
             />
             <button type="button" class="btn-light" [disabled]="sharing() || !loadedFromDb()"
-              (click)="share()" title="Speichere zuerst, dann teilen">
+              (click)="share()" [title]="loadedFromDb() ? '' : 'Bitte zuerst speichern'">
               {{ sharing() ? 'Link wird erstellt …' : 'Teilen-Link' }}
             </button>
             <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
@@ -161,6 +161,17 @@
           Öffentlicher Link (read-only):
           <a [href]="url" target="_blank" rel="noopener">{{ url }}</a>
           <button type="button" class="btn-link" (click)="copyShareUrl()">Kopieren</button>
+        </p>
+      }
+      @if (tracking(); as t) {
+        <p class="tracking-info" role="status">
+          Geteilt am {{ formatTrackingDate(t.createdAt) }}
+          @if (t.viewedAt) {
+            · Zuletzt angesehen am {{ formatTrackingDate(t.viewedAt) }} ({{ t.viewCount }} Aufrufe)
+          }
+          @if (t.acceptedAt) {
+            · <span class="tracking-accepted">✓ Angenommen von {{ t.acceptedByName }} am {{ formatTrackingDate(t.acceptedAt) }}</span>
+          }
         </p>
       }
 
@@ -335,6 +346,21 @@
             </div>
           </div>
         </div>
+
+        @if (offer.status === 'accepted' && loadedFromDb()) {
+          <div class="deposit-invoice">
+            <span class="deposit-label">Anzahlungsrechnung</span>
+            <label class="opt">
+              <span>Anteil</span>
+              <input type="number" inputmode="decimal" step="1" min="1" max="100"
+                [(ngModel)]="depositPercent" [ngModelOptions]="{ standalone: true }" /> %
+            </label>
+            <button type="button" class="btn-light" [disabled]="creatingInvoice()"
+              (click)="createDepositInvoice()">
+              {{ creatingInvoice() ? 'Rechnung wird erstellt …' : 'Anzahlungsrechnung erstellen' }}
+            </button>
+          </div>
+        }
 
         <label class="offer-text">
           <span>Schlusstext (optional)</span>

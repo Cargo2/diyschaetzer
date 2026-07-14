@@ -1,4 +1,4 @@
-import { ContractorOffer } from '../models/contractor-offer.model';
+import { ContractorOffer, offerGrossTotal } from '../models/contractor-offer.model';
 import {
   InvoiceSellerSource,
   invoiceGrossTotal,
@@ -188,6 +188,74 @@ describe('ContractorInvoiceService.nextInvoiceNumber', () => {
 
   it('ignores other years when computing the next number', () => {
     expect(service.nextInvoiceNumber(['RE-2025-099'], 2026)).toBe('RE-2026-001');
+  });
+});
+
+describe('ContractorInvoiceService.buildDepositInvoice', () => {
+  const service = new ContractorInvoiceService();
+
+  it('builds a single deposit line from a percentage of the gross total (19 % VAT)', () => {
+    const offer = offerWithMixedLines(); // gross = 856.8 € (s.o.)
+    expect(offerGrossTotal(offer)).toBeCloseTo(856.8, 2);
+
+    const invoice = service.buildDepositInvoice(offer, profile(), [], 30);
+
+    expect(invoice.sections).toHaveLength(1);
+    expect(invoice.sections[0].kind).toBe('custom');
+    expect(invoice.sections[0].lines).toHaveLength(1);
+    const line = invoice.sections[0].lines[0];
+    expect(line.quantity).toBe(1);
+    expect(line.unit).toBe('pauschal');
+    expect(line.isActive).toBe(true);
+
+    // Brutto-Rückrechnung: 30 % von 856,80 € = 257,04 € brutto → 216,00 € netto (19 %).
+    expect(line.unitPrice).toBeCloseTo(216, 2);
+    expect(invoiceVatAmount(invoice)).toBeCloseTo(41.04, 2);
+    // Rundungsfehler durch zwei Rundungsstufen (netto, dann MwSt.) bleiben ≤ 1 Cent.
+    expect(Math.abs(invoiceGrossTotal(invoice) - 257.04)).toBeLessThanOrEqual(0.01);
+  });
+
+  it('nets equal gross at 0 % VAT', () => {
+    const offer = { ...offerWithMixedLines(), vatPercent: 0, discountPercent: 0 };
+    const invoice = service.buildDepositInvoice(offer, profile(), [], 30);
+
+    const line = invoice.sections[0].lines[0];
+    // 30 % von 800 € (netto = brutto bei 0 %) = 240 €, keine Bruttoumrechnung nötig.
+    expect(line.unitPrice).toBeCloseTo(240, 2);
+    expect(invoiceGrossTotal(invoice)).toBeCloseTo(line.unitPrice, 2);
+    expect(invoice.vatPercent).toBe(0);
+  });
+
+  it('always forces discountPercent to 0, even if the offer had a discount', () => {
+    const offer = offerWithMixedLines(); // discountPercent: 10
+    const invoice = service.buildDepositInvoice(offer, profile(), [], 25);
+    expect(invoice.discountPercent).toBe(0);
+  });
+
+  it('labels the deposit line with the percentage and the offer reference (number/label/project)', () => {
+    const withNumber = service.buildDepositInvoice(
+      { ...offerWithMixedLines(), offerNumber: '2026-042' },
+      profile(),
+      [],
+      30
+    );
+    expect(withNumber.sections[0].lines[0].label).toContain('30');
+    expect(withNumber.sections[0].lines[0].label).toContain('2026-042');
+
+    // Ohne Angebotsnummer/-Bezeichnung fällt die Referenz auf den Projektnamen zurück.
+    const withoutNumber = service.buildDepositInvoice(offerWithMixedLines(), profile(), [], 30);
+    expect(withoutNumber.sections[0].lines[0].label).toContain('Sanierung Altbau');
+  });
+
+  it('sets vatPercent from the offer, an invoice number and a +14d due date', () => {
+    const invoice = service.buildDepositInvoice(offerWithMixedLines(), profile(), [], 30);
+    expect(invoice.vatPercent).toBe(19);
+    expect(invoice.invoiceNumber).toMatch(/^RE-\d{4}-001$/);
+    expect(invoice.serviceDate).toBe(invoice.invoiceDate);
+    expect(invoice.dueDate > invoice.invoiceDate).toBe(true);
+    expect(invoice.outroText).toContain('§ 14 Abs. 5 UStG');
+    // Bestehender Angebots-Schlusstext bleibt erhalten (angehängt).
+    expect(invoice.outroText).toContain('Zahlbar in 14 Tagen.');
   });
 });
 

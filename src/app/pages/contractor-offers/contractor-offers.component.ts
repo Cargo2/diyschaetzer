@@ -31,6 +31,7 @@ import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-
 import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
 import { ContractorInvoiceService } from '../../services/contractor-invoice.service';
 import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
+import { SharedOfferTracking } from '../../models/shared-offer-tracking.model';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { ExportDocumentData } from '../../models/export-document.model';
@@ -120,6 +121,11 @@ export class ContractorOffersComponent implements OnInit {
   readonly shareUrl = signal<string | null>(null);
   readonly sharing = signal(false);
   readonly shareError = signal<string | null>(null);
+  /** Owner-scoped Tracking (Aufrufe/Annahme) zum Teilen-Link des aktuellen Angebots. */
+  readonly tracking = signal<SharedOfferTracking | null>(null);
+
+  /** Anteil (%) für die Anzahlungsrechnung (Block „Anzahlungsrechnung"). */
+  depositPercent = 30;
 
   readonly statusOptions: { value: ContractorOfferStatus; label: string }[] = [
     { value: 'draft', label: CONTRACTOR_OFFER_STATUS_LABELS.draft },
@@ -144,6 +150,8 @@ export class ContractorOffersComponent implements OnInit {
 
   /** Monoton steigendes Token, damit nur die zuletzt angeforderte Ladung übernimmt. */
   private loadToken = 0;
+  /** Eigenes Token für das (unabhängig nachladbare) Tracking, gegen Ladungs-Races. */
+  private trackingToken = 0;
 
   async ngOnInit(): Promise<void> {
     await this.localProject.ready;
@@ -272,9 +280,51 @@ export class ContractorOffersComponent implements OnInit {
     this.offer = normalizeContractorOffer({ ...offer });
     this.loadedFromDb.set(fromDb);
     this.shareUrl.set(null);
+    this.tracking.set(null);
     this.projectChanged.set(
       fromDb && !!offer.sourceUpdatedAt && offer.sourceUpdatedAt !== project.updatedAt
     );
+    if (fromDb && this.offer.id) {
+      void this.loadTracking(this.offer.id);
+    }
+  }
+
+  /**
+   * Lädt das Teilen-Tracking eines gespeicherten Angebots (owner-scoped). Über ein
+   * eigenes Token gegen schnellen Versions-/Projektwechsel abgesichert. Spiegelt
+   * eine bereits erfolgte Annahme (`acceptedAt`) dezent in den lokalen Status –
+   * die DB hat den Status bereits per RPC gesetzt, hier wird nur nachgezogen,
+   * ohne ein Speichern zu erzwingen.
+   */
+  private async loadTracking(offerId: string): Promise<void> {
+    const token = ++this.trackingToken;
+    let result: SharedOfferTracking | null = null;
+    try {
+      result = await this.shareService.trackingForOffer(offerId);
+    } catch {
+      result = null;
+    }
+    if (token !== this.trackingToken) {
+      return; // Ein neuerer Wechsel hat diese Ladung überholt.
+    }
+    this.tracking.set(result);
+    if (
+      result?.acceptedAt &&
+      this.offer &&
+      this.offer.id === offerId &&
+      this.offer.status !== 'accepted'
+    ) {
+      this.offer.status = 'accepted';
+    }
+  }
+
+  /** Deutsches Datum/Uhrzeit-Format für die Tracking-Anzeige. */
+  formatTrackingDate(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return iso;
+    }
+    return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
   }
 
   /** Wechselt zu einer gespeicherten Version. */
@@ -392,16 +442,23 @@ export class ContractorOffersComponent implements OnInit {
 
   // ---- Teilen (öffentlicher read-only Link) --------------------------------
 
+  /**
+   * Teilt nur ein **gespeichertes** Angebot (stabiler Token je `offerId` – ein Link
+   * je Angebot, wiederholtes Teilen aktualisiert nur den Snapshot). Ungespeicherte
+   * Angebote haben noch keine `id`; der Button ist dafür im Markup deaktiviert.
+   */
   async share(): Promise<void> {
-    if (!this.offer) {
+    if (!this.offer || !this.offer.id || !this.loadedFromDb()) {
       return;
     }
+    const offerId = this.offer.id;
     this.shareError.set(null);
     this.shareUrl.set(null);
     this.sharing.set(true);
     try {
-      const token = await this.shareService.createShare(this.buildExportData());
+      const token = await this.shareService.createShareForOffer(offerId, this.buildExportData());
       this.shareUrl.set(this.shareService.shareUrl(token));
+      await this.loadTracking(offerId);
     } catch {
       this.shareError.set('Teilen fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
@@ -451,6 +508,44 @@ export class ContractorOffersComponent implements OnInit {
       await this.router.navigate(['/rechnungen']);
     } catch {
       this.invoiceError.set('Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.');
+    } finally {
+      this.creatingInvoice.set(false);
+    }
+  }
+
+  /**
+   * Erzeugt aus dem **angenommenen, gespeicherten** Angebot eine Anzahlungsrechnung
+   * über `depositPercent` % der Bruttosumme (§ 14 Abs. 5 UStG), übergibt sie an
+   * /rechnungen und navigiert dorthin – analog {@link createInvoiceFromOffer}.
+   */
+  async createDepositInvoice(): Promise<void> {
+    if (!this.offer || !this.loadedFromDb() || this.offer.status !== 'accepted') {
+      return;
+    }
+    this.invoiceError.set(null);
+    this.creatingInvoice.set(true);
+    try {
+      const profile = await this.companyProfile.load();
+      let existingNumbers: string[] = [];
+      try {
+        existingNumbers = (await this.invoiceRepository.listMine()).map(
+          (invoice) => invoice.invoiceNumber
+        );
+      } catch {
+        // Ohne Nummernliste startet der Vorschlag bei 001 – editierbar auf /rechnungen.
+      }
+      const invoice = this.invoiceService.buildDepositInvoice(
+        sanitizeContractorOffer(this.offer),
+        profile,
+        existingNumbers,
+        this.depositPercent
+      );
+      this.invoiceService.setPending(invoice);
+      await this.router.navigate(['/rechnungen']);
+    } catch {
+      this.invoiceError.set(
+        'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.'
+      );
     } finally {
       this.creatingInvoice.set(false);
     }

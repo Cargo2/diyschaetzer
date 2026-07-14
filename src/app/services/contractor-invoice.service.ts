@@ -1,5 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { ContractorOffer } from '../models/contractor-offer.model';
+import {
+  ContractorOffer,
+  ContractorOfferSection,
+  offerGrossTotal
+} from '../models/contractor-offer.model';
 import {
   ContractorInvoice,
   ContractorInvoiceCustomer,
@@ -14,6 +18,16 @@ import {
 /** Verständliche Meldung für eine bereits vergebene Rechnungsnummer (Unique-Konflikt). */
 export const INVOICE_DUPLICATE_NUMBER_MESSAGE =
   'Diese Rechnungsnummer ist bereits vergeben. Bitte wähle eine andere Nummer.';
+
+/** Kaufmännisch auf zwei Nachkommastellen runden (wie die Modell-Summenhelfer). */
+function round2(value: number): number {
+  return Number((Number.isFinite(value) ? value : 0).toFixed(2));
+}
+
+/** `0` für nicht-numerische/fehlende Werte (wie im Angebots-Modell). */
+function toNumber(value: number | null | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
 
 /**
  * Baut Rechnungen aus gespeicherten Angeboten, schlägt fortlaufende Nummern vor
@@ -74,6 +88,90 @@ export class ContractorInvoiceService {
       introText: '',
       outroText: offer.outroText ?? ''
     });
+  }
+
+  /**
+   * Baut eine **Anzahlungsrechnung** (§ 14 Abs. 5 UStG) über einen Prozentsatz der
+   * Angebots-Bruttosumme. Anders als {@link buildFromOffer} übernimmt sie **keine**
+   * Positionen aus dem Angebot, sondern genau **eine** Sammelposition mit dem
+   * gewünschten Netto-Betrag – der Nachlass ist bereits in der Zielsumme enthalten
+   * (Rückrechnung aus dem Brutto), daher wird `discountPercent` hart auf `0` gesetzt,
+   * um ihn nicht ein zweites Mal abzuziehen.
+   */
+  buildDepositInvoice(
+    offer: ContractorOffer,
+    profile: InvoiceSellerSource,
+    existingNumbers: string[],
+    percent: number
+  ): ContractorInvoice {
+    const vatPercent = toNumber(offer.vatPercent);
+    const safePercent = Number.isFinite(percent) ? percent : 0;
+    const grossTarget = round2(offerGrossTotal(offer) * safePercent / 100);
+    const net = round2(grossTarget / (1 + vatPercent / 100));
+    const reference = this.offerReference(offer);
+    const depositNote =
+      `Anzahlungsrechnung gemäß § 14 Abs. 5 UStG zum Angebot ${reference}. ` +
+      'Die Anzahlung wird in der Schlussrechnung angerechnet.';
+    const outroText = offer.outroText ? `${depositNote}\n\n${offer.outroText}` : depositNote;
+
+    const section: ContractorOfferSection = {
+      id: this.createId(),
+      kind: 'custom',
+      title: 'Anzahlung',
+      lines: [
+        {
+          id: this.createId(),
+          label: `Anzahlung ${this.formatPercent(safePercent)} % auf Angebot ${reference}`,
+          description: '',
+          quantity: 1,
+          unit: 'pauschal',
+          unitPrice: net,
+          isActive: true,
+          isOptional: false,
+          origin: 'custom'
+        }
+      ]
+    };
+
+    return normalizeContractorInvoice({
+      id: this.createId(),
+      projectId: offer.projectId || null,
+      offerId: offer.id || null,
+      projectName: offer.projectName,
+      invoiceNumber: this.nextInvoiceNumber(existingNumbers),
+      invoiceDate: invoiceTodayIso(),
+      serviceDate: invoiceTodayIso(),
+      servicePeriodStart: '',
+      servicePeriodEnd: '',
+      dueDate: invoiceDueDateIso(14),
+      buyerReference: 'n/a',
+      status: 'draft',
+      vatPercent,
+      discountPercent: 0,
+      sections: [section],
+      customer: this.parseCustomer(offer.customer),
+      seller: this.sellerFromProfile(profile),
+      introText: '',
+      outroText
+    });
+  }
+
+  /** Angebots-Kennung für Anzahlungs-Referenztexte: Nummer, sonst Label, sonst Projektname. */
+  private offerReference(offer: ContractorOffer): string {
+    const offerNumber = offer.offerNumber?.trim();
+    if (offerNumber) {
+      return offerNumber;
+    }
+    const label = offer.label?.trim();
+    if (label) {
+      return label;
+    }
+    return offer.projectName;
+  }
+
+  /** Prozentwert ohne unnötige Nachkommastellen für Positionstexte (`30`, `12.5`, …). */
+  private formatPercent(percent: number): string {
+    return String(Math.round(percent * 100) / 100);
   }
 
   /**
