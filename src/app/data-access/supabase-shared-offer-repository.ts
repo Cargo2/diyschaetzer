@@ -181,4 +181,17 @@ export class SupabaseSharedOfferRepository implements SharedOfferRepository {
       acceptedByName: row.accepted_by_name ?? ''
     };
   }
+
+  async deleteForOffer(offerId: string): Promise<void> {
+    const client = this.requireClient();
+    const userId = await this.requireUserId(client);
+    const { error } = await client
+      .from('shared_offers')
+      .delete()
+      .eq('owner_id', userId)
+      .eq('offer_id', offerId);
+    if (error) {
+      throw error;
+    }
+  }
 }

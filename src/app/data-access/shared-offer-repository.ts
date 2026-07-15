@@ -32,6 +32,11 @@ export interface SharedOfferRepository {
   ): Promise<{ acceptedAt: string; acceptedByName: string } | null>;
   /** Owner-scoped Tracking zum eigenen Angebots-Share (RLS) oder `null`. */
   getTrackingForOffer(offerId: string): Promise<SharedOfferTracking | null>;
+  /**
+   * Löscht den Share-Eintrag eines Angebots (owner-scoped, RLS). Der öffentliche
+   * Link ist danach nicht mehr auflösbar. No-op, wenn kein Eintrag existiert.
+   */
+  deleteForOffer(offerId: string): Promise<void>;
 }
 
 export const SHARED_OFFER_REPOSITORY = new InjectionToken<SharedOfferRepository>(

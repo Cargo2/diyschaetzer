@@ -66,28 +66,31 @@
           } @else if (offer) {
             <span class="badge-draft">{{ 'Nicht gespeichert' | t }}</span>
           }
-          <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
-            {{ 'Aus Projekt aktualisieren' | t }}
-          </button>
-          <button
-            type="button"
-            class="btn-primary"
-            [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
-            [title]="newOfferBlocked() ? (offerLimitMessage | t) : ''"
-            (click)="save()"
-          >
-            {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
-          </button>
+          @if (!locked()) {
+            <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
+              {{ 'Aus Projekt aktualisieren' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
+              [title]="newOfferBlocked() ? (offerLimitMessage | t) : ''"
+              (click)="save()"
+            >
+              {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
+            </button>
+          }
           @if (hasRooms && offer) {
             <app-premium-export-button
               [label]="'PDF herunterladen' | t"
               [format]="'pdf'"
               [document]="exportDocumentFn"
             />
-            <button type="button" class="btn-light" [disabled]="sharing() || !loadedFromDb()"
-              (click)="share()" [title]="loadedFromDb() ? '' : ('Bitte zuerst speichern' | t)">
-              {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link' | t) }}
-            </button>
+            @if (!tracking() && loadedFromDb()) {
+              <button type="button" class="btn-light" [disabled]="sharing()" (click)="share()">
+                {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link erstellen' | t) }}
+              </button>
+            }
             <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
               (click)="createInvoiceFromOffer()"
               [title]="loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t)">
@@ -140,7 +143,7 @@
       @if (saveSuccess()) {
         <p class="offers-message success" role="status">{{ saveSuccess() }}</p>
       }
-      @if (projectChanged()) {
+      @if (projectChanged() && !locked()) {
         <p class="offers-message warning" role="status">
           {{ 'Das Projekt hat sich seit dem gespeicherten Angebot geändert.' | t }}
           <button type="button" class="btn-link" (click)="updateFromProject()">
@@ -174,39 +177,63 @@
         </p>
       }
 
+      <!-- Bearbeiten-Sperre: geteilt (mit Unlock) bzw. angenommen (nur neue Version). -->
+      @if (sharedLock()) {
+        <div class="lock-banner" role="status">
+          <p>{{ 'Dieses Angebot ist geteilt. Zum Bearbeiten muss der geteilte Link gelöscht werden.' | t }}</p>
+          @if (confirmingUnlock) {
+            <span class="confirm-delete">
+              {{ 'Der Kunde kann den Link danach nicht mehr öffnen; die Ansichts-Statistik geht verloren. Wirklich löschen?' | t }}
+              <button type="button" class="btn-danger btn-small" (click)="confirmUnlock()">{{ 'Ja' | t }}</button>
+              <button type="button" class="btn-light btn-small" (click)="cancelUnlock()">{{ 'Abbrechen' | t }}</button>
+            </span>
+          } @else {
+            <button type="button" class="btn-light btn-small" (click)="requestUnlock()">
+              {{ 'Link löschen & bearbeiten' | t }}
+            </button>
+          }
+        </div>
+      }
+      @if (acceptedLock()) {
+        <div class="lock-banner accepted" role="status">
+          <p>{{ 'Dieses Angebot wurde angenommen und ist unveränderlich. Erstelle für Änderungen eine neue Version.' | t }}</p>
+        </div>
+      }
+
       @if (!hasRooms) {
         <p class="offers-status">
           {{ 'Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an – danach kannst du hier die Schätzung erzeugen und bearbeiten.' | t }}
         </p>
       } @else if (offer) {
+        <div class="offer-editor" [class.editor-locked]="locked()">
         <!-- Angebotskopf: Empfänger + Angebotsmeta -->
         <div class="offer-meta">
           <div class="meta-customer">
             <label class="meta-field">
               <span>{{ 'Kunde / Empfänger' | t }}</span>
-              <input type="text" [(ngModel)]="offer.customer!.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Name des Kunden' | t" />
+              <input type="text" [(ngModel)]="offer.customer!.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Name des Kunden' | t" [readonly]="locked()" />
             </label>
             <label class="meta-field">
               <span>{{ 'Anschrift' | t }}</span>
-              <textarea rows="3" [(ngModel)]="offer.customer!.address" [ngModelOptions]="{ standalone: true }" [placeholder]="('Straße Nr.' | t) + '\n' + ('PLZ Ort' | t)"></textarea>
+              <textarea rows="3" [(ngModel)]="offer.customer!.address" [ngModelOptions]="{ standalone: true }" [placeholder]="('Straße Nr.' | t) + '\n' + ('PLZ Ort' | t)" [readonly]="locked()"></textarea>
             </label>
           </div>
           <div class="meta-numbers">
             <label class="meta-field">
               <span>{{ 'Angebotsnummer' | t }}</span>
-              <input type="text" [(ngModel)]="offer.offerNumber" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. 2026-042' | t" />
+              <input type="text" [(ngModel)]="offer.offerNumber" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. 2026-042' | t" [readonly]="locked()" />
             </label>
             <label class="meta-field">
               <span>{{ 'Angebotsdatum' | t }}</span>
-              <input type="date" [(ngModel)]="offer.offerDate" [ngModelOptions]="{ standalone: true }" />
+              <input type="date" [(ngModel)]="offer.offerDate" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
             </label>
             <label class="meta-field">
               <span>{{ 'Gültig bis' | t }}</span>
-              <input type="date" [(ngModel)]="offer.validUntil" [ngModelOptions]="{ standalone: true }" />
+              <input type="date" [(ngModel)]="offer.validUntil" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
             </label>
             <label class="meta-field">
               <span>{{ 'Status' | t }}</span>
-              <select [(ngModel)]="offer.status" [ngModelOptions]="{ standalone: true }">
+              <select [(ngModel)]="offer.status" [ngModelOptions]="{ standalone: true }" [disabled]="locked()">
                 @for (option of statusOptions; track option.value) {
                   <option [value]="option.value">{{ option.label | t }}</option>
                 }
@@ -214,7 +241,7 @@
             </label>
             <label class="meta-field">
               <span>{{ 'Versions-Bezeichnung' | t }}</span>
-              <input type="text" [(ngModel)]="offer.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. nach Kundengespräch' | t" />
+              <input type="text" [(ngModel)]="offer.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'z. B. nach Kundengespräch' | t" [readonly]="locked()" />
             </label>
           </div>
         </div>
@@ -222,7 +249,7 @@
         <label class="offer-text">
           <span>{{ 'Einleitungstext (optional)' | t }}</span>
           <textarea rows="2" [(ngModel)]="offer.introText" [ngModelOptions]="{ standalone: true }"
-            [placeholder]="'Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:' | t"></textarea>
+            [placeholder]="'Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:' | t" [readonly]="locked()"></textarea>
         </label>
 
         @for (section of offer.sections; track section.id; let si = $index) {
@@ -231,13 +258,13 @@
               <span class="pos-badge">
                 {{ section.kind === 'site_setup' ? '–' : (('Pos.' | t) + ' ' + posNumber(section)) }}
               </span>
-              <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" />
+              <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
               <span class="section-subtotal">{{ eur(sectionSubtotal(section)) }}</span>
               <span class="section-actions">
-                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" [title]="'Nach oben' | t">↑</button>
-                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === offer.sections.length - 1" [title]="'Nach unten' | t">↓</button>
+                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0 || locked()" [title]="'Nach oben' | t">↑</button>
+                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === offer.sections.length - 1 || locked()" [title]="'Nach unten' | t">↓</button>
                 @if (section.kind === 'custom') {
-                  <button type="button" class="btn-danger" (click)="removeSection(section)">{{ 'Gruppe löschen' | t }}</button>
+                  <button type="button" class="btn-danger" [disabled]="locked()" (click)="removeSection(section)">{{ 'Gruppe löschen' | t }}</button>
                 }
               </span>
             </div>
@@ -261,63 +288,67 @@
                   <tr [class.inactive]="!line.isActive" [class.optional]="line.isOptional">
                     <td class="col-pos" data-label="Pos">{{ lineNumber(section, line) }}</td>
                     <td class="col-label">
-                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" />
-                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" [readonly]="locked()" />
+                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
                     </td>
                     <td class="col-num" data-label="Menge">
-                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
                     </td>
                     <td class="col-unit" data-label="Einheit">
-                      <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }">
+                      <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }" [disabled]="locked()">
                         @for (option of unitOptions; track option.value) {
                           <option [value]="option.value">{{ option.label | t }}</option>
                         }
                       </select>
                     </td>
                     <td class="col-num" data-label="Einheitspreis">
-                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.unitPrice" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.unitPrice" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
                     </td>
                     <td class="col-num total" data-label="Gesamt">{{ eur(lineTotal(line)) }}</td>
                     <td class="col-active" data-label="Bedarfsposition">
-                      <input type="checkbox" [(ngModel)]="line.isOptional" [ngModelOptions]="{ standalone: true }" [title]="'Bedarfsposition (nicht in der Summe)' | t" />
+                      <input type="checkbox" [(ngModel)]="line.isOptional" [ngModelOptions]="{ standalone: true }" [title]="'Bedarfsposition (nicht in der Summe)' | t" [disabled]="locked()" />
                     </td>
                     <td class="col-active" data-label="Aktiv">
-                      <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" />
+                      <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" [disabled]="locked()" />
                     </td>
                     <td class="col-tools" data-label="">
-                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
-                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
-                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
+                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0 || locked()" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
+                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1 || locked()" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
+                      <button type="button" class="btn-danger" [disabled]="locked()" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
 
-            <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
+            @if (!locked()) {
+              <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
+            }
           </div>
         }
 
         <div class="calc-options">
           <label class="opt">
             <input type="checkbox" [(ngModel)]="offer.materialBreakdown"
-              (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" />
+              (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" [disabled]="locked()" />
             {{ 'Material je Raum ausweisen' | t }}
           </label>
           <label class="opt">
             <span>{{ 'Materialaufschlag' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="offer.materialSurchargePercent"
-              (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" /> %
+              (ngModelChange)="applyMaterialSettings()" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" /> %
           </label>
           <label class="opt">
             <span>{{ 'Nachlass' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="offer.discountPercent"
-              [ngModelOptions]="{ standalone: true }" /> %
+              [ngModelOptions]="{ standalone: true }" [readonly]="locked()" /> %
           </label>
         </div>
 
         <div class="offer-foot">
-          <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>
+          @if (!locked()) {
+            <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>
+          }
 
           <div class="totals">
             <div class="total-row">
@@ -334,7 +365,7 @@
             <div class="total-row">
               <span>
                 {{ 'zzgl.' | t }}
-                <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="offer.vatPercent" [ngModelOptions]="{ standalone: true }" />
+                <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="offer.vatPercent" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
                 % {{ 'MwSt.' | t }}
               </span>
               <span>{{ eur(vatAmount()) }}</span>
@@ -363,7 +394,7 @@
         <label class="offer-text">
           <span>{{ 'Schlusstext (optional)' | t }}</span>
           <textarea rows="3" [(ngModel)]="offer.outroText" [ngModelOptions]="{ standalone: true }"
-            [placeholder]="'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.' | t"></textarea>
+            [placeholder]="'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.' | t" [readonly]="locked()"></textarea>
         </label>
 
         <!-- Mobile: Brutto + Speichern immer greifbar (nur auf Handy sichtbar). -->
@@ -372,9 +403,10 @@
             <span>{{ 'Gesamt' | t }}</span>
             <strong>{{ eur(grossTotal()) }}</strong>
           </div>
-          <button type="button" class="btn-primary" [disabled]="saving() || !hasRooms || newOfferBlocked()" (click)="save()">
+          <button type="button" class="btn-primary" [disabled]="saving() || !hasRooms || newOfferBlocked() || locked()" (click)="save()">
             {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
           </button>
+        </div>
         </div>
       }
     </section>

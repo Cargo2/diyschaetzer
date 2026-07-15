@@ -54,6 +54,15 @@ export class ContractorOfferShareService {
     return this.repository.getTrackingForOffer(offerId);
   }
 
+  /**
+   * Löscht den Teilen-Link eines Angebots (owner-scoped). Der öffentliche Link ist
+   * danach nicht mehr auflösbar – nötig, um ein geteiltes Angebot wieder bearbeitbar
+   * zu machen bzw. beim Löschen einer Version keinen verwaisten Link zurückzulassen.
+   */
+  async deleteShareForOffer(offerId: string): Promise<void> {
+    return this.repository.deleteForOffer(offerId);
+  }
+
   /** Voll qualifizierter Teilen-Link zum Token. */
   shareUrl(token: string): string {
     return `${globalThis.location.origin}/angebot/${token}`;

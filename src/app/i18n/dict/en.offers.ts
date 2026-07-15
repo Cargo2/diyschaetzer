@@ -11,6 +11,8 @@ export const EN_OFFERS: Record<string, string> = {
   'Speichern fehlgeschlagen. Bitte erneut versuchen.': 'Saving failed. Please try again.',
   'Löschen fehlgeschlagen. Bitte erneut versuchen.': 'Deleting failed. Please try again.',
   'Teilen fehlgeschlagen. Bitte erneut versuchen.': 'Sharing failed. Please try again.',
+  'Link konnte nicht gelöscht werden. Bitte erneut versuchen.':
+    'The link could not be deleted. Please try again.',
   'Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'The invoice could not be created. Please try again.',
   'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
@@ -51,9 +53,8 @@ export const EN_OFFERS: Record<string, string> = {
   'Speichern …': 'Saving …',
   Speichern: 'Save',
   'PDF herunterladen': 'Download PDF',
-  'Bitte zuerst speichern': 'Please save first',
   'Link wird erstellt …': 'Creating link …',
-  'Teilen-Link': 'Share link',
+  'Teilen-Link erstellen': 'Create share link',
   'Nur aktive Pflichtpositionen werden übernommen': 'Only active mandatory line items are transferred',
   'Speichere zuerst das Angebot': 'Save the offer first',
   'Rechnung wird erstellt …': 'Creating invoice …',
@@ -79,6 +80,15 @@ export const EN_OFFERS: Record<string, string> = {
   Aufrufe: 'views',
   'Angenommen von': 'Accepted by',
   am: 'on',
+
+  // --- Bearbeiten-Sperre (geteilt / angenommen) ---
+  'Dieses Angebot ist geteilt. Zum Bearbeiten muss der geteilte Link gelöscht werden.':
+    'This offer is shared. To edit it, the shared link must be deleted.',
+  'Link löschen & bearbeiten': 'Delete link & edit',
+  'Der Kunde kann den Link danach nicht mehr öffnen; die Ansichts-Statistik geht verloren. Wirklich löschen?':
+    'The customer will no longer be able to open the link; the view statistics will be lost. Really delete?',
+  'Dieses Angebot wurde angenommen und ist unveränderlich. Erstelle für Änderungen eine neue Version.':
+    'This offer has been accepted and is immutable. Create a new version to make changes.',
 
   // --- Ohne Räume / Angebotskopf-Felder ---
   'Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an – danach kannst du hier die Schätzung erzeugen und bearbeiten.':

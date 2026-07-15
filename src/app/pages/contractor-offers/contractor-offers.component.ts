@@ -127,6 +127,21 @@ export class ContractorOffersComponent implements OnInit {
   /** Owner-scoped Tracking (Aufrufe/Annahme) zum Teilen-Link des aktuellen Angebots. */
   readonly tracking = signal<SharedOfferTracking | null>(null);
 
+  /**
+   * `true`, sobald das aktuelle Angebot **angenommen und gespeichert** ist. Bewusst
+   * ein Signal (nicht aus `offer.status` abgeleitet – `offer` ist kein Signal): der
+   * Lock greift erst NACH dem Speichern, nicht schon beim Wählen von „Angenommen".
+   * Gesetzt an genau drei Stellen: {@link setWorking} (Laden), {@link loadTracking}
+   * (Remote-Annahme), {@link save} (nach erfolgreichem Speichern).
+   */
+  readonly acceptedLock = signal(false);
+  /** Geteilt, aber (noch) nicht angenommen → sperrt Bearbeitung, bis der Link gelöscht wird. */
+  readonly sharedLock = computed(() => this.tracking() !== null && !this.acceptedLock());
+  /** Gesamt-Sperre: angenommen ODER geteilt. Treibt das Read-only-Gating im Template. */
+  readonly locked = computed(() => this.acceptedLock() || this.sharedLock());
+  /** Inline-Bestätigung „Link löschen & bearbeiten" (Muster wie `confirmingDelete*`). */
+  confirmingUnlock = false;
+
   /** Anteil (%) für die Anzahlungsrechnung (Block „Anzahlungsrechnung"). */
   depositPercent = 30;
 
@@ -284,6 +299,9 @@ export class ContractorOffersComponent implements OnInit {
     this.loadedFromDb.set(fromDb);
     this.shareUrl.set(null);
     this.tracking.set(null);
+    this.confirmingUnlock = false;
+    // (a) Lock beim Laden: nur ein gespeichertes, angenommenes Angebot ist gesperrt.
+    this.acceptedLock.set(fromDb && this.offer.status === 'accepted');
     this.projectChanged.set(
       fromDb && !!offer.sourceUpdatedAt && offer.sourceUpdatedAt !== project.updatedAt
     );
@@ -311,6 +329,10 @@ export class ContractorOffersComponent implements OnInit {
       return; // Ein neuerer Wechsel hat diese Ladung überholt.
     }
     this.tracking.set(result);
+    if (result) {
+      // Der Teilen-Link ist bei jedem Laden dauerhaft sichtbar (nicht nur direkt nach dem Erstellen).
+      this.shareUrl.set(this.shareService.shareUrl(result.token));
+    }
     if (
       result?.acceptedAt &&
       this.offer &&
@@ -318,6 +340,10 @@ export class ContractorOffersComponent implements OnInit {
       this.offer.status !== 'accepted'
     ) {
       this.offer.status = 'accepted';
+    }
+    // (b) Lock aus Remote-Annahme: liegt eine Annahme vor, ist das Angebot unveränderlich.
+    if (result?.acceptedAt) {
+      this.acceptedLock.set(true);
     }
   }
 
@@ -368,6 +394,13 @@ export class ContractorOffersComponent implements OnInit {
 
   async confirmDeleteVersion(id: string): Promise<void> {
     this.confirmingDeleteVersionId = null;
+    // Verwaisten öffentlichen Link zuerst entfernen (FK `on delete set null` in 0024 würde
+    // ihn sonst nach dem Löschen der Version weiterleben lassen). Fehler nicht blockierend.
+    try {
+      await this.shareService.deleteShareForOffer(id);
+    } catch {
+      // Löschen der Version trotzdem fortsetzen – ein evtl. verbleibender Link ist unkritisch.
+    }
     try {
       await this.repository.delete(id);
     } catch {
@@ -414,6 +447,8 @@ export class ContractorOffersComponent implements OnInit {
     try {
       await this.repository.save(this.offer);
       this.loadedFromDb.set(true);
+      // (c) Lock nach dem Speichern: „Angenommen" gespeichert → ab jetzt unveränderlich.
+      this.acceptedLock.set(this.offer.status === 'accepted');
       this.saveSuccess.set(this.i18n.t('Angebot gespeichert.'));
       await this.refreshList();
       await this.refreshOfferCount();
@@ -446,12 +481,13 @@ export class ContractorOffersComponent implements OnInit {
   // ---- Teilen (öffentlicher read-only Link) --------------------------------
 
   /**
-   * Teilt nur ein **gespeichertes** Angebot (stabiler Token je `offerId` – ein Link
-   * je Angebot, wiederholtes Teilen aktualisiert nur den Snapshot). Ungespeicherte
-   * Angebote haben noch keine `id`; der Button ist dafür im Markup deaktiviert.
+   * Erzeugt **einmalig** den Teilen-Link eines **gespeicherten** Angebots (ein Link je
+   * Angebot). Ist bereits geteilt (`tracking`), passiert nichts – der Link bleibt sichtbar
+   * und der Bearbeiten-Lock greift. Beim ersten Teilen aus einem Entwurf wird der Status
+   * auf „Versendet" gehoben und einmal gespeichert, bevor der Link entsteht.
    */
   async share(): Promise<void> {
-    if (!this.offer || !this.offer.id || !this.loadedFromDb()) {
+    if (!this.offer || !this.offer.id || !this.loadedFromDb() || this.tracking()) {
       return;
     }
     const offerId = this.offer.id;
@@ -459,9 +495,17 @@ export class ContractorOffersComponent implements OnInit {
     this.shareUrl.set(null);
     this.sharing.set(true);
     try {
+      // Entwurf → „Versendet" (einmaliges Update; der Limit-Trigger feuert bei Updates nicht).
+      if (this.offer.status === 'draft') {
+        this.offer.status = 'sent';
+        this.offer = sanitizeContractorOffer(this.offer);
+        await this.repository.save(this.offer);
+      }
       const token = await this.shareService.createShareForOffer(offerId, this.buildExportData());
       this.shareUrl.set(this.shareService.shareUrl(token));
+      // Tracking laden → `sharedLock` greift sofort; Liste neu laden → Badge „Versendet".
       await this.loadTracking(offerId);
+      await this.refreshList();
     } catch {
       this.shareError.set(this.i18n.t('Teilen fehlgeschlagen. Bitte erneut versuchen.'));
     } finally {
@@ -477,6 +521,37 @@ export class ContractorOffersComponent implements OnInit {
       } catch {
         // Clipboard nicht verfügbar – der Link steht sichtbar zum manuellen Kopieren.
       }
+    }
+  }
+
+  // ---- Sperre lösen (geteiltes Angebot wieder bearbeitbar machen) ----------
+
+  requestUnlock(): void {
+    this.confirmingUnlock = true;
+  }
+
+  cancelUnlock(): void {
+    this.confirmingUnlock = false;
+  }
+
+  /**
+   * Löscht den geteilten Link des aktuellen Angebots und entsperrt es damit
+   * (`sharedLock` → false). Der Kunde kann den Link danach nicht mehr öffnen.
+   */
+  async confirmUnlock(): Promise<void> {
+    this.confirmingUnlock = false;
+    if (!this.offer?.id) {
+      return;
+    }
+    this.shareError.set(null);
+    try {
+      await this.shareService.deleteShareForOffer(this.offer.id);
+      this.tracking.set(null);
+      this.shareUrl.set(null);
+    } catch {
+      this.shareError.set(
+        this.i18n.t('Link konnte nicht gelöscht werden. Bitte erneut versuchen.')
+      );
     }
   }
 

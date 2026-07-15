@@ -11,6 +11,8 @@ export const PL_OFFERS: Record<string, string> = {
   'Speichern fehlgeschlagen. Bitte erneut versuchen.': 'Zapis nie powiódł się. Spróbuj ponownie.',
   'Löschen fehlgeschlagen. Bitte erneut versuchen.': 'Usuwanie nie powiodło się. Spróbuj ponownie.',
   'Teilen fehlgeschlagen. Bitte erneut versuchen.': 'Udostępnianie nie powiodło się. Spróbuj ponownie.',
+  'Link konnte nicht gelöscht werden. Bitte erneut versuchen.':
+    'Nie udało się usunąć linku. Spróbuj ponownie.',
   'Rechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'Nie udało się utworzyć faktury. Spróbuj ponownie.',
   'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
@@ -51,9 +53,8 @@ export const PL_OFFERS: Record<string, string> = {
   'Speichern …': 'Zapisywanie…',
   Speichern: 'Zapisz',
   'PDF herunterladen': 'Pobierz PDF',
-  'Bitte zuerst speichern': 'Najpierw zapisz',
   'Link wird erstellt …': 'Tworzenie linku…',
-  'Teilen-Link': 'Link do udostępnienia',
+  'Teilen-Link erstellen': 'Utwórz link do udostępnienia',
   'Nur aktive Pflichtpositionen werden übernommen':
     'Przenoszone są tylko aktywne pozycje obowiązkowe',
   'Speichere zuerst das Angebot': 'Najpierw zapisz ofertę',
@@ -80,6 +81,15 @@ export const PL_OFFERS: Record<string, string> = {
   Aufrufe: 'wyświetleń',
   'Angenommen von': 'Zaakceptowano przez',
   am: 'w dniu',
+
+  // --- Bearbeiten-Sperre (geteilt / angenommen) ---
+  'Dieses Angebot ist geteilt. Zum Bearbeiten muss der geteilte Link gelöscht werden.':
+    'Ta oferta jest udostępniona. Aby ją edytować, należy usunąć udostępniony link.',
+  'Link löschen & bearbeiten': 'Usuń link i edytuj',
+  'Der Kunde kann den Link danach nicht mehr öffnen; die Ansichts-Statistik geht verloren. Wirklich löschen?':
+    'Klient nie będzie już mógł otworzyć linku; statystyka wyświetleń zostanie utracona. Na pewno usunąć?',
+  'Dieses Angebot wurde angenommen und ist unveränderlich. Erstelle für Änderungen eine neue Version.':
+    'Ta oferta została zaakceptowana i jest niezmienna. Aby wprowadzić zmiany, utwórz nową wersję.',
 
   // --- Ohne Räume / Angebotskopf-Felder ---
   'Dieses Projekt hat noch keine Räume. Lege zuerst über den Wizard Räume an – danach kannst du hier die Schätzung erzeugen und bearbeiten.':

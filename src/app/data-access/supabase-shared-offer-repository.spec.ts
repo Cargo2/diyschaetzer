@@ -14,6 +14,8 @@ function makeClient(opts: {
   rpcData?: unknown;
   onInsert?: (value: Record<string, unknown>) => void;
   onUpdate?: (value: Record<string, unknown>) => void;
+  onDelete?: (filters: Record<string, unknown>) => void;
+  deleteError?: unknown;
   onRpc?: (fn: string, params: Record<string, unknown>) => void;
 }) {
   const selectChain = {
@@ -39,6 +41,20 @@ function makeClient(opts: {
       update: (value: Record<string, unknown>) => {
         opts.onUpdate?.(value);
         return { eq: async () => ({ error: null }) };
+      },
+      delete: () => {
+        const filters: Record<string, unknown> = {};
+        const deleteChain = {
+          eq(column: string, value: unknown) {
+            filters[column] = value;
+            return deleteChain;
+          },
+          then(resolve: (result: { error: unknown }) => void) {
+            opts.onDelete?.(filters);
+            resolve({ error: opts.deleteError ?? null });
+          }
+        };
+        return deleteChain;
       }
     }),
     rpc: async (fn: string, params: Record<string, unknown>) => {
@@ -186,5 +202,28 @@ describe('SupabaseSharedOfferRepository', () => {
   it('getTrackingForOffer returns null when no share exists', async () => {
     const repo = setup(makeClient({ userId: 'user-1', selectRow: null }));
     expect(await repo.getTrackingForOffer('offer-x')).toBeNull();
+  });
+
+  it('deleteForOffer deletes only the owner-scoped share of the offer', async () => {
+    let filters: Record<string, unknown> | null = null;
+    const repo = setup(
+      makeClient({ userId: 'user-1', onDelete: (value) => (filters = value) })
+    );
+
+    await repo.deleteForOffer('offer-1');
+
+    expect(filters).toEqual({ owner_id: 'user-1', offer_id: 'offer-1' });
+  });
+
+  it('deleteForOffer throws without a session', async () => {
+    const repo = setup(makeClient({ userId: null }));
+    await expect(repo.deleteForOffer('offer-1')).rejects.toThrow();
+  });
+
+  it('deleteForOffer propagates a delete error', async () => {
+    const repo = setup(
+      makeClient({ userId: 'user-1', deleteError: new Error('rls') })
+    );
+    await expect(repo.deleteForOffer('offer-1')).rejects.toThrow('rls');
   });
 });
