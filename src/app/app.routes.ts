@@ -134,13 +134,6 @@ export const MARKETING_ROUTES: Routes = [
         (m) => m.SharedCalculationComponent
       )
   },
-  {
-    path: 'angebot/:token',
-    loadComponent: () =>
-      import('./pages/shared-offer/shared-offer.component').then(
-        (m) => m.SharedOfferComponent
-      )
-  },
   { path: 'ratgeber', component: GuideComponent },
   {
     path: 'ratgeber/:slug',
@@ -192,6 +185,16 @@ export const MARKETING_ROUTES: Routes = [
  * app.routes.server.ts NICHT anfassen: App-Pfade fallen unter `** → Client`.
  */
 export const routes: Routes = [
+  // Bewusst shell-los (Kundenansicht ohne Navigation): öffentliche Angebotsseite
+  // ohne Marketing-Topmenü/Footer. Muss VOR dem App-Host-Baum stehen, sonst
+  // schluckt dessen `**`-Fallback die Route auf dem App-Host. Gilt für beide Hosts.
+  {
+    path: 'angebot/:token',
+    loadComponent: () =>
+      import('./pages/shared-offer/shared-offer.component').then(
+        (m) => m.SharedOfferComponent
+      )
+  },
   {
     path: '',
     canMatch: [appHostMatchGuard],
