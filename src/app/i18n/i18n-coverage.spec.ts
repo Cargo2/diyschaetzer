@@ -25,6 +25,10 @@ import {
 } from '../components/wizard/wizard.component';
 import { COUNTRY_OPTIONS } from '../pages/profile/konto-firmenprofil.component';
 import { PROFILE_PRICE_FIELDS } from '../config/profile-price-fields';
+import { DYNAMIC_KEYS_MATERIAL } from './dynamic-keys/material';
+import { DYNAMIC_KEYS_SUMMARY } from './dynamic-keys/summary';
+import { DYNAMIC_KEYS_ASSUMPTIONS } from './dynamic-keys/assumptions';
+import { DYNAMIC_KEYS_LEADS } from './dynamic-keys/leads';
 
 /**
  * Coverage-Spec: hält die Dictionaries und die gewrappten Templates ehrlich.
@@ -48,7 +52,24 @@ const SCANNED_FILES = [
   'src/app/pages/contractor-invoices/*.html',
   'src/app/pages/contractor-invoices/*.ts',
   'src/app/pages/profile/konto-*.html',
-  'src/app/pages/profile/konto-*.ts'
+  'src/app/pages/profile/konto-*.ts',
+  // R1-B: vier neue Übersetzungsbereiche (Material, Summary, Assumptions, Leads).
+  // Noch nicht gewrappt → liefern vorerst 0 Keys (harmlos, expandFiles überspringt
+  // fehlende Dirs, extractKeysFromSource findet in .css/.spec.ts schlicht nichts).
+  'src/app/pages/material-list/*.html',
+  'src/app/pages/material-list/*.ts',
+  'src/app/pages/project-summary/*.html',
+  'src/app/pages/project-summary/*.ts',
+  'src/app/pages/summary-page/*.ts',
+  'src/app/pages/room-summary-contractor/*.ts',
+  'src/app/components/summary-assumptions/*.html',
+  'src/app/components/summary-assumptions/*.ts',
+  'src/app/components/lead-form/*.html',
+  'src/app/components/lead-form/*.ts',
+  'src/app/components/contractor-directory/*.html',
+  'src/app/components/contractor-directory/*.ts',
+  'src/app/components/premium-export-button/*.ts',
+  'src/app/services/cost-comparison.service.ts'
 ];
 
 /**
@@ -145,7 +166,12 @@ const DYNAMIC_KEYS: readonly string[] = [
   'PLZ (Kunde)',
   'Ort (Kunde)',
   'E-Mail des Kunden (Pflicht für XRechnung-Versand)',
-  'Mindestens eine aktive Position'
+  'Mindestens eine aktive Position',
+  // --- R1-B: dynamische Keys je Übersetzungspaket (eigene Module, s. dynamic-keys/) ---
+  ...DYNAMIC_KEYS_MATERIAL,
+  ...DYNAMIC_KEYS_SUMMARY,
+  ...DYNAMIC_KEYS_ASSUMPTIONS,
+  ...DYNAMIC_KEYS_LEADS
 ];
 
 const PIPE_RE = /'((?:[^'\\]|\\.)*)'\s*\|\s*t\b/g;
