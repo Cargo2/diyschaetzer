@@ -52,6 +52,37 @@ export interface ExportOfferGroup {
   subtotal: number | null;
 }
 
+/**
+ * Eine angerechnete Abschlags-/Anzahlungsrechnung im Anrechnungsblock einer
+ * Schlussrechnung (§ 14 Abs. 5 S. 2 UStG). Anzeigefertig: `date` ist bereits
+ * de-DE-formatiert, `gross`/`vatContained` sind die eingefrorenen Beträge der
+ * Vor-Rechnung.
+ */
+export interface ExportSettlementRow {
+  invoiceNumber: string;
+  /** Deutsche Beschriftung der Rechnungsart (Anzahlung/Abschlag). */
+  kindLabel: string;
+  /** Rechnungsdatum der Vor-Rechnung (bereits de-DE-formatiert). */
+  date: string;
+  /** Eingefrorener Bruttobetrag der Vor-Rechnung (positiv; als Abzug dargestellt). */
+  gross: number;
+  /** Darin enthaltene USt (§ 14 Abs. 5 S. 2 – Pflichtangabe). */
+  vatContained: number;
+}
+
+/**
+ * Anrechnungsblock einer Schlussrechnung: die bereits gestellten Abschläge/
+ * Anzahlungen und der verbleibende Restbetrag. Nur bei
+ * `documentType: 'contractor_invoice'` und `kind: 'final'` gesetzt.
+ */
+export interface ExportSettlement {
+  rows: ExportSettlementRow[];
+  /** Summe der angerechneten Teilentgelte (brutto). */
+  settledGross: number;
+  /** Verbleibender Restbetrag (brutto); negativ = Guthaben zugunsten des Kunden. */
+  payableGross: number;
+}
+
 export interface ExportBrandingData {
   brandName: string;
   logoUrl: string | null;
@@ -114,6 +145,8 @@ export interface ExportDocumentData {
   offerMeta?: ExportOfferMeta;
   /** Rechnungskopf/Pflichtangaben (nur bei `documentType: 'contractor_invoice'`). */
   invoiceMeta?: ExportInvoiceMeta;
+  /** Anrechnungsblock (nur bei Schlussrechnung mit angerechneten Abschlägen). */
+  settlement?: ExportSettlement;
   /** Einleitungstext über den Sektionen. */
   introText?: string | null;
   /** Schlusstext unter den Summen. */

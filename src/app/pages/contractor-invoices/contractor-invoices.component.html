@@ -20,49 +20,58 @@
           <a routerLink="/angebote">{{ 'Zu den Angeboten' | t }}</a>
         </p>
       } @else {
-        <table class="invoice-list">
-          <thead>
-            <tr>
-              <th>{{ 'Nummer' | t }}</th>
-              <th>{{ 'Datum' | t }}</th>
-              <th>{{ 'Kunde' | t }}</th>
-              <th class="num">{{ 'Brutto' | t }}</th>
-              <th>{{ 'Status' | t }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of invoices(); track item.id) {
-              <tr [class.active]="isCurrent(item.id)">
-                <td data-label="Nummer">{{ item.invoiceNumber }}</td>
-                <td data-label="Datum">{{ item.invoiceDate }}</td>
-                <td data-label="Kunde">{{ item.customer.name || '—' }}</td>
-                <td class="num" data-label="Brutto">{{ eur(grossOf(item)) }}</td>
-                <td data-label="Status">
-                  <span class="status-badge" [attr.data-status]="item.status">
-                    {{ statusLabel(item.status) }}
-                  </span>
-                </td>
-                <td class="row-actions" data-label="">
-                  @if (isCurrent(item.id)) {
-                    <span class="badge-active">{{ 'Geöffnet' | t }}</span>
-                  } @else {
-                    <button type="button" class="btn-light" (click)="selectInvoice(item.id!)">{{ 'Öffnen' | t }}</button>
-                  }
-                  @if (confirmingDeleteId === item.id) {
-                    <span class="confirm-delete">
-                      {{ 'Sicher?' | t }}
-                      <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">{{ 'Ja' | t }}</button>
-                      <button type="button" class="btn-light btn-small" (click)="cancelDelete()">{{ 'Nein' | t }}</button>
-                    </span>
-                  } @else {
-                    <button type="button" class="btn-danger btn-small" (click)="requestDelete(item.id!)">{{ 'Löschen' | t }}</button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="invoice-groups">
+          @for (group of groupedInvoices(); track group.key) {
+            <div class="invoice-group">
+              <div class="group-head">
+                <span class="group-title">{{ group.isNone ? ('Weitere Rechnungen' | t) : (group.title || '—') }}</span>
+                <span class="group-meta">
+                  {{ group.invoices.length }} {{ 'Rechnungen' | t }} · {{ 'Σ gestellt' | t }} {{ eur(group.billedTotal) }}
+                </span>
+              </div>
+              <div class="invoice-rows">
+                @for (item of group.invoices; track item.id) {
+                  <div class="invoice-row-wrapper">
+                    <button type="button" class="invoice-row" [class.active]="isCurrent(item.id)"
+                      (click)="selectInvoice(item.id!)">
+                      <span class="kind-badge"
+                        [class.kind-standard]="(item.kind ?? 'standard') === 'standard'"
+                        [class.kind-deposit]="item.kind === 'deposit'"
+                        [class.kind-partial]="item.kind === 'partial'"
+                        [class.kind-final]="item.kind === 'final'">{{ kindLabel(item.kind) }}</span>
+                      <span class="inv-number">{{ item.invoiceNumber }}</span>
+                      <span class="inv-date">{{ dateDe(item.invoiceDate) }}</span>
+                      <span class="inv-gross">
+                        {{ eur(grossOf(item)) }}
+                        @if (item.kind === 'final') {
+                          <span class="inv-rest">· {{ 'Rest' | t }} {{ eur(restOf(item)) }}</span>
+                        }
+                      </span>
+                      <span class="status-badge" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
+                    </button>
+                    <div class="row-quick">
+                      @if (item.status !== 'paid') {
+                        <button type="button" class="btn-light btn-small mark-paid"
+                          [disabled]="markingPaidId() !== null"
+                          (click)="markPaid(item)">{{ 'Als bezahlt markieren' | t }}</button>
+                      }
+                      @if (confirmingDeleteId === item.id) {
+                        <span class="confirm-delete">
+                          {{ 'Sicher?' | t }}
+                          <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">{{ 'Ja' | t }}</button>
+                          <button type="button" class="btn-light btn-small" (click)="cancelDelete()">{{ 'Nein' | t }}</button>
+                        </span>
+                      } @else {
+                        <button type="button" class="row-delete" (click)="requestDelete(item.id!)"
+                          [attr.aria-label]="'Löschen' | t" [title]="'Löschen' | t">✕</button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
       }
     </section>
 
@@ -320,6 +329,39 @@
               [ngModelOptions]="{ standalone: true }" /> %
           </label>
         </div>
+
+        @if (isFinalWithSettlements()) {
+          <div class="settled-card">
+            <div class="settled-head">{{ 'Angerechnete Abschlagsrechnungen' | t }}</div>
+            <ul class="settled-list">
+              @for (payment of settledPayments(); track payment.invoiceId) {
+                <li class="settled-row">
+                  <div class="settled-main">
+                    <span class="settled-number">{{ payment.invoiceNumber }}</span>
+                    <span class="kind-badge"
+                      [class.kind-standard]="payment.kind === 'standard'"
+                      [class.kind-deposit]="payment.kind === 'deposit'"
+                      [class.kind-partial]="payment.kind === 'partial'"
+                      [class.kind-final]="payment.kind === 'final'">{{ kindLabel(payment.kind) }}</span>
+                    <span class="settled-date">{{ dateDe(payment.invoiceDate) }}</span>
+                    <span class="settled-amount">−{{ eur(payment.grossAmount) }}</span>
+                  </div>
+                  <div class="settled-sub">{{ 'enthaltene USt' | t }} {{ eur(payment.vatAmount) }}</div>
+                </li>
+              }
+            </ul>
+            <div class="settled-foot" [class.negative]="payableGross() < 0">
+              <span>{{ 'Restbetrag' | t }}</span>
+              <span class="settled-rest">{{ eur(payableGross()) }}</span>
+            </div>
+            @if (payableGross() < 0) {
+              <p class="settled-hint-warn">{{ 'Guthaben zugunsten des Kunden' | t }}</p>
+            }
+            <p class="settled-note">
+              {{ 'Eingefroren bei Erstellung. Zum Ändern: Schlussrechnung löschen, Abschläge anpassen, neu erstellen.' | t }}
+            </p>
+          </div>
+        }
 
         <div class="invoice-foot">
           <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>

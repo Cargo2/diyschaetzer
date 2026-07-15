@@ -29,12 +29,25 @@ export const EN_INVOICES: Record<string, string> = {
   'Noch keine Rechnungen. Öffne ein gespeichertes Angebot unter „Angebote" und wähle „Als Rechnung übernehmen".':
     'No invoices yet. Open a saved offer under "Offers" and choose "Transfer as invoice".',
   'Zu den Angeboten': 'Go to offers',
-  Nummer: 'Number',
-  Datum: 'Date',
-  Kunde: 'Customer',
-  Brutto: 'Gross',
-  Geöffnet: 'Open',
-  Öffnen: 'Open',
+
+  // --- Gruppierte Liste / Rechnungskette ---
+  'Weitere Rechnungen': 'Other invoices',
+  'Σ gestellt': 'Σ billed',
+  'Als bezahlt markieren': 'Mark as paid',
+  Rest: 'Remaining',
+
+  // --- Rechnungsarten (Badge, expliziter switch → Literal-Scan) ---
+  Anzahlung: 'Deposit',
+  Abschlag: 'Interim',
+  Schlussrechnung: 'Final invoice',
+
+  // --- Schlussrechnungs-Karte (angerechnete Abschläge) ---
+  'Angerechnete Abschlagsrechnungen': 'Credited interim invoices',
+  'enthaltene USt': 'incl. VAT',
+  Restbetrag: 'Remaining amount',
+  'Guthaben zugunsten des Kunden': 'Credit in favour of the customer',
+  'Eingefroren bei Erstellung. Zum Ändern: Schlussrechnung löschen, Abschläge anpassen, neu erstellen.':
+    'Frozen at creation. To change: delete the final invoice, adjust the interim payments, then recreate it.',
 
   // --- Editor-Kopf ---
   Rechnung: 'Invoice',

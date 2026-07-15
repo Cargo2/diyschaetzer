@@ -517,19 +517,27 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   14. Nur mit Capacitor sinnvoll (bewusst nachgelagert): Push-Benachrichtigungen
       (Angebot angesehen/angenommen), Kamera fürs Aufmaß-Foto.
 
-- **Angebots-Lifecycle** *(in Arbeit)*: Versionen als eingeklappte Zeilenliste, geteilte Angebote
+- **Angebots-Lifecycle** *(erledigt)*: Versionen als eingeklappte Zeilenliste, geteilte Angebote
   gesperrt (Bearbeiten nur nach bestätigtem Löschen des Links → `deleteForOffer`), angenommene
   Angebote hart gesperrt + eingerückte „Neue Version"-Zeile, `/angebot/:token` shell-los (ohne
   Topmenü).
 
-- **Phase 19 – Profi-Ausbau** *(geplant)*: (a) **Bestell-/Einkaufsliste je Auftrag** (Contractor-
-  Ansicht/Export der bereits berechneten Materialmengen; Kalkulations-Pipeline liefert die Daten
-  schon); (b) **eigener Positions- & Textbausteinkatalog** (eigene Positionen/Einleitungs-/
-  Schlusstexte einmal anlegen, in Angeboten wiederverwenden; auch zweisprachige Textbausteine für
-  den Sprachmodus); (c) **Anzahlungs-/Abschlags-/Schlussrechnungs-Kette** (aufbauend auf
-  `buildDepositInvoice`: Abschläge mit Anrechnung, Schlussrechnung mit ausgewiesenen erhaltenen
-  Zahlungen); (d) offene i18n-Folgen (Dashboard/Materialliste/Zusammenfassung übersetzen,
-  Muttersprachler-Review, ggf. PL-Landingpage für Ads).
+- **Phase 19 – Profi-Ausbau** *(erledigt bis auf Muttersprachler-Review/Ads-Landingpage)*:
+  (a) **Bestell-/Einkaufsliste je Auftrag**: Bestellt-Häkchen in der projektweiten Materialübersicht
+  (contractor-only; `LocalTileProject.orderedMaterialKeys`, `ProjectMaterialListItem.aggregationKey`,
+  ✓/☐ im PDF/Excel-Export; Häkchen bumpen bewusst kein `updatedAt`).
+  (b) **Positions- & Textbausteinkatalog**: Tabelle `contractor_snippets` (Migration `0025`, remote),
+  Repo-Trio + `ContractorSnippetService`, Verwaltungsseite `/konto/vorlagen`, Editor-Integration
+  („+ aus Katalog" je Gruppe, „Aus Vorlagen einfügen" an Intro/Outro, „Als Vorlage speichern").
+  (c) **Anzahlungs-/Abschlags-/Schlussrechnungs-Kette** (migrationsfrei im jsonb-Blob):
+  `ContractorInvoice.kind` (standard/deposit/partial/final) + eingefrorener `settledPayments`-
+  Snapshot (§ 14 Abs. 5 S. 2; nie neu berechnen), `buildPartialInvoice`/`buildFinalInvoice`,
+  gruppierte Rechnungsliste je Angebot (Art-Badges, „Als bezahlt markieren", Σ gestellt ohne
+  Doppelzählung), Anrechnungs-Karte im Editor, PDF-Anrechnungsblock mit USt-Ausweis + Restbetrag,
+  XRechnung BT-113/BT-115 (BR-CO-16 geprüft); Buttons Anzahlung/Abschlag/Schlussrechnung im
+  Angebots-Editor.
+  (d) i18n-Rest erledigt (Dashboard/Materialliste/Zusammenfassungen/Annahmen/Lead-Formular, ~320
+  Key-Paare). **Offen**: Muttersprachler-Review aller Dictionaries, ggf. PL-Landingpage für Ads.
 
 ### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant

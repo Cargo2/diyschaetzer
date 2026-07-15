@@ -3,11 +3,16 @@ import {
   ContractorInvoice,
   ContractorInvoiceCustomer,
   ContractorInvoiceSeller,
+  SettledPayment,
   hasXRechnungServiceDate,
+  invoiceGrossTotal,
+  invoicePayableGross,
+  invoiceSettledGross,
   isGermanInvoiceSeller,
   isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
-  listMissingXRechnungSellerFields
+  listMissingXRechnungSellerFields,
+  normalizeContractorInvoice
 } from './contractor-invoice.model';
 
 function line(partial: Partial<ContractorOfferLine> = {}): ContractorOfferLine {
@@ -267,5 +272,119 @@ describe('isLikelyMalformedLeitwegId', () => {
     expect(isLikelyMalformedLeitwegId('04011000-1234512345')).toBe(true);
     expect(isLikelyMalformedLeitwegId('LWID-04011000-1234512345-06')).toBe(true);
     expect(isLikelyMalformedLeitwegId('04011000-1234512345-006')).toBe(true);
+  });
+});
+
+function settledPayment(partial: Partial<SettledPayment> = {}): SettledPayment {
+  return {
+    invoiceId: 'inv-a',
+    invoiceNumber: 'RE-2026-001',
+    kind: 'deposit',
+    invoiceDate: '2026-07-01',
+    grossAmount: 5950,
+    netAmount: 5000,
+    vatAmount: 950,
+    ...partial
+  };
+}
+
+describe('normalizeContractorInvoice (kind + settledPayments)', () => {
+  it('defaults kind to "standard" and settledPayments to [] when absent', () => {
+    const invoice = normalizeContractorInvoice(completeInvoice());
+    expect(invoice.kind).toBe('standard');
+    expect(invoice.settledPayments).toEqual([]);
+  });
+
+  it('keeps a valid kind and a well-formed settledPayments snapshot (roundtrip)', () => {
+    const invoice = normalizeContractorInvoice(
+      completeInvoice({ kind: 'final', settledPayments: [settledPayment()] })
+    );
+    expect(invoice.kind).toBe('final');
+    expect(invoice.settledPayments).toEqual([settledPayment()]);
+  });
+
+  it('coerces an unknown kind to "standard"', () => {
+    const invoice = normalizeContractorInvoice(
+      completeInvoice({ kind: 'bogus' as unknown as ContractorInvoice['kind'] })
+    );
+    expect(invoice.kind).toBe('standard');
+  });
+
+  it('sanitizes settledPayments defensively (coerces numbers/strings, drops garbage)', () => {
+    const raw = [
+      // gültig, aber verunreinigt: String-Zahlen, ungetrimmte Strings, unbekanntes kind
+      {
+        invoiceId: '  inv-b  ',
+        invoiceNumber: '  RE-2026-002  ',
+        kind: 'weird',
+        invoiceDate: ' 2026-07-05 ',
+        grossAmount: '1190',
+        netAmount: '1000',
+        vatAmount: '190'
+      },
+      null, // kein Objekt → verwerfen
+      'nonsense', // kein Objekt → verwerfen
+      { invoiceNumber: '', grossAmount: 10 }, // ohne Nummer → verwerfen
+      { invoiceNumber: 'RE-2026-003', grossAmount: Number.NaN } // NaN → 0
+    ];
+    const invoice = normalizeContractorInvoice(
+      completeInvoice({ settledPayments: raw as unknown as SettledPayment[] })
+    );
+    expect(invoice.settledPayments).toEqual([
+      {
+        invoiceId: 'inv-b',
+        invoiceNumber: 'RE-2026-002',
+        kind: 'standard',
+        invoiceDate: '2026-07-05',
+        grossAmount: 1190,
+        netAmount: 1000,
+        vatAmount: 190
+      },
+      {
+        invoiceId: '',
+        invoiceNumber: 'RE-2026-003',
+        kind: 'standard',
+        invoiceDate: '',
+        grossAmount: 0,
+        netAmount: 0,
+        vatAmount: 0
+      }
+    ]);
+  });
+});
+
+describe('invoiceSettledGross / invoicePayableGross', () => {
+  it('sums the frozen gross amounts (0 without a snapshot)', () => {
+    expect(invoiceSettledGross(completeInvoice())).toBe(0);
+    const invoice = completeInvoice({
+      settledPayments: [
+        settledPayment({ grossAmount: 5950 }),
+        settledPayment({ invoiceNumber: 'RE-2026-002', grossAmount: 5950 })
+      ]
+    });
+    expect(invoiceSettledGross(invoice)).toBe(11900);
+  });
+
+  it('computes payable gross = gross total minus settled', () => {
+    // eine aktive Pauschalposition 17 850 € netto bei 0 % USt = 17 850 € brutto
+    const invoice = completeInvoice({
+      vatPercent: 0,
+      sections: sections([{ lines: [line({ quantity: 1, unitPrice: 17850 })] }]),
+      settledPayments: [
+        settledPayment({ grossAmount: 5950 }),
+        settledPayment({ invoiceNumber: 'RE-2026-002', grossAmount: 5950 })
+      ]
+    });
+    expect(invoiceGrossTotal(invoice)).toBe(17850);
+    expect(invoicePayableGross(invoice)).toBe(5950);
+  });
+
+  it('allows a negative remaining amount (overpayment, no clamping)', () => {
+    const invoice = completeInvoice({
+      vatPercent: 0,
+      sections: sections([{ lines: [line({ quantity: 1, unitPrice: 1000 })] }]),
+      settledPayments: [settledPayment({ grossAmount: 1500 })]
+    });
+    expect(invoicePayableGross(invoice)).toBe(-500);
   });
 });

@@ -1,10 +1,16 @@
 import { ContractorOffer, offerGrossTotal } from '../models/contractor-offer.model';
 import {
+  ContractorInvoice,
   InvoiceSellerSource,
+  emptyInvoiceCustomer,
+  emptyInvoiceSeller,
   invoiceGrossTotal,
   invoiceNetTotal,
+  invoicePayableGross,
+  invoiceSettledGross,
   invoiceVatAmount,
-  invoiceDiscountAmount
+  invoiceDiscountAmount,
+  normalizeContractorInvoice
 } from '../models/contractor-invoice.model';
 import { ContractorInvoiceService } from './contractor-invoice.service';
 
@@ -256,6 +262,230 @@ describe('ContractorInvoiceService.buildDepositInvoice', () => {
     expect(invoice.outroText).toContain('§ 14 Abs. 5 UStG');
     // Bestehender Angebots-Schlusstext bleibt erhalten (angehängt).
     expect(invoice.outroText).toContain('Zahlbar in 14 Tagen.');
+  });
+});
+
+describe('ContractorInvoiceService.buildDepositInvoice (kind)', () => {
+  const service = new ContractorInvoiceService();
+
+  it('tags the deposit invoice with kind "deposit"', () => {
+    const invoice = service.buildDepositInvoice(offerWithMixedLines(), profile(), [], 30);
+    expect(invoice.kind).toBe('deposit');
+    expect(invoice.sections[0].title).toBe('Anzahlung');
+  });
+});
+
+describe('ContractorInvoiceService.buildPartialInvoice', () => {
+  const service = new ContractorInvoiceService();
+
+  it('builds a partial (Abschlag) invoice with sequence, percent and kind', () => {
+    const offer = offerWithMixedLines(); // gross = 856.8 €
+    const invoice = service.buildPartialInvoice(offer, profile(), [], 25, 2);
+
+    expect(invoice.kind).toBe('partial');
+    expect(invoice.sections).toHaveLength(1);
+    expect(invoice.sections[0].title).toBe('Abschlag');
+    const line = invoice.sections[0].lines[0];
+    expect(line.label).toContain('Abschlagszahlung Nr. 2');
+    expect(line.label).toContain('25');
+    // 25 % von 856,80 € = 214,20 € brutto → 180,00 € netto (19 %).
+    expect(line.unitPrice).toBeCloseTo(180, 2);
+    expect(invoice.discountPercent).toBe(0);
+    expect(invoice.invoiceNumber).toMatch(/^RE-\d{4}-001$/);
+  });
+
+  it('adds a § 14 Abs. 5 note referencing the sequence, keeping the offer outro', () => {
+    const invoice = service.buildPartialInvoice(offerWithMixedLines(), profile(), [], 25, 3);
+    expect(invoice.outroText).toContain('Abschlagsrechnung Nr. 3');
+    expect(invoice.outroText).toContain('§ 14 Abs. 5 UStG');
+    expect(invoice.outroText).toContain('Der Abschlag wird in der Schlussrechnung angerechnet.');
+    expect(invoice.outroText).toContain('Zahlbar in 14 Tagen.'); // Angebots-Schlusstext bleibt
+  });
+});
+
+/** Eine Vor-Rechnung (Anzahlung/Abschlag) mit bekannten Beträgen, 0 % USt = brutto. */
+function priorInvoice(overrides: Partial<ContractorInvoice> = {}): ContractorInvoice {
+  return normalizeContractorInvoice({
+    id: 'prior',
+    projectId: 'proj-1',
+    offerId: 'off-1',
+    projectName: 'Bad Neubau',
+    invoiceNumber: 'RE-2026-001',
+    invoiceDate: '2026-06-01',
+    dueDate: '2026-06-15',
+    buyerReference: 'n/a',
+    status: 'sent',
+    kind: 'deposit',
+    vatPercent: 0,
+    discountPercent: 0,
+    sections: [
+      {
+        id: 'sec',
+        kind: 'custom',
+        title: 'Anzahlung',
+        lines: [
+          {
+            id: 'ln',
+            label: 'Anzahlung',
+            description: '',
+            quantity: 1,
+            unit: 'pauschal',
+            unitPrice: 5950,
+            isActive: true,
+            isOptional: false,
+            origin: 'custom'
+          }
+        ]
+      }
+    ],
+    customer: { ...emptyInvoiceCustomer(), name: 'Kunde' },
+    seller: emptyInvoiceSeller(),
+    introText: '',
+    outroText: '',
+    ...overrides
+  });
+}
+
+/** Angebot mit 17.850 € Brutto (0 % USt) für die Schlussrechnungs-Tests. */
+function offerForFinal(): ContractorOffer {
+  return {
+    id: 'off-1',
+    projectId: 'proj-1',
+    projectName: 'Bad Neubau',
+    vatPercent: 0,
+    discountPercent: 0,
+    outroText: 'Zahlbar in 14 Tagen.',
+    customer: { name: 'Kunde', address: 'Weg 1\n12345 Stadt' },
+    sections: [
+      {
+        id: 'room',
+        kind: 'room',
+        title: 'Leistungen',
+        lines: [
+          {
+            id: 'room:all',
+            label: 'Komplettleistung',
+            description: '',
+            quantity: 1,
+            unit: 'pauschal',
+            unitPrice: 17850,
+            isActive: true,
+            isOptional: false,
+            origin: 'generated'
+          }
+        ]
+      }
+    ]
+  };
+}
+
+describe('ContractorInvoiceService.buildFinalInvoice', () => {
+  const service = new ContractorInvoiceService();
+
+  it('freezes deposit + partial of the same offer, sorted by date; remaining = gross − settled', () => {
+    const deposit = priorInvoice({
+      id: 'd1',
+      invoiceNumber: 'RE-2026-001',
+      invoiceDate: '2026-06-01',
+      kind: 'deposit'
+    });
+    const partial = priorInvoice({
+      id: 'p1',
+      invoiceNumber: 'RE-2026-002',
+      invoiceDate: '2026-06-15',
+      kind: 'partial'
+    });
+
+    // Bewusst unsortiert übergeben – der Service sortiert nach invoiceDate.
+    const final = service.buildFinalInvoice(offerForFinal(), profile(), [], [partial, deposit]);
+
+    expect(final.kind).toBe('final');
+    expect(final.settledPayments?.map((p) => p.invoiceNumber)).toEqual([
+      'RE-2026-001',
+      'RE-2026-002'
+    ]);
+    expect(final.settledPayments?.map((p) => p.kind)).toEqual(['deposit', 'partial']);
+    expect(final.settledPayments?.map((p) => p.grossAmount)).toEqual([5950, 5950]);
+    expect(invoiceGrossTotal(final)).toBe(17850);
+    expect(invoiceSettledGross(final)).toBe(11900);
+    expect(invoicePayableGross(final)).toBe(5950);
+    expect(final.outroText).toContain('Schlussrechnung zum Angebot');
+    expect(final.outroText).toContain('Zahlbar in 14 Tagen.'); // Angebots-Schlusstext bleibt
+  });
+
+  it('freezes gross/net/vat at creation time for a 19 % deposit', () => {
+    const deposit = priorInvoice({
+      id: 'd19',
+      kind: 'deposit',
+      vatPercent: 19,
+      sections: [
+        {
+          id: 'sec',
+          kind: 'custom',
+          title: 'Anzahlung',
+          lines: [
+            {
+              id: 'ln',
+              label: 'Anzahlung',
+              description: '',
+              quantity: 1,
+              unit: 'pauschal',
+              unitPrice: 180,
+              isActive: true,
+              isOptional: false,
+              origin: 'custom'
+            }
+          ]
+        }
+      ]
+    });
+    const final = service.buildFinalInvoice(offerForFinal(), profile(), [], [deposit]);
+    const snapshot = final.settledPayments![0];
+    expect(snapshot.netAmount).toBe(180);
+    expect(snapshot.vatAmount).toBeCloseTo(34.2, 2);
+    expect(snapshot.grossAmount).toBeCloseTo(214.2, 2);
+  });
+
+  it('includes a legacy deposit (kind "standard" with a single custom "Anzahlung" section)', () => {
+    const legacy = priorInvoice({ id: 'leg', invoiceNumber: 'RE-2026-001', kind: 'standard' });
+    const final = service.buildFinalInvoice(offerForFinal(), profile(), [], [legacy]);
+    expect(final.settledPayments?.map((p) => p.invoiceNumber)).toEqual(['RE-2026-001']);
+    expect(final.settledPayments?.[0].grossAmount).toBe(5950);
+  });
+
+  it('ignores a standard full invoice without the deposit fingerprint', () => {
+    const standard = priorInvoice({
+      id: 'std',
+      kind: 'standard',
+      sections: [
+        {
+          id: 'room',
+          kind: 'room',
+          title: 'Leistungen',
+          lines: [
+            {
+              id: 'room:l',
+              label: 'Fliesen verlegen',
+              description: '',
+              quantity: 10,
+              unit: 'm2',
+              unitPrice: 30,
+              isActive: true,
+              isOptional: false,
+              origin: 'generated'
+            }
+          ]
+        }
+      ]
+    });
+    const final = service.buildFinalInvoice(offerForFinal(), profile(), [], [standard]);
+    expect(final.settledPayments).toEqual([]);
+  });
+
+  it('ignores prior invoices belonging to a different offer', () => {
+    const foreign = priorInvoice({ id: 'other', offerId: 'off-999', kind: 'deposit' });
+    const final = service.buildFinalInvoice(offerForFinal(), profile(), [], [foreign]);
+    expect(final.settledPayments).toEqual([]);
   });
 });
 

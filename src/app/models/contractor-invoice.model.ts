@@ -19,6 +19,59 @@ export const CONTRACTOR_INVOICE_STATUS_LABELS: Record<ContractorInvoiceStatus, s
 };
 
 /**
+ * Art der Rechnung in der Rechnungskette (§ 14 Abs. 5 UStG):
+ * - `standard`  – normale Voll-/Einzelrechnung (Default; Altbestand ohne Feld).
+ * - `deposit`   – Anzahlungsrechnung (vor Leistungsbeginn).
+ * - `partial`   – Abschlagsrechnung (Teilzahlung während der Leistung).
+ * - `final`     – Schlussrechnung (rechnet Anzahlungen/Abschläge an).
+ */
+export type ContractorInvoiceKind = 'standard' | 'deposit' | 'partial' | 'final';
+
+/** Deutsche Beschriftung je Rechnungsart (für die UI). */
+export const CONTRACTOR_INVOICE_KIND_LABELS: Record<ContractorInvoiceKind, string> = {
+  standard: 'Rechnung',
+  deposit: 'Anzahlung',
+  partial: 'Abschlag',
+  final: 'Schlussrechnung'
+};
+
+/** Alle gültigen Rechnungsarten (für die defensive Normalisierung). */
+const VALID_INVOICE_KINDS: ReadonlySet<ContractorInvoiceKind> = new Set<ContractorInvoiceKind>([
+  'standard',
+  'deposit',
+  'partial',
+  'final'
+]);
+
+/**
+ * Ein in einer Schlussrechnung **angerechnetes** Teilentgelt (Anzahlung/Abschlag).
+ *
+ * WICHTIG: Dieser Snapshot wird bei der **Erstellung der Schlussrechnung
+ * EINGEFROREN** und danach NIE neu berechnet. § 14 Abs. 5 S. 2 UStG verlangt, dass
+ * die Schlussrechnung die bereits vereinnahmten Teilentgelte **und die darauf
+ * entfallende Umsatzsteuer** ausweist – diese Werte müssen dem Stand der jeweiligen
+ * Vorausrechnung entsprechen, auch wenn sich das Angebot/die Preise später ändern.
+ * Daher liegen `grossAmount`/`netAmount`/`vatAmount` hier als feste Beträge vor und
+ * dürfen beim Laden **nicht** aus den Positionen der Vor-Rechnung neu abgeleitet werden.
+ */
+export interface SettledPayment {
+  /** ID der angerechneten Vor-Rechnung (informativ). */
+  invoiceId: string;
+  /** Rechnungsnummer der Vor-Rechnung (Anzeige/PDF). */
+  invoiceNumber: string;
+  /** Art der Vor-Rechnung (Anzahlung/Abschlag). */
+  kind: ContractorInvoiceKind;
+  /** Rechnungsdatum der Vor-Rechnung (ISO `yyyy-mm-dd`; steuert die Sortierung). */
+  invoiceDate: string;
+  /** Eingefrorener Bruttobetrag der Vor-Rechnung. */
+  grossAmount: number;
+  /** Eingefrorener Nettobetrag (nach Nachlass) der Vor-Rechnung. */
+  netAmount: number;
+  /** Eingefrorener USt-Betrag der Vor-Rechnung (§ 14 Abs. 5 S. 2). */
+  vatAmount: number;
+}
+
+/**
  * Minimaler **struktureller** Verkäufer-Typ: genau die Firmenprofil-Felder, die für
  * den Rechnungs-Verkäufer-Snapshot gelesen werden. Bewusst strukturell (kein Import
  * von {@link CompanyProfile}), damit der Rechnungscode nicht an der additiven
@@ -110,6 +163,17 @@ export interface ContractorInvoice {
   /** Leitweg-ID/Käuferreferenz (BT-10, XRechnung-Pflicht; Default `n/a`). */
   buyerReference: string;
   status: ContractorInvoiceStatus;
+  /**
+   * Art in der Rechnungskette (§ 14 Abs. 5). Optional (Altbestand ⇒ `standard`,
+   * s. {@link normalizeContractorInvoice}). Liegt im jsonb-Blob, keine DB-Spalte.
+   */
+  kind?: ContractorInvoiceKind;
+  /**
+   * Nur bei `kind: 'final'`: die in dieser Schlussrechnung angerechneten Anzahlungen/
+   * Abschläge – bei der Erstellung **eingefroren** (§ 14 Abs. 5 S. 2 UStG). NIE beim
+   * Laden neu berechnen (s. {@link SettledPayment}).
+   */
+  settledPayments?: SettledPayment[];
   vatPercent: number;
   /** Nachlass in % auf den Nettobetrag (0 = ohne). */
   discountPercent?: number;
@@ -126,6 +190,54 @@ export interface ContractorInvoice {
 
 function toNumber(value: number | null | undefined): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+/** Kaufmännisch auf zwei Nachkommastellen runden (wie die Summenhelfer). */
+function round2(value: number): number {
+  return Number((Number.isFinite(value) ? value : 0).toFixed(2));
+}
+
+/** Beliebigen Wert in eine gültige Rechnungsart überführen (unbekannt ⇒ `standard`). */
+function normalizeInvoiceKind(value: unknown): ContractorInvoiceKind {
+  return typeof value === 'string' && VALID_INVOICE_KINDS.has(value as ContractorInvoiceKind)
+    ? (value as ContractorInvoiceKind)
+    : 'standard';
+}
+
+/** Zahl-Koerzierung aus rohem jsonb-Wert (String/Zahl/…): endlich, sonst `0`. */
+function coerceNumber(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/** String-Koerzierung aus rohem jsonb-Wert: getrimmt, Nicht-Strings ⇒ `''`. */
+function coerceString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/**
+ * Bereinigt die eingefrorenen Teilentgelte defensiv (der Blob kann aus fremden
+ * Quellen kommen): Zahlen via Number-Koerzierung, Strings getrimmt, Nicht-Objekte
+ * und leere Einträge (ohne Rechnungsnummer) verworfen. Die eingefrorenen Beträge
+ * werden **nicht** neu berechnet – nur typ-bereinigt.
+ */
+function sanitizeSettledPayments(value: unknown): SettledPayment[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .filter((entry): entry is Record<string, unknown> =>
+      entry != null && typeof entry === 'object')
+    .map((entry) => ({
+      invoiceId: coerceString(entry['invoiceId']),
+      invoiceNumber: coerceString(entry['invoiceNumber']),
+      kind: normalizeInvoiceKind(entry['kind']),
+      invoiceDate: coerceString(entry['invoiceDate']),
+      grossAmount: coerceNumber(entry['grossAmount']),
+      netAmount: coerceNumber(entry['netAmount']),
+      vatAmount: coerceNumber(entry['vatAmount'])
+    }))
+    .filter((entry) => entry.invoiceNumber !== '');
 }
 
 /** Heutiges Datum als ISO `yyyy-mm-dd`. */
@@ -181,6 +293,26 @@ export function invoiceGrossTotal(invoice: ContractorInvoice): number {
   return offerGrossTotal(invoiceAsOffer(invoice));
 }
 
+/**
+ * Summe der eingefrorenen Anzahlungs-/Abschlagsbeträge (brutto) dieser
+ * Schlussrechnung. `0`, wenn kein Snapshot vorliegt. Liest **nur** den
+ * eingefrorenen Snapshot – rechnet nichts neu (§ 14 Abs. 5 S. 2 UStG).
+ */
+export function invoiceSettledGross(invoice: ContractorInvoice): number {
+  return round2(
+    (invoice.settledPayments ?? []).reduce((sum, payment) => sum + toNumber(payment.grossAmount), 0)
+  );
+}
+
+/**
+ * Verbleibender Restbetrag (brutto) = {@link invoiceGrossTotal} minus die bereits
+ * angerechneten Teilentgelte. **Negativ zulässig** (Überzahlung durch Anzahlungen);
+ * bewusst kein Clamping – die UI zeigt in dem Fall einen Warnhinweis.
+ */
+export function invoicePayableGross(invoice: ContractorInvoice): number {
+  return round2(invoiceGrossTotal(invoice) - invoiceSettledGross(invoice));
+}
+
 /** Leerer Verkäufer-Snapshot (Formular-/Lade-Default). */
 export function emptyInvoiceSeller(): ContractorInvoiceSeller {
   return {
@@ -222,6 +354,8 @@ export function normalizeContractorInvoice(invoice: ContractorInvoice): Contract
     dueDate: invoice.dueDate ?? invoiceDueDateIso(),
     buyerReference: invoice.buyerReference ?? 'n/a',
     status: invoice.status ?? 'draft',
+    kind: normalizeInvoiceKind(invoice.kind),
+    settledPayments: sanitizeSettledPayments(invoice.settledPayments),
     vatPercent: toNumber(invoice.vatPercent),
     discountPercent: toNumber(invoice.discountPercent),
     introText: invoice.introText ?? '',

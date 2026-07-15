@@ -17,6 +17,10 @@ export const PL_OFFERS: Record<string, string> = {
     'Nie udało się utworzyć faktury. Spróbuj ponownie.',
   'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'Nie udało się utworzyć faktury zaliczkowej. Spróbuj ponownie.',
+  'Abschlagsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
+    'Nie udało się utworzyć faktury częściowej. Spróbuj ponownie.',
+  'Schlussrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
+    'Nie udało się utworzyć faktury końcowej. Spróbuj ponownie.',
 
   // --- Status-/Einheiten-Labels (dynamisch: statusOptions/unitOptions, DYNAMIC_KEYS) ---
   Entwurf: 'Szkic',
@@ -143,10 +147,14 @@ export const PL_OFFERS: Record<string, string> = {
   'zzgl.': 'plus',
   Gesamtsumme: 'Suma całkowita',
 
-  // --- Anzahlungsrechnung ---
-  Anzahlungsrechnung: 'Faktura zaliczkowa',
+  // --- Rechnungen zum Angebot (Anzahlung/Abschlag/Schlussrechnung) ---
+  'Rechnungen zum Angebot': 'Faktury do oferty',
   Anteil: 'Udział',
   'Anzahlungsrechnung erstellen': 'Utwórz fakturę zaliczkową',
+  'Abschlagsrechnung erstellen': 'Utwórz fakturę częściową',
+  'Schlussrechnung erstellen': 'Utwórz fakturę końcową',
+  'Die Schlussrechnung rechnet alle Anzahlungs-/Abschlagsrechnungen dieses Angebots automatisch an.':
+    'Faktura końcowa automatycznie uwzględnia wszystkie faktury zaliczkowe/częściowe tej oferty.',
 
   // --- Schlusstext / Mobile ---
   'Schlusstext (optional)': 'Tekst końcowy (opcjonalnie)',

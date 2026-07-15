@@ -17,6 +17,10 @@ export const EN_OFFERS: Record<string, string> = {
     'The invoice could not be created. Please try again.',
   'Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'The deposit invoice could not be created. Please try again.',
+  'Abschlagsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
+    'The partial invoice could not be created. Please try again.',
+  'Schlussrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
+    'The final invoice could not be created. Please try again.',
 
   // --- Status-/Einheiten-Labels (dynamisch: statusOptions/unitOptions, DYNAMIC_KEYS) ---
   Entwurf: 'Draft',
@@ -142,10 +146,14 @@ export const EN_OFFERS: Record<string, string> = {
   'zzgl.': 'plus',
   Gesamtsumme: 'Grand total',
 
-  // --- Anzahlungsrechnung ---
-  Anzahlungsrechnung: 'Deposit invoice',
+  // --- Rechnungen zum Angebot (Anzahlung/Abschlag/Schlussrechnung) ---
+  'Rechnungen zum Angebot': 'Invoices for this offer',
   Anteil: 'Share',
   'Anzahlungsrechnung erstellen': 'Create deposit invoice',
+  'Abschlagsrechnung erstellen': 'Create partial invoice',
+  'Schlussrechnung erstellen': 'Create final invoice',
+  'Die Schlussrechnung rechnet alle Anzahlungs-/Abschlagsrechnungen dieses Angebots automatisch an.':
+    'The final invoice automatically credits all deposit/partial invoices for this offer.',
 
   // --- Schlusstext / Mobile ---
   'Schlusstext (optional)': 'Closing text (optional)',

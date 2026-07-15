@@ -113,6 +113,10 @@ export class PdfDocumentBuilderService {
     content.push(...data.sections.flatMap((section) => this.section(section)));
     content.push(...this.totals(data));
 
+    if (data.settlement) {
+      content.push(...this.settlementBlock(data));
+    }
+
     if (data.invoiceMeta) {
       content.push(...this.paymentBlock(data.invoiceMeta));
     }
@@ -661,6 +665,88 @@ export class PdfDocumentBuilderService {
               paddingLeft: () => 12,
               paddingRight: () => 0
             }
+          }
+        ]
+      }
+    ];
+  }
+
+  /**
+   * Anrechnungsblock der Schlussrechnung (unter den Summen): die bereits
+   * gestellten Abschläge/Anzahlungen als Abzug (§ 14 Abs. 5 S. 2 UStG – inkl.
+   * darin enthaltener USt), abgeschlossen mit dem Restbetrag in der Optik der
+   * Bruttosummen-Zeile. Bei negativem Restbetrag (Anzahlungen > Endbetrag) wird
+   * ein Guthaben zugunsten des Kunden als positiver Betrag ausgewiesen; das
+   * „Minus" trägt hier die Beschriftung, nicht das Vorzeichen (klarste Lesart).
+   */
+  private settlementBlock(data: ExportDocumentData): Content[] {
+    const settlement = data.settlement;
+    if (!settlement) {
+      return [];
+    }
+
+    const body: TableCell[][] = [];
+    for (const row of settlement.rows) {
+      body.push([
+        {
+          text: `${row.invoiceNumber} · ${row.kindLabel} · ${row.date}`,
+          border: [false, false, false, false]
+        },
+        {
+          // Abzug: negativer Betrag → de-DE-Formatierung liefert das Minuszeichen.
+          text: this.currency(-row.gross),
+          alignment: 'right',
+          border: [false, false, false, false]
+        }
+      ]);
+      body.push([
+        {
+          text: `darin enthaltene USt: ${this.currency(row.vatContained)}`,
+          style: 'muted',
+          border: [false, false, false, false]
+        },
+        { text: '', border: [false, false, false, false] }
+      ]);
+    }
+
+    const isCredit = settlement.payableGross < 0;
+    const restLabel = isCredit ? 'Guthaben zugunsten des Kunden' : 'Restbetrag (zu zahlen)';
+    body.push([
+      { text: restLabel, style: 'totalLabel', border: [false, true, false, false] },
+      {
+        text: this.currency(Math.abs(settlement.payableGross)),
+        style: 'totalValue',
+        alignment: 'right',
+        border: [false, true, false, false]
+      }
+    ]);
+
+    return [
+      {
+        margin: [0, 12, 0, 0],
+        columns: [
+          { text: '', width: '*' },
+          {
+            width: 'auto',
+            stack: [
+              {
+                text: 'Abzüglich bereits gestellter Abschlagsrechnungen',
+                style: 'muted',
+                margin: [0, 0, 0, 4]
+              },
+              {
+                table: { widths: ['*', 'auto'], body },
+                layout: {
+                  hLineWidth: () => 0.8,
+                  hLineColor: () => BRAND_COLOR,
+                  vLineWidth: () => 0,
+                  paddingTop: () => 4,
+                  paddingBottom: () => 2,
+                  paddingLeft: () => 12,
+                  paddingRight: () => 0
+                }
+              }
+            ]
           }
         ]
       }

@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   ContractorInvoice,
+  ContractorInvoiceKind,
   ContractorInvoiceStatus,
   CONTRACTOR_INVOICE_STATUS_LABELS,
   hasXRechnungServiceDate,
@@ -11,13 +12,16 @@ import {
   invoiceGrossTotal,
   invoiceNetAfterDiscount,
   invoiceNetTotal,
+  invoicePayableGross,
+  invoiceSettledGross,
   invoiceVatAmount,
   isGermanInvoiceSeller,
   isLikelyMalformedLeitwegId,
   listMissingXRechnungFields,
   listMissingXRechnungSellerFields,
   normalizeContractorInvoice,
-  sanitizeContractorInvoice
+  sanitizeContractorInvoice,
+  SettledPayment
 } from '../../models/contractor-invoice.model';
 import {
   ContractorOfferLine,
@@ -43,10 +47,34 @@ import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
+ * Eine nach Herkunftsangebot gruppierte Rechnungskette (Anzahlung → Abschlag →
+ * Schlussrechnung). Rein abgeleitetes ViewModel, wird nie gespeichert.
+ */
+interface InvoiceGroup {
+  /** Gruppierungsschlüssel: `offerId` bzw. `'__none__'` für Rechnungen ohne Angebot. */
+  key: string;
+  /** `true` für die Sammelgruppe „Weitere Rechnungen" (Rechnungen ohne Angebotsbezug). */
+  isNone: boolean;
+  /** Projektname (Gruppentitel); leer bei der Sammelgruppe. */
+  title: string;
+  /** Rechnungen der Gruppe, chronologisch nach Rechnungsdatum aufsteigend. */
+  invoices: ContractorInvoice[];
+  /** Jüngstes Rechnungsdatum der Gruppe (steuert die Gruppen-Sortierung). */
+  latestDate: string;
+  /**
+   * Ehrliche „Σ gestellt"-Summe ohne Doppelzählung: Anzahlungen/Abschläge/
+   * Standardrechnungen mit vollem Brutto, Schlussrechnungen nur mit dem
+   * verbleibenden Restbetrag ({@link invoicePayableGross}), da deren angerechnete
+   * Teilentgelte bereits über die Vor-Rechnungen gestellt wurden.
+   */
+  billedTotal: number;
+}
+
+/**
  * Rechnungsmodul (M12). Nur über den contractorGuard erreichbar. Rechnungen
  * entstehen aus gespeicherten Angeboten („Als Rechnung übernehmen") und werden
- * hier verwaltet: Liste + editierbarer Rechnungskopf/Positionen, PDF- und
- * XRechnung-Download, Löschen. Ohne Angebots-Übernahme zeigt die Seite die Liste.
+ * hier verwaltet: gruppierte Liste + editierbarer Rechnungskopf/Positionen, PDF-
+ * und XRechnung-Download, Löschen. Ohne Angebots-Übernahme zeigt die Seite die Liste.
  */
 @Component({
   selector: 'app-contractor-invoices',
@@ -73,6 +101,48 @@ export class ContractorInvoicesComponent implements OnInit {
   readonly loadedFromDb = signal(false);
   /** Alle Rechnungen des Profis (neueste zuerst). */
   readonly invoices = signal<ContractorInvoice[]>([]);
+  /** ID der Rechnung, die gerade als „bezahlt" markiert wird (Busy-Guard). */
+  readonly markingPaidId = signal<string | null>(null);
+
+  /**
+   * Rechnungen nach Herkunftsangebot gruppiert (ZONELESS: rein aus dem
+   * unveränderlichen `invoices`-Signal abgeleitet, NIE aus dem mutablen
+   * `invoice`-Editorfeld). Sammelgruppe „Weitere Rechnungen" (`__none__`) zuletzt,
+   * sonst neueste Aktivität zuerst; innerhalb der Gruppe chronologisch aufsteigend.
+   */
+  readonly groupedInvoices = computed<InvoiceGroup[]>(() => {
+    const buckets = new Map<string, ContractorInvoice[]>();
+    for (const invoice of this.invoices()) {
+      const key = invoice.offerId ?? '__none__';
+      const bucket = buckets.get(key) ?? [];
+      bucket.push(invoice);
+      buckets.set(key, bucket);
+    }
+    const groups: InvoiceGroup[] = [];
+    for (const [key, list] of buckets) {
+      const sorted = [...list].sort((a, b) => a.invoiceDate.localeCompare(b.invoiceDate));
+      const latest = sorted[sorted.length - 1];
+      groups.push({
+        key,
+        isNone: key === '__none__',
+        title: key === '__none__' ? '' : latest?.projectName ?? '',
+        invoices: sorted,
+        latestDate: latest?.invoiceDate ?? '',
+        billedTotal: sorted.reduce(
+          (sum, invoice) =>
+            sum + (invoice.kind === 'final' ? invoicePayableGross(invoice) : invoiceGrossTotal(invoice)),
+          0
+        )
+      });
+    }
+    groups.sort((a, b) => {
+      if (a.isNone !== b.isNone) {
+        return a.isNone ? 1 : -1;
+      }
+      return b.latestDate.localeCompare(a.latestDate);
+    });
+    return groups;
+  });
 
   /** Editierbare Arbeitskopie der aktuellen Rechnung. */
   invoice: ContractorInvoice | null = null;
@@ -375,6 +445,92 @@ export class ContractorInvoicesComponent implements OnInit {
   /** Bruttosumme einer Listen-Rechnung (für die Übersichtstabelle). */
   grossOf(invoice: ContractorInvoice): number {
     return invoiceGrossTotal(invoice);
+  }
+
+  /** Verbleibender Restbetrag (brutto) einer Schlussrechnung nach Anrechnung. */
+  restOf(invoice: ContractorInvoice): number {
+    return invoicePayableGross(invoice);
+  }
+
+  /**
+   * Übersetzte Beschriftung der Rechnungsart. Bewusst ein expliziter Switch über
+   * String-Literale (statt `t(CONTRACTOR_INVOICE_KIND_LABELS[kind])` mit Variable),
+   * damit der i18n-Coverage-Literal-Scan die Keys erfasst – ohne Eintrag in die
+   * (nicht in diesem Scope liegende) DYNAMIC_KEYS-Allowlist.
+   */
+  kindLabel(kind: ContractorInvoiceKind | undefined): string {
+    switch (kind) {
+      case 'deposit':
+        return this.i18n.t('Anzahlung');
+      case 'partial':
+        return this.i18n.t('Abschlag');
+      case 'final':
+        return this.i18n.t('Schlussrechnung');
+      default:
+        return this.i18n.t('Rechnung');
+    }
+  }
+
+  /** ISO-Datum (`yyyy-mm-dd`) als deutsches Datum; leere/ungültige Werte bleiben leer. */
+  dateDe(iso: string | undefined): string {
+    if (!iso) {
+      return '';
+    }
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime())
+      ? iso
+      : new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+  }
+
+  // ---- Schlussrechnungs-Karte (eingefrorene Anrechnung) --------------------
+
+  /** Ist die aktuelle Rechnung eine Schlussrechnung mit angerechneten Teilentgelten? */
+  isFinalWithSettlements(): boolean {
+    return (
+      this.invoice !== null &&
+      this.invoice.kind === 'final' &&
+      (this.invoice.settledPayments?.length ?? 0) > 0
+    );
+  }
+
+  /** Die eingefrorenen angerechneten Teilentgelte der aktuellen Rechnung. */
+  settledPayments(): SettledPayment[] {
+    return this.invoice?.settledPayments ?? [];
+  }
+
+  /** Summe der angerechneten Teilentgelte (brutto). */
+  settledGross(): number {
+    return this.invoice ? invoiceSettledGross(this.invoice) : 0;
+  }
+
+  /** Restbetrag (brutto) der aktuellen Schlussrechnung; negativ = Kundenguthaben. */
+  payableGross(): number {
+    return this.invoice ? invoicePayableGross(this.invoice) : 0;
+  }
+
+  /**
+   * Markiert eine Rechnung als bezahlt (Quick-Action der Liste). Persistiert eine
+   * **Kopie** mit `status: 'paid'` (KEINE In-Place-Mutation des Listeneintrags),
+   * lädt danach die Liste neu und spiegelt den Stand in den offenen Editor.
+   */
+  async markPaid(invoice: ContractorInvoice): Promise<void> {
+    if (invoice.status === 'paid' || this.markingPaidId() !== null || !invoice.id) {
+      return;
+    }
+    this.resetFeedback();
+    this.markingPaidId.set(invoice.id);
+    const updated = sanitizeContractorInvoice({ ...invoice, status: 'paid' });
+    try {
+      await this.repository.save(updated);
+      if (this.invoice?.id === invoice.id) {
+        this.setWorking(updated, true);
+      }
+      await this.loadList();
+    } catch {
+      this.saveError.set(this.i18n.t('Speichern fehlgeschlagen. Bitte erneut versuchen.'));
+    } finally {
+      this.markingPaidId.set(null);
+    }
   }
 
   eur(value: number): string {

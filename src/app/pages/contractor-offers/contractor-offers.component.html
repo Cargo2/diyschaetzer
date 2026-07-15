@@ -435,7 +435,7 @@
 
         @if (offer.status === 'accepted' && loadedFromDb()) {
           <div class="deposit-invoice">
-            <span class="deposit-label">{{ 'Anzahlungsrechnung' | t }}</span>
+            <span class="deposit-label">{{ 'Rechnungen zum Angebot' | t }}</span>
             <label class="opt">
               <span>{{ 'Anteil' | t }}</span>
               <input type="number" inputmode="decimal" step="1" min="1" max="100"
@@ -445,6 +445,17 @@
               (click)="createDepositInvoice()">
               {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Anzahlungsrechnung erstellen' | t) }}
             </button>
+            <button type="button" class="btn-light" [disabled]="creatingInvoice()"
+              (click)="createPartialInvoice()">
+              {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Abschlagsrechnung erstellen' | t) }}
+            </button>
+            <button type="button" class="btn-light deposit-final-btn" [disabled]="creatingInvoice()"
+              (click)="createFinalInvoice()">
+              {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Schlussrechnung erstellen' | t) }}
+            </button>
+            <p class="deposit-hint">
+              {{ 'Die Schlussrechnung rechnet alle Anzahlungs-/Abschlagsrechnungen dieses Angebots automatisch an.' | t }}
+            </p>
           </div>
         }
 

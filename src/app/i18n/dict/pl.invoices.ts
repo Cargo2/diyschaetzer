@@ -29,12 +29,25 @@ export const PL_INVOICES: Record<string, string> = {
   'Noch keine Rechnungen. Öffne ein gespeichertes Angebot unter „Angebote" und wähle „Als Rechnung übernehmen".':
     'Brak jeszcze faktur. Otwórz zapisaną ofertę w zakładce „Oferty" i wybierz „Przenieś jako fakturę".',
   'Zu den Angeboten': 'Przejdź do ofert',
-  Nummer: 'Numer',
-  Datum: 'Data',
-  Kunde: 'Klient',
-  Brutto: 'Brutto',
-  Geöffnet: 'Otwarta',
-  Öffnen: 'Otwórz',
+
+  // --- Gruppierte Liste / Rechnungskette ---
+  'Weitere Rechnungen': 'Pozostałe faktury',
+  'Σ gestellt': 'Σ wystawiono',
+  'Als bezahlt markieren': 'Oznacz jako zapłaconą',
+  Rest: 'Pozostało',
+
+  // --- Rechnungsarten (Badge, expliziter switch → Literal-Scan) ---
+  Anzahlung: 'Zaliczka',
+  Abschlag: 'Rata',
+  Schlussrechnung: 'Faktura końcowa',
+
+  // --- Schlussrechnungs-Karte (angerechnete Abschläge) ---
+  'Angerechnete Abschlagsrechnungen': 'Zaliczone faktury częściowe',
+  'enthaltene USt': 'w tym VAT',
+  Restbetrag: 'Kwota pozostała',
+  'Guthaben zugunsten des Kunden': 'Nadpłata na rzecz klienta',
+  'Eingefroren bei Erstellung. Zum Ändern: Schlussrechnung löschen, Abschläge anpassen, neu erstellen.':
+    'Zamrożone przy utworzeniu. Aby zmienić: usuń fakturę końcową, dostosuj raty i utwórz ponownie.',
 
   // --- Editor-Kopf ---
   Rechnung: 'Faktura',

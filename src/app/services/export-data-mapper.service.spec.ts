@@ -2,6 +2,8 @@ import { COMMERCIAL_CONFIG, DEFAULT_WHITE_LABEL_CONFIG } from '../config/commerc
 import { DEFAULT_FEATURE_ACCESS } from '../models/commercial.model';
 import {
   ContractorInvoice,
+  ContractorInvoiceKind,
+  SettledPayment,
   emptyInvoiceCustomer,
   emptyInvoiceSeller,
   normalizeContractorInvoice
@@ -49,6 +51,60 @@ function invoiceWithSeller(countryCode: string, vatPercent = 0): ContractorInvoi
     ],
     customer: emptyInvoiceCustomer(),
     seller: { ...emptyInvoiceSeller(), countryCode }
+  } as ContractorInvoice);
+}
+
+function settlement(overrides: Partial<SettledPayment> = {}): SettledPayment {
+  return {
+    invoiceId: 'dep-1',
+    invoiceNumber: 'RE-2026-005',
+    kind: 'deposit',
+    invoiceDate: '2026-05-01',
+    grossAmount: 5950,
+    netAmount: 5000,
+    vatAmount: 950,
+    ...overrides
+  };
+}
+
+function finalInvoice(
+  kind: ContractorInvoiceKind,
+  settledPayments: SettledPayment[] | undefined,
+  unitPrice = 10000
+): ContractorInvoice {
+  return normalizeContractorInvoice({
+    id: 'inv-final',
+    projectName: 'Sanierung',
+    invoiceNumber: 'RE-2026-010',
+    invoiceDate: '2026-07-14',
+    dueDate: '2026-07-28',
+    buyerReference: 'n/a',
+    status: 'draft',
+    kind,
+    settledPayments,
+    vatPercent: 19,
+    sections: [
+      {
+        id: 's0',
+        kind: 'custom',
+        title: 'Leistungen',
+        lines: [
+          {
+            id: 'l0',
+            label: 'Gesamtleistung',
+            description: '',
+            quantity: 1,
+            unit: 'pauschal',
+            unitPrice,
+            isActive: true,
+            isOptional: false,
+            origin: 'custom'
+          }
+        ]
+      }
+    ],
+    customer: emptyInvoiceCustomer(),
+    seller: { ...emptyInvoiceSeller(), countryCode: 'DE' }
   } as ContractorInvoice);
 }
 
@@ -349,6 +405,67 @@ describe('ExportDataMapperService', () => {
     it('omits the notice when the German seller charges VAT', () => {
       const result = service.buildContractorInvoiceExportData(invoiceWithSeller('DE', 19));
       expect(result.taxNote).toBeNull();
+    });
+  });
+
+  describe('buildContractorInvoiceExportData settlement (R3-B: Anrechnungsblock)', () => {
+    it('builds the settlement block for a final invoice with a frozen snapshot', () => {
+      // Endbetrag: 10000 netto + 19 % = 11900 brutto; Anzahlung 5950 brutto.
+      const result = service.buildContractorInvoiceExportData(
+        finalInvoice('final', [settlement()])
+      );
+      expect(result.settlement).toBeDefined();
+      expect(result.settlement!.rows).toHaveLength(1);
+      const row = result.settlement!.rows[0];
+      expect(row.invoiceNumber).toBe('RE-2026-005');
+      expect(row.kindLabel).toBe('Anzahlung');
+      expect(row.date).toBe('01.05.2026');
+      expect(row.gross).toBe(5950);
+      expect(row.vatContained).toBe(950);
+      expect(result.settlement!.settledGross).toBe(5950);
+      expect(result.settlement!.payableGross).toBe(5950);
+      // Der Summenblock zeigt weiterhin die volle Bruttosumme der Schlussrechnung.
+      expect(result.totals.grossTotal).toBe(11900);
+    });
+
+    it('sums multiple settled payments and can yield a negative payable (credit)', () => {
+      const result = service.buildContractorInvoiceExportData(
+        finalInvoice(
+          'final',
+          [
+            settlement({ invoiceNumber: 'RE-2026-005', grossAmount: 5950, vatAmount: 950 }),
+            settlement({
+              invoiceId: 'dep-2',
+              invoiceNumber: 'RE-2026-006',
+              kind: 'partial',
+              grossAmount: 7140,
+              netAmount: 6000,
+              vatAmount: 1140
+            })
+          ],
+          10000
+        )
+      );
+      expect(result.settlement!.settledGross).toBe(13090);
+      // 11900 − 13090 = −1190 → Guthaben zugunsten des Kunden.
+      expect(result.settlement!.payableGross).toBe(-1190);
+    });
+
+    it('omits the settlement for a standard invoice', () => {
+      const result = service.buildContractorInvoiceExportData(invoiceWithSeller('DE', 19));
+      expect(result.settlement).toBeUndefined();
+    });
+
+    it('omits the settlement for a deposit invoice even if a snapshot is present', () => {
+      const result = service.buildContractorInvoiceExportData(
+        finalInvoice('deposit', [settlement()])
+      );
+      expect(result.settlement).toBeUndefined();
+    });
+
+    it('omits the settlement for a final invoice without a snapshot', () => {
+      const result = service.buildContractorInvoiceExportData(finalInvoice('final', undefined));
+      expect(result.settlement).toBeUndefined();
     });
   });
 });

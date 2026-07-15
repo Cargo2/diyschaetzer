@@ -6,6 +6,7 @@ import {
   ExportInvoiceMeta,
   ExportOfferGroup,
   ExportOfferMeta,
+  ExportSettlement,
   INVOICE_EXPORT_LEGAL_NOTICE,
   OFFER_EXPORT_LEGAL_NOTICE
 } from '../models/export-document.model';
@@ -23,12 +24,15 @@ import {
   offerVatAmount
 } from '../models/contractor-offer.model';
 import {
+  CONTRACTOR_INVOICE_KIND_LABELS,
   ContractorInvoice,
   invoiceAsOffer,
   invoiceDiscountAmount,
   invoiceGrossTotal,
   invoiceNetAfterDiscount,
   invoiceNetTotal,
+  invoicePayableGross,
+  invoiceSettledGross,
   invoiceVatAmount,
   isGermanInvoiceSeller
 } from '../models/contractor-invoice.model';
@@ -385,6 +389,7 @@ export class ExportDataMapperService {
       },
       legalNotice: INVOICE_EXPORT_LEGAL_NOTICE,
       invoiceMeta,
+      settlement: this.buildSettlement(invoice),
       introText: invoice.introText ?? null,
       outroText: invoice.outroText ?? null,
       taxNote
@@ -423,6 +428,43 @@ export class ExportDataMapperService {
     });
   }
 
+  /**
+   * Baut den Anrechnungsblock einer Schlussrechnung aus dem **eingefrorenen**
+   * Snapshot der angerechneten Teilentgelte (§ 14 Abs. 5 S. 2 UStG). Nur bei
+   * `kind: 'final'` mit vorhandenem Snapshot – sonst `undefined`. Die Beträge
+   * werden **nicht** neu berechnet, nur die Summen aus dem Snapshot abgeleitet.
+   * Das Datum wird de-DE-formatiert (anzeigefertig für die Export-Builder).
+   */
+  private buildSettlement(invoice: ContractorInvoice): ExportSettlement | undefined {
+    if (invoice.kind !== 'final' || !(invoice.settledPayments?.length)) {
+      return undefined;
+    }
+    return {
+      rows: invoice.settledPayments.map((payment) => ({
+        invoiceNumber: payment.invoiceNumber,
+        kindLabel: CONTRACTOR_INVOICE_KIND_LABELS[payment.kind],
+        date: this.formatDate(payment.invoiceDate),
+        gross: payment.grossAmount,
+        vatContained: payment.vatAmount
+      })),
+      settledGross: invoiceSettledGross(invoice),
+      payableGross: invoicePayableGross(invoice)
+    };
+  }
+
+  /** ISO-Datum als de-DE (`TT.MM.JJJJ`); ungültige Werte bleiben unverändert. */
+  private formatDate(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return iso;
+    }
+    return new Intl.DateTimeFormat('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
+  }
+
   /** Baut Anschriftszeilen (Straße, „PLZ Ort") ohne Leerzeilen. */
   private addressLines(street: string, postalCode: string, city: string): string[] {
     const cityLine = [postalCode, city].map((part) => part.trim()).filter(Boolean).join(' ');
@@ -442,6 +484,7 @@ export class ExportDataMapperService {
           | 'legalNotice'
           | 'offerMeta'
           | 'invoiceMeta'
+          | 'settlement'
           | 'introText'
           | 'outroText'
           | 'taxNote'

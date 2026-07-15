@@ -36,6 +36,7 @@ import {
 import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
 import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
 import { ContractorInvoiceService } from '../../services/contractor-invoice.service';
+import { ContractorInvoice } from '../../models/contractor-invoice.model';
 import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
 import { SharedOfferTracking } from '../../models/shared-offer-tracking.model';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
@@ -161,7 +162,11 @@ export class ContractorOffersComponent implements OnInit {
   /** Inline-Bestätigung „Link löschen & bearbeiten" (Muster wie `confirmingDelete*`). */
   confirmingUnlock = false;
 
-  /** Anteil (%) für die Anzahlungsrechnung (Block „Anzahlungsrechnung"). */
+  /**
+   * Anteil (%) für Anzahlungs-/Abschlagsrechnung (Block „Rechnungen zum Angebot").
+   * Ein gemeinsames Feld für beide Aktionen – der Nutzer setzt den Prozentsatz
+   * einmal und wählt dann den passenden Button.
+   */
   depositPercent = 30;
 
   /**
@@ -715,6 +720,95 @@ export class ContractorOffersComponent implements OnInit {
     } catch {
       this.invoiceError.set(
         this.i18n.t('Anzahlungsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.')
+      );
+    } finally {
+      this.creatingInvoice.set(false);
+    }
+  }
+
+  /**
+   * Erzeugt aus dem **angenommenen, gespeicherten** Angebot eine Abschlagsrechnung
+   * über `depositPercent` % der Bruttosumme (§ 14 Abs. 5 UStG) – wie
+   * {@link createDepositInvoice}, aber mit fortlaufender `sequenceNumber`.
+   *
+   * Die Nummer zählt **nur kind-basiert** (`deposit`/`partial`) bereits gespeicherte
+   * Rechnungen desselben Angebots + 1. Der Legacy-Fingerprint für Alt-Anzahlungen
+   * ohne `kind`-Feld (s. {@link ContractorInvoiceService}) ist eine **private**
+   * Methode des Service, kein exportierter Helfer – daher wird hier bewusst
+   * **keine** eigene Kopie dieser Heuristik gepflegt. Alt-Anzahlungen ohne `kind`
+   * fließen folglich nicht in die Zählung ein (Kante, dokumentiert statt verdeckt).
+   */
+  async createPartialInvoice(): Promise<void> {
+    if (!this.offer || !this.loadedFromDb() || this.offer.status !== 'accepted') {
+      return;
+    }
+    this.invoiceError.set(null);
+    this.creatingInvoice.set(true);
+    try {
+      const profile = await this.companyProfile.load();
+      let allInvoices: ContractorInvoice[] = [];
+      try {
+        allInvoices = await this.invoiceRepository.listMine();
+      } catch {
+        // Ohne Liste startet Nummer/Zählung bei 001 bzw. 1 – editierbar auf /rechnungen.
+      }
+      const existingNumbers = allInvoices.map((invoice) => invoice.invoiceNumber);
+      const sequenceNumber =
+        allInvoices.filter(
+          (invoice) =>
+            invoice.offerId === this.offer!.id &&
+            (invoice.kind === 'deposit' || invoice.kind === 'partial')
+        ).length + 1;
+      const invoice = this.invoiceService.buildPartialInvoice(
+        sanitizeContractorOffer(this.offer),
+        profile,
+        existingNumbers,
+        this.depositPercent,
+        sequenceNumber
+      );
+      this.invoiceService.setPending(invoice);
+      await this.router.navigate(['/rechnungen']);
+    } catch {
+      this.invoiceError.set(
+        this.i18n.t('Abschlagsrechnung konnte nicht erstellt werden. Bitte erneut versuchen.')
+      );
+    } finally {
+      this.creatingInvoice.set(false);
+    }
+  }
+
+  /**
+   * Erzeugt aus dem **angenommenen, gespeicherten** Angebot die Schlussrechnung
+   * (§ 14 Abs. 5 UStG) – die volle Rechnung, angereichert um die eingefrorene
+   * Anrechnung aller bisherigen Anzahlungs-/Abschlagsrechnungen dieses Angebots.
+   * Der Service (`buildFinalInvoice`) filtert `allInvoices` selbst nach `offerId`/`kind`.
+   */
+  async createFinalInvoice(): Promise<void> {
+    if (!this.offer || !this.loadedFromDb() || this.offer.status !== 'accepted') {
+      return;
+    }
+    this.invoiceError.set(null);
+    this.creatingInvoice.set(true);
+    try {
+      const profile = await this.companyProfile.load();
+      let allInvoices: ContractorInvoice[] = [];
+      try {
+        allInvoices = await this.invoiceRepository.listMine();
+      } catch {
+        // Ohne Vor-Rechnungen wird nichts angerechnet – die Schlussrechnung entspricht dann der Vollrechnung.
+      }
+      const existingNumbers = allInvoices.map((invoice) => invoice.invoiceNumber);
+      const invoice = this.invoiceService.buildFinalInvoice(
+        sanitizeContractorOffer(this.offer),
+        profile,
+        existingNumbers,
+        allInvoices
+      );
+      this.invoiceService.setPending(invoice);
+      await this.router.navigate(['/rechnungen']);
+    } catch {
+      this.invoiceError.set(
+        this.i18n.t('Schlussrechnung konnte nicht erstellt werden. Bitte erneut versuchen.')
       );
     } finally {
       this.creatingInvoice.set(false);

@@ -9,9 +9,13 @@ import {
   ContractorInvoiceCustomer,
   ContractorInvoiceSeller,
   InvoiceSellerSource,
+  SettledPayment,
   emptyInvoiceCustomer,
   invoiceDueDateIso,
+  invoiceGrossTotal,
+  invoiceNetAfterDiscount,
   invoiceTodayIso,
+  invoiceVatAmount,
   normalizeContractorInvoice
 } from '../models/contractor-invoice.model';
 
@@ -96,7 +100,8 @@ export class ContractorInvoiceService {
    * Positionen aus dem Angebot, sondern genau **eine** Sammelposition mit dem
    * gewünschten Netto-Betrag – der Nachlass ist bereits in der Zielsumme enthalten
    * (Rückrechnung aus dem Brutto), daher wird `discountPercent` hart auf `0` gesetzt,
-   * um ihn nicht ein zweites Mal abzuziehen.
+   * um ihn nicht ein zweites Mal abzuziehen. (Delegiert an {@link buildAdvanceInvoice}
+   * mit `kind: 'deposit'`; öffentliche Signatur unverändert.)
    */
   buildDepositInvoice(
     offer: ContractorOffer,
@@ -104,24 +109,70 @@ export class ContractorInvoiceService {
     existingNumbers: string[],
     percent: number
   ): ContractorInvoice {
+    return this.buildAdvanceInvoice('deposit', offer, profile, existingNumbers, percent);
+  }
+
+  /**
+   * Baut eine **Abschlagsrechnung** (§ 14 Abs. 5 UStG) – wie die Anzahlung eine
+   * einzelne Sammelposition über einen Prozentsatz der Angebots-Bruttosumme, jedoch
+   * mit fortlaufender `sequenceNumber` in Beschriftung/Hinweis (mehrere Abschläge je
+   * Projekt üblich). Der Aufrufer zählt die Nummer hoch (z. B. aus vorhandenen
+   * Abschlagsrechnungen des Angebots + 1).
+   */
+  buildPartialInvoice(
+    offer: ContractorOffer,
+    profile: InvoiceSellerSource,
+    existingNumbers: string[],
+    percent: number,
+    sequenceNumber: number
+  ): ContractorInvoice {
+    return this.buildAdvanceInvoice('partial', offer, profile, existingNumbers, percent, sequenceNumber);
+  }
+
+  /**
+   * Gemeinsamer Kern für Anzahlungs- (`deposit`) und Abschlagsrechnung (`partial`):
+   * eine einzelne pauschale Netto-Sammelposition (Rückrechnung aus dem Ziel-Brutto),
+   * `discountPercent: 0` und ein art-spezifischer § 14-Hinweistext. `sequenceNumber`
+   * ist nur für `partial` relevant (Default 1).
+   */
+  private buildAdvanceInvoice(
+    kind: 'deposit' | 'partial',
+    offer: ContractorOffer,
+    profile: InvoiceSellerSource,
+    existingNumbers: string[],
+    percent: number,
+    sequenceNumber = 1
+  ): ContractorInvoice {
     const vatPercent = toNumber(offer.vatPercent);
     const safePercent = Number.isFinite(percent) ? percent : 0;
     const grossTarget = round2(offerGrossTotal(offer) * safePercent / 100);
     const net = round2(grossTarget / (1 + vatPercent / 100));
     const reference = this.offerReference(offer);
-    const depositNote =
-      `Anzahlungsrechnung gemäß § 14 Abs. 5 UStG zum Angebot ${reference}. ` +
-      'Die Anzahlung wird in der Schlussrechnung angerechnet.';
-    const outroText = offer.outroText ? `${depositNote}\n\n${offer.outroText}` : depositNote;
+    const isDeposit = kind === 'deposit';
+    const percentText = this.formatPercent(safePercent);
+
+    const sectionTitle = isDeposit ? 'Anzahlung' : 'Abschlag';
+    const lineLabel = isDeposit
+      ? `Anzahlung ${percentText} % auf Angebot ${reference}`
+      : `Abschlagszahlung Nr. ${sequenceNumber} (${percentText} %) auf Angebot ${reference}`;
+
+    const noteLead = isDeposit
+      ? `Anzahlungsrechnung gemäß § 14 Abs. 5 UStG zum Angebot ${reference}.`
+      : `Abschlagsrechnung Nr. ${sequenceNumber} gemäß § 14 Abs. 5 UStG zum Angebot ${reference}.`;
+    const anrechnung = isDeposit
+      ? 'Die Anzahlung wird in der Schlussrechnung angerechnet.'
+      : 'Der Abschlag wird in der Schlussrechnung angerechnet.';
+    const note = `${noteLead} ${anrechnung}`;
+    const outroText = offer.outroText ? `${note}\n\n${offer.outroText}` : note;
 
     const section: ContractorOfferSection = {
       id: this.createId(),
       kind: 'custom',
-      title: 'Anzahlung',
+      title: sectionTitle,
       lines: [
         {
           id: this.createId(),
-          label: `Anzahlung ${this.formatPercent(safePercent)} % auf Angebot ${reference}`,
+          label: lineLabel,
           description: '',
           quantity: 1,
           unit: 'pauschal',
@@ -146,6 +197,7 @@ export class ContractorInvoiceService {
       dueDate: invoiceDueDateIso(14),
       buyerReference: 'n/a',
       status: 'draft',
+      kind,
       vatPercent,
       discountPercent: 0,
       sections: [section],
@@ -154,6 +206,98 @@ export class ContractorInvoiceService {
       introText: '',
       outroText
     });
+  }
+
+  /**
+   * Baut die **Schlussrechnung** (§ 14 Abs. 5 UStG): die volle Rechnung aus dem
+   * Angebot (Wiederverwendung von {@link buildFromOffer}), angereichert um `kind:
+   * 'final'` und einen **eingefrorenen** Snapshot der bereits gestellten Anzahlungs-/
+   * Abschlagsrechnungen (`settledPayments`).
+   *
+   * Angerechnet werden Vor-Rechnungen mit **gleicher `offerId`** und entweder
+   * `kind` ∈ {`deposit`, `partial`} **oder** – als Fallback für Alt-Anzahlungen ohne
+   * `kind`-Feld – einem **Legacy-Fingerprint**: genau EINE Section mit
+   * `kind === 'custom' && title === 'Anzahlung'`. Der Fingerprint kann in seltenen
+   * Fällen handgebaute Einzel-„Anzahlung"-Sections fälschlich einfangen (akzeptierte
+   * False-Positives); der Nutzer korrigiert das über das Löschen der Anrechnung.
+   *
+   * **Alle** Vor-Rechnungen fließen ein – auch Entwürfe: Der Nutzer steuert die
+   * Anrechnung, indem er nicht (mehr) relevante Rechnungen löscht.
+   *
+   * Die Beträge (`grossAmount`/`netAmount`/`vatAmount`) werden **zum Erstellzeitpunkt
+   * eingefroren** und danach nie neu berechnet.
+   */
+  buildFinalInvoice(
+    offer: ContractorOffer,
+    profile: InvoiceSellerSource,
+    existingNumbers: string[],
+    priorInvoices: ContractorInvoice[]
+  ): ContractorInvoice {
+    const base = this.buildFromOffer(offer, profile, existingNumbers);
+    const settledPayments = this.collectSettledPayments(offer.id ?? null, priorInvoices);
+    const reference = this.offerReference(offer);
+    const note =
+      `Schlussrechnung zum Angebot ${reference}. ` +
+      'Bereits gestellte Abschlags-/Anzahlungsrechnungen sind unten angerechnet.';
+    const outroText = offer.outroText ? `${note}\n\n${offer.outroText}` : note;
+
+    return normalizeContractorInvoice({
+      ...base,
+      kind: 'final',
+      settledPayments,
+      outroText
+    });
+  }
+
+  /**
+   * Sammelt die angerechneten Teilentgelte aus den Vor-Rechnungen des Angebots,
+   * friert je Rechnung die Beträge ein und sortiert nach Rechnungsdatum.
+   */
+  private collectSettledPayments(
+    offerId: string | null,
+    priorInvoices: ContractorInvoice[]
+  ): SettledPayment[] {
+    return priorInvoices
+      .filter((invoice) => this.isSettleableAdvance(offerId, invoice))
+      .map((invoice) => this.toSettledPayment(invoice))
+      .sort((a, b) => a.invoiceDate.localeCompare(b.invoiceDate));
+  }
+
+  /** Ob eine Vor-Rechnung als Anzahlung/Abschlag dieses Angebots anzurechnen ist. */
+  private isSettleableAdvance(offerId: string | null, invoice: ContractorInvoice): boolean {
+    const target = (offerId ?? '').trim();
+    if (target === '' || (invoice.offerId ?? '').trim() !== target) {
+      return false;
+    }
+    if (invoice.kind === 'deposit' || invoice.kind === 'partial') {
+      return true;
+    }
+    // Legacy: Anzahlung ohne `kind`-Feld (normalize setzt sie auf 'standard').
+    if (invoice.kind === undefined || invoice.kind === 'standard') {
+      return this.hasLegacyDepositFingerprint(invoice);
+    }
+    return false;
+  }
+
+  /** Legacy-Fingerprint: genau EINE Custom-Section mit dem Titel „Anzahlung". */
+  private hasLegacyDepositFingerprint(invoice: ContractorInvoice): boolean {
+    const depositSections = invoice.sections.filter(
+      (section) => section.kind === 'custom' && section.title === 'Anzahlung'
+    );
+    return depositSections.length === 1;
+  }
+
+  /** Friert die Beträge einer Vor-Rechnung als {@link SettledPayment} ein. */
+  private toSettledPayment(invoice: ContractorInvoice): SettledPayment {
+    return {
+      invoiceId: invoice.id ?? '',
+      invoiceNumber: invoice.invoiceNumber,
+      kind: invoice.kind ?? 'standard',
+      invoiceDate: invoice.invoiceDate,
+      grossAmount: invoiceGrossTotal(invoice),
+      netAmount: invoiceNetAfterDiscount(invoice),
+      vatAmount: invoiceVatAmount(invoice)
+    };
   }
 
   /** Angebots-Kennung für Anzahlungs-Referenztexte: Nummer, sonst Label, sonst Projektname. */

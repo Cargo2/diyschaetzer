@@ -176,3 +176,83 @@ describe('ContractorInvoicesComponent – Firmendaten aus Profil aktualisieren',
     expect(component.invoice).toBeNull();
   });
 });
+
+describe('ContractorInvoicesComponent – gruppierte Liste', () => {
+  it('groups by offerId, keeps the "__none__" bucket last and sorts rows chronologically', () => {
+    const { component } = setup();
+    component.invoices.set([
+      completeInvoice({ id: 'a2', offerId: 'o1', invoiceNumber: 'RE-2', invoiceDate: '2026-07-05' }),
+      completeInvoice({ id: 'a1', offerId: 'o1', invoiceNumber: 'RE-1', invoiceDate: '2026-07-01' }),
+      completeInvoice({ id: 'n1', offerId: null, invoiceNumber: 'RE-N', invoiceDate: '2026-08-01' })
+    ]);
+    const groups = component.groupedInvoices();
+    expect(groups.length).toBe(2);
+    // Gruppe mit Angebot zuerst, Sammelgruppe zuletzt.
+    expect(groups[0].key).toBe('o1');
+    expect(groups[1].isNone).toBe(true);
+    // Zeilen chronologisch aufsteigend.
+    expect(groups[0].invoices.map((i) => i.id)).toEqual(['a1', 'a2']);
+  });
+
+  it('computes an honest "Σ gestellt" without double-counting the final invoice', () => {
+    const { component } = setup();
+    // Anzahlung 1.000 € brutto (0 % USt) + Schlussrechnung 3.000 € brutto, davon 1.000 € angerechnet.
+    const deposit = completeInvoice({
+      id: 'd',
+      offerId: 'o1',
+      kind: 'deposit',
+      vatPercent: 0,
+      invoiceDate: '2026-07-01',
+      sections: [{ id: 's', kind: 'custom', title: 'Anzahlung', lines: [line({ unitPrice: 1000 })] }]
+    });
+    const final = completeInvoice({
+      id: 'f',
+      offerId: 'o1',
+      kind: 'final',
+      vatPercent: 0,
+      invoiceDate: '2026-07-20',
+      sections: [{ id: 's', kind: 'custom', title: 'Leistungen', lines: [line({ unitPrice: 3000 })] }],
+      settledPayments: [
+        { invoiceId: 'd', invoiceNumber: 'RE-1', kind: 'deposit', invoiceDate: '2026-07-01', grossAmount: 1000, netAmount: 1000, vatAmount: 0 }
+      ]
+    });
+    component.invoices.set([deposit, final]);
+    const group = component.groupedInvoices()[0];
+    // 1.000 (Anzahlung) + (3.000 − 1.000 Rest der Schlussrechnung) = 3.000.
+    expect(group.billedTotal).toBe(3000);
+  });
+
+  it('marks an invoice as paid by persisting a copy without mutating the list entry', async () => {
+    const saved: ContractorInvoice[] = [];
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [ContractorInvoicesComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CONTRACTOR_INVOICE_REPOSITORY,
+          useValue: {
+            listMine: async () => [],
+            save: async (invoice: ContractorInvoice) => {
+              saved.push(invoice);
+            },
+            delete: async () => {}
+          }
+        },
+        { provide: XRechnungExportService, useValue: { download: () => {} } },
+        { provide: CompanyProfileService, useValue: { load: async () => emptyCompanyProfile() } }
+      ]
+    });
+    const component = TestBed.createComponent(ContractorInvoicesComponent).componentInstance;
+    const entry = completeInvoice({ id: 'x', status: 'sent' });
+    component.invoices.set([entry]);
+
+    await component.markPaid(entry);
+
+    expect(saved.length).toBe(1);
+    expect(saved[0].status).toBe('paid');
+    // Der Listeneintrag selbst wurde nicht in-place mutiert.
+    expect(entry.status).toBe('sent');
+    expect(component.markingPaidId()).toBeNull();
+  });
+});

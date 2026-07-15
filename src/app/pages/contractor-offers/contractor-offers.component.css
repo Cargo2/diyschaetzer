@@ -333,6 +333,19 @@
   text-align: right;
 }
 
+/* Schlussrechnung-Button in eigener Zeile (Reihenfolge: Anzahlung/Abschlag, dann Schluss). */
+.deposit-final-btn {
+  flex-basis: 100%;
+}
+
+.deposit-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: .8rem;
+  color: #065f46;
+  opacity: .75;
+}
+
 .offers-message {
   border-radius: .55rem;
   padding: .6rem .8rem;

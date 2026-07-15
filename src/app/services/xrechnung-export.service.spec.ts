@@ -232,4 +232,58 @@ describe('XRechnungExportService', () => {
     const contactName = text(doc, 'AccountingSupplierParty Contact > Name');
     expect(contactName).toBe('Fliesen Meister GmbH');
   });
+
+  describe('final invoice with prepaid amounts (BT-113, R3-B)', () => {
+    const settled = [
+      {
+        invoiceId: 'dep-1',
+        invoiceNumber: 'RE-2026-005',
+        kind: 'deposit' as const,
+        invoiceDate: '2026-05-01',
+        grossAmount: 500,
+        netAmount: 420.17,
+        vatAmount: 79.83
+      }
+    ];
+
+    it('emits PrepaidAmount (BT-113) and reduces PayableAmount (BT-115) accordingly', () => {
+      const invoice = baseInvoice({ kind: 'final', settledPayments: settled });
+      const doc = parse(service.buildXml(invoice));
+      // Brutto 1118.60 − Anzahlung 500 = 618.60.
+      expect(Number(text(doc, 'PrepaidAmount'))).toBeCloseTo(500, 2);
+      expect(Number(text(doc, 'PayableAmount'))).toBeCloseTo(618.6, 2);
+    });
+
+    it('satisfies BR-CO-16: PayableAmount = TaxInclusiveAmount − PrepaidAmount', () => {
+      const doc = parse(
+        service.buildXml(baseInvoice({ kind: 'final', settledPayments: settled }))
+      );
+      const taxInclusive = Number(text(doc, 'TaxInclusiveAmount'));
+      const prepaid = Number(text(doc, 'PrepaidAmount'));
+      const payable = Number(text(doc, 'PayableAmount'));
+      expect(payable).toBeCloseTo(taxInclusive - prepaid, 2);
+    });
+
+    it('orders PrepaidAmount before PayableAmount in LegalMonetaryTotal (UBL 2.1)', () => {
+      const doc = parse(
+        service.buildXml(baseInvoice({ kind: 'final', settledPayments: settled }))
+      );
+      const total = doc.querySelector('LegalMonetaryTotal')!;
+      const children = Array.from(total.children).map((child) => child.localName);
+      expect(children.indexOf('PrepaidAmount')).toBeGreaterThanOrEqual(0);
+      expect(children.indexOf('PrepaidAmount')).toBeLessThan(children.indexOf('PayableAmount'));
+    });
+
+    it('omits PrepaidAmount for a standard invoice (PayableAmount stays the gross)', () => {
+      const doc = parse(service.buildXml(baseInvoice({ settledPayments: settled })));
+      expect(doc.querySelector('PrepaidAmount')).toBeNull();
+      expect(Number(text(doc, 'PayableAmount'))).toBeCloseTo(1118.6, 2);
+    });
+
+    it('omits PrepaidAmount for a final invoice without a snapshot', () => {
+      const doc = parse(service.buildXml(baseInvoice({ kind: 'final' })));
+      expect(doc.querySelector('PrepaidAmount')).toBeNull();
+      expect(Number(text(doc, 'PayableAmount'))).toBeCloseTo(1118.6, 2);
+    });
+  });
 });

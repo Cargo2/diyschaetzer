@@ -6,6 +6,8 @@ import {
   invoiceGrossTotal,
   invoiceNetAfterDiscount,
   invoiceNetTotal,
+  invoicePayableGross,
+  invoiceSettledGross,
   invoiceVatAmount
 } from '../models/contractor-invoice.model';
 import { ContractorOfferLine } from '../models/contractor-offer.model';
@@ -50,6 +52,13 @@ export class XRechnungExportService {
     const taxable = invoiceNetAfterDiscount(invoice);
     const vatAmount = invoiceVatAmount(invoice);
     const gross = invoiceGrossTotal(invoice);
+    // Schlussrechnung: bereits gestellte Abschläge/Anzahlungen als BT-113
+    // PrepaidAmount ausweisen (§ 14 Abs. 5). BR-CO-16 (EN 16931):
+    // PayableAmount = TaxInclusiveAmount − PrepaidAmount (+ Rundung 0). Da `gross`
+    // und `prepaid` bereits auf 2 Nachkommastellen gerundet sind, ist die Differenz
+    // exakt – es entsteht kein Rundungsbetrag (BT-114 bleibt 0/entfällt).
+    const prepaid = invoice.kind === 'final' ? invoiceSettledGross(invoice) : 0;
+    const payable = prepaid > 0 ? invoicePayableGross(invoice) : gross;
     const isSmallBusiness = this.round(invoice.vatPercent) === 0;
     const taxCategory = isSmallBusiness ? 'E' : 'S';
     const vatPercent = this.round(invoice.vatPercent);
@@ -156,7 +165,11 @@ export class XRechnungExportService {
     if (discount > 0) {
       parts.push(this.amountEl('cbc:AllowanceTotalAmount', discount));
     }
-    parts.push(this.amountEl('cbc:PayableAmount', gross));
+    // UBL-2.1-Schema-Reihenfolge: PrepaidAmount (BT-113) VOR PayableAmount (BT-115).
+    if (prepaid > 0) {
+      parts.push(this.amountEl('cbc:PrepaidAmount', prepaid));
+    }
+    parts.push(this.amountEl('cbc:PayableAmount', payable));
     parts.push('</cac:LegalMonetaryTotal>');
 
     // Positionen.

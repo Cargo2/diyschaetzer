@@ -37,40 +37,128 @@
   font-size: 1.2rem;
 }
 
-/* Rechnungsliste */
-.invoice-list {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: .9rem;
+/* Gruppierte Rechnungsliste (Rechnungskette je Angebot) */
+.invoice-groups {
+  display: grid;
+  gap: 1.1rem;
 }
 
-.invoice-list th {
-  text-align: left;
-  color: #6b7280;
-  font-weight: 600;
-  padding: .4rem .5rem;
+.invoice-group {
+  display: grid;
+  gap: .5rem;
+}
+
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  flex-wrap: wrap;
+  padding-bottom: .35rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.invoice-list td {
-  padding: .5rem .5rem;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: middle;
+.group-title {
+  font-weight: 700;
+  color: #111827;
+  font-size: .98rem;
 }
 
-.invoice-list td.num,
-.invoice-list th.num { text-align: right; white-space: nowrap; }
+.group-meta {
+  font-size: .82rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
 
-.invoice-list tr.active {
+.invoice-rows {
+  display: grid;
+  gap: .4rem;
+  /* Rechnungen einer Kette eingerückt unter dem Gruppenkopf (wie Versions-Zeilen). */
+  padding-left: .35rem;
+}
+
+.invoice-row-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: .4rem;
+}
+
+.invoice-row {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-height: 2.75rem;
+  padding: .5rem .8rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: .6rem;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.invoice-row.active {
+  border-color: #047857;
   background: #ecfdf5;
 }
 
-.row-actions {
-  display: flex;
-  gap: .4rem;
+.kind-badge {
+  font-size: .74rem;
+  font-weight: 700;
+  padding: .12rem .5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  min-width: 5.5rem;
+  text-align: center;
+}
+
+.kind-badge.kind-deposit { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.kind-badge.kind-partial { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.kind-badge.kind-final { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+
+.inv-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.inv-date {
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.inv-gross {
+  flex: 1 1 auto;
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.inv-rest { color: #92400e; font-weight: 700; }
+
+.row-quick {
+  display: inline-flex;
   align-items: center;
+  gap: .4rem;
   flex-wrap: wrap;
-  justify-content: flex-end;
+}
+
+.mark-paid { white-space: nowrap; }
+
+.row-delete {
+  flex: 0 0 auto;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  background: #fff;
+  border-radius: .5rem;
+  cursor: pointer;
 }
 
 .status-badge {
@@ -81,12 +169,11 @@
   background: #f3f4f6;
   color: #374151;
   border: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
 
 .status-badge[data-status="sent"] { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
 .status-badge[data-status="paid"] { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
-
-.badge-active { color: #047857; font-weight: 700; font-size: .85rem; }
 
 .confirm-delete {
   display: inline-flex;
@@ -374,6 +461,90 @@
   text-align: right;
 }
 
+/* Schlussrechnungs-Karte: eingefrorene Anrechnung der Abschläge */
+.settled-card {
+  border: 1px solid #e5e7eb;
+  border-radius: .7rem;
+  padding: .8rem 1rem;
+  margin: 1rem 0;
+  background: #fcfcfd;
+}
+
+.settled-head {
+  font-size: .85rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: .5rem;
+}
+
+.settled-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .4rem;
+}
+
+.settled-row {
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: .35rem;
+}
+
+.settled-main {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.settled-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  color: #111827;
+}
+
+.settled-date { color: #6b7280; font-size: .85rem; }
+
+.settled-amount {
+  margin-left: auto;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.settled-sub {
+  font-size: .76rem;
+  color: #9ca3af;
+  margin-top: .15rem;
+}
+
+.settled-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .6rem;
+  padding-top: .5rem;
+  border-top: 2px solid #047857;
+  font-weight: 800;
+}
+
+.settled-foot.negative { border-top-color: #b91c1c; color: #b91c1c; }
+
+.settled-rest { white-space: nowrap; }
+
+.settled-hint-warn {
+  margin: .3rem 0 0;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.settled-note {
+  margin: .5rem 0 0;
+  font-size: .76rem;
+  color: #9ca3af;
+  line-height: 1.35;
+}
+
 .invoice-foot {
   display: flex;
   align-items: flex-start;
@@ -445,26 +616,18 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 @media (max-width: 768px) {
   .panel { padding: 1rem; }
 
-  /* Rechnungsliste → Karten */
-  .invoice-list, .invoice-list tbody { display: block; }
-  .invoice-list thead { display: none; }
-  .invoice-list tr {
-    display: grid;
-    gap: .3rem;
-    border: 1px solid #e5e7eb;
-    border-radius: .6rem;
-    padding: .7rem;
-    margin-bottom: .7rem;
+  /* Gruppierte Rechnungsliste: Zeile bricht in zwei Reihen um */
+  .invoice-row {
+    flex-wrap: wrap;
+    gap: .35rem .6rem;
+    align-items: center;
   }
-  .invoice-list td { border: none; padding: 0; display: flex; justify-content: space-between; gap: .5rem; }
-  .invoice-list td[data-label]::before {
-    content: attr(data-label);
-    font-size: .74rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-  .invoice-list td.num { justify-content: space-between; }
-  .row-actions { justify-content: flex-start; }
+  .invoice-row .inv-gross { flex: 1 1 100%; text-align: left; }
+  .invoice-row .status-badge { order: -1; }
+  .kind-badge { min-width: 0; }
+  .row-quick { flex-wrap: wrap; }
+  .mark-paid { min-height: 2.75rem; }
+  .settled-amount { margin-left: 0; }
 
   /* Positionstabelle → Karten */
   .line-table, .line-table tbody { display: block; }
