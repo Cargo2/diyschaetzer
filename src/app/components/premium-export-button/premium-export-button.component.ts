@@ -3,6 +3,7 @@ import { ExportDocumentData } from '../../models/export-document.model';
 import { ExcelExportService } from '../../services/excel-export.service';
 import { FeatureAccessService } from '../../services/feature-access.service';
 import { PdfExportService } from '../../services/pdf-export.service';
+import { I18nService } from '../../i18n/i18n.service';
 
 type ExportFormat = 'pdf' | 'excel';
 
@@ -34,6 +35,7 @@ export class PremiumExportButtonComponent {
   private readonly featureAccess = inject(FeatureAccessService);
   private readonly pdfExport = inject(PdfExportService);
   private readonly excelExport = inject(ExcelExportService);
+  private readonly i18n = inject(I18nService);
 
   readonly label = input.required<string>();
   readonly hintId = input('pdf-premium-hint');
@@ -51,7 +53,9 @@ export class PremiumExportButtonComponent {
   readonly feedback = signal('');
 
   busyLabel(): string {
-    return this.format() === 'excel' ? 'Excel wird erstellt …' : 'PDF wird erstellt …';
+    return this.format() === 'excel'
+      ? this.i18n.t('Excel wird erstellt …')
+      : this.i18n.t('PDF wird erstellt …');
   }
 
   async exportDocument(): Promise<void> {
@@ -61,7 +65,7 @@ export class PremiumExportButtonComponent {
 
     const data = this.document()();
     if (!data) {
-      this.feedback.set('Es liegen noch keine Daten zum Export vor.');
+      this.feedback.set(this.i18n.t('Es liegen noch keine Daten zum Export vor.'));
       return;
     }
 
@@ -82,8 +86,10 @@ export class PremiumExportButtonComponent {
 
   private errorMessage(reason: 'downloaded' | 'access_denied' | 'generation_failed'): string {
     const formatLabel = this.format() === 'excel' ? 'Excel' : 'PDF';
-    return reason === 'access_denied'
-      ? `${formatLabel}-Export ist für deinen Zugang nicht verfügbar.`
-      : `${formatLabel} konnte nicht erstellt werden. Bitte erneut versuchen.`;
+    const template =
+      reason === 'access_denied'
+        ? this.i18n.t('{format}-Export ist für deinen Zugang nicht verfügbar.')
+        : this.i18n.t('{format} konnte nicht erstellt werden. Bitte erneut versuchen.');
+    return template.replace('{format}', formatLabel);
   }
 }

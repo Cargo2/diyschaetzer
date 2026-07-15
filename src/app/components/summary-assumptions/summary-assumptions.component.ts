@@ -14,6 +14,8 @@ import {
   WizardFieldKey,
   WizardFieldRelevanceService
 } from '../../services/wizard-field-relevance.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 interface SummaryItem {
   label: string;
@@ -36,7 +38,7 @@ interface AssumptionGroupViewModel {
 @Component({
   selector: 'app-summary-assumptions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './summary-assumptions.component.html',
   styleUrl: './summary-assumptions.component.css'
 })
@@ -44,6 +46,7 @@ export class SummaryAssumptionsComponent {
   private readonly wizardState = inject(WizardStateService);
   private readonly localProject = inject(LocalProjectService);
   private readonly fieldRelevance = inject(WizardFieldRelevanceService);
+  private readonly i18n = inject(I18nService);
 
   readonly showOptions = input(true);
   readonly showAssumptions = input(true);
@@ -106,9 +109,9 @@ export class SummaryAssumptionsComponent {
   async copyJson(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.payloadJson());
-      this.copyFeedback.set('JSON wurde in die Zwischenablage kopiert.');
+      this.copyFeedback.set(this.i18n.t('JSON wurde in die Zwischenablage kopiert.'));
     } catch {
-      this.copyFeedback.set('Kopieren war im Browser nicht moglich.');
+      this.copyFeedback.set(this.i18n.t('Kopieren war im Browser nicht moglich.'));
     }
   }
 
@@ -131,7 +134,11 @@ export class SummaryAssumptionsComponent {
   }
 
   resetAllCalculationAssumptions(): void {
-    if (globalThis.confirm('Alle manuell geänderten Berechnungsannahmen zurücksetzen?')) {
+    if (
+      globalThis.confirm(
+        this.i18n.t('Alle manuell geänderten Berechnungsannahmen zurücksetzen?')
+      )
+    ) {
       this.wizardState.resetAllCalculationAssumptions();
       this.persistEditedRoom();
     }

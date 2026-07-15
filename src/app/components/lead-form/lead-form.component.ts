@@ -12,6 +12,8 @@ import {
 } from '../../models/lead.model';
 import { FeatureAccessService } from '../../services/feature-access.service';
 import { LeadRegionService } from '../../services/lead-region.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 // Der Einwilligungstext endet auf „… Datenschutzerklärung." – für die Anzeige
 // trennen wir das letzte Wort ab, um es als Link auf /datenschutz#leads zu setzen.
@@ -34,7 +36,7 @@ const CONSENT_TEXT_PREFIX = LEAD_CONSENT_TEXT.slice(
 @Component({
   selector: 'app-lead-form',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, TranslatePipe],
   templateUrl: './lead-form.component.html',
   styleUrl: './lead-form.component.css'
 })
@@ -42,6 +44,7 @@ export class LeadFormComponent {
   private readonly repository = inject(LEAD_REPOSITORY);
   private readonly featureAccess = inject(FeatureAccessService);
   private readonly region = inject(LeadRegionService);
+  private readonly i18n = inject(I18nService);
 
   /** Snapshot der Rechner-Ergebnisse (kein Live-Verweis, keine PII). */
   readonly snapshot = input.required<LeadProjectSnapshot>();
@@ -83,7 +86,7 @@ export class LeadFormComponent {
 
   errorMessage(): string | null {
     const reason = this.errorReason();
-    return reason ? LEAD_SUBMIT_ERROR_MESSAGES[reason] : null;
+    return reason ? this.i18n.t(LEAD_SUBMIT_ERROR_MESSAGES[reason]) : null;
   }
 
   /**

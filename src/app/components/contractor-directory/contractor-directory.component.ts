@@ -5,6 +5,7 @@ import { ContractorDirectoryEntry } from '../../models/contractor-directory.mode
 import { ROOM_TYPE_DEFAULT_NAMES, RoomType } from '../../models/bathroom-wizard.model';
 import { FeatureAccessService } from '../../services/feature-access.service';
 import { LeadRegionService } from '../../services/lead-region.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * „Betriebe in deiner Region"-Sektion am Anfang der Zusammenfassung (Nutzerauftrag
@@ -17,7 +18,7 @@ import { LeadRegionService } from '../../services/lead-region.service';
 @Component({
   selector: 'app-contractor-directory',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './contractor-directory.component.html',
   styleUrl: './contractor-directory.component.css'
 })

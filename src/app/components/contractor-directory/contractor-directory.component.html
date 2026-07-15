@@ -8,8 +8,8 @@
       (click)="open.update((value) => !value)"
     >
       <span>
-        <small>Fachbetriebe finden</small>
-        <strong id="directory-heading">Betriebe in deiner Region</strong>
+        <small>{{ 'Fachbetriebe finden' | t }}</small>
+        <strong id="directory-heading">{{ 'Betriebe in deiner Region' | t }}</strong>
       </span>
       <i [class.open]="open()">⌄</i>
     </button>
@@ -17,13 +17,12 @@
     @if (open()) {
       <div id="directory-panel" class="directory-panel">
         <p class="directory-lead">
-          Gib deine Postleitzahl ein und sieh Premium-Fachbetriebe, die in deinem Gebiet
-          Fliesen verlegen. Die PLZ übernehmen wir gleich in die Anfrage unten.
+          {{ 'Gib deine Postleitzahl ein und sieh Premium-Fachbetriebe, die in deinem Gebiet Fliesen verlegen. Die PLZ übernehmen wir gleich in die Anfrage unten.' | t }}
         </p>
 
         <form class="directory-search" (ngSubmit)="search()" novalidate>
           <label class="directory-field">
-            <span>Postleitzahl</span>
+            <span>{{ 'Postleitzahl' | t }}</span>
             <input
               type="text"
               name="directoryPostalCode"
@@ -36,13 +35,13 @@
             />
           </label>
           <button type="submit" [disabled]="!canSearch()">
-            {{ loading() ? 'Suche …' : 'Betriebe anzeigen' }}
+            {{ loading() ? ('Suche …' | t) : ('Betriebe anzeigen' | t) }}
           </button>
         </form>
 
         @if (error()) {
           <p class="directory-message error" role="alert">
-            Die Betriebe konnten nicht geladen werden. Bitte versuche es erneut.
+            {{ 'Die Betriebe konnten nicht geladen werden. Bitte versuche es erneut.' | t }}
           </p>
         } @else if (results(); as list) {
           @if (list.length > 0) {
@@ -56,7 +55,7 @@
                   @if (entry.leadRoomTypes.length > 0) {
                     <ul class="directory-chips">
                       @for (type of entry.leadRoomTypes; track type) {
-                        <li>{{ roomTypeLabel(type) }}</li>
+                        <li>{{ roomTypeLabel(type) | t }}</li>
                       }
                     </ul>
                   }
@@ -66,7 +65,7 @@
                     }
                     @if (entry.website) {
                       <a [href]="websiteHref(entry.website)" target="_blank" rel="noopener">
-                        Website
+                        {{ 'Website' | t }}
                       </a>
                     }
                   </div>
@@ -75,7 +74,7 @@
             </div>
           } @else {
             <p class="directory-empty" role="status">
-              Noch kein Premium-Betrieb in deiner Region – stelle trotzdem eine Anfrage.
+              {{ 'Noch kein Premium-Betrieb in deiner Region – stelle trotzdem eine Anfrage.' | t }}
             </p>
           }
         }

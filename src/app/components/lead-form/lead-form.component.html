@@ -1,20 +1,19 @@
 @if (canSubmitLeads()) {
   <section class="lead-box" aria-labelledby="lead-heading">
     <div class="lead-head">
-      <p class="lead-eyebrow">Angebote von Fliesenlegern erhalten</p>
-      <h2 id="lead-heading">Kostenlos passende Fachbetriebe anfragen</h2>
+      <p class="lead-eyebrow">{{ 'Angebote von Fliesenlegern erhalten' | t }}</p>
+      <h2 id="lead-heading">{{ 'Kostenlos passende Fachbetriebe anfragen' | t }}</h2>
       <p class="lead-lead">
-        Wir geben deine Anfrage an <strong>bis zu 3 passende Fliesenleger-Betriebe</strong> weiter –
-        unverbindlich und kostenlos. Die Eckdaten deines Raums hängen wir automatisch an.
+        {{ 'Wir geben deine Anfrage an' | t }} <strong>{{ 'bis zu 3 passende Fliesenleger-Betriebe' | t }}</strong>
+        {{ 'weiter – unverbindlich und kostenlos. Die Eckdaten deines Raums hängen wir automatisch an.' | t }}
       </p>
     </div>
 
     @if (submitted()) {
       <div class="lead-success" role="status">
-        <strong>Fast geschafft – bitte E-Mail bestätigen.</strong>
+        <strong>{{ 'Fast geschafft – bitte E-Mail bestätigen.' | t }}</strong>
         <p>
-          Wir haben dir eine E-Mail geschickt. Bestätige darin deine Anfrage, damit wir sie an
-          passende Betriebe weitergeben dürfen. Ohne Bestätigung wird nichts weitergegeben.
+          {{ 'Wir haben dir eine E-Mail geschickt. Bestätige darin deine Anfrage, damit wir sie an passende Betriebe weitergeben dürfen. Ohne Bestätigung wird nichts weitergegeben.' | t }}
         </p>
       </div>
     } @else {
@@ -23,7 +22,7 @@
              am Input allein – visually-hidden-Wrapper + aus dem Tab-/AT-Fluss genommen. -->
         <div class="visually-hidden" aria-hidden="true">
           <label>
-            Bitte dieses Feld leer lassen
+            {{ 'Bitte dieses Feld leer lassen' | t }}
             <input
               type="text"
               name="website"
@@ -35,7 +34,7 @@
         </div>
 
         <label class="field">
-          <span>Name<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <span>{{ 'Name' | t }}<abbr [attr.title]="'Pflichtfeld' | t" [attr.aria-label]="'Pflichtfeld' | t">*</abbr></span>
           <input
             type="text"
             name="name"
@@ -47,7 +46,7 @@
         </label>
 
         <label class="field field-narrow">
-          <span>PLZ<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <span>{{ 'PLZ' | t }}<abbr [attr.title]="'Pflichtfeld' | t" [attr.aria-label]="'Pflichtfeld' | t">*</abbr></span>
           <input
             type="text"
             name="postalCode"
@@ -62,7 +61,7 @@
         </label>
 
         <label class="field">
-          <span>E-Mail<abbr title="Pflichtfeld" aria-label="Pflichtfeld">*</abbr></span>
+          <span>{{ 'E-Mail' | t }}<abbr [attr.title]="'Pflichtfeld' | t" [attr.aria-label]="'Pflichtfeld' | t">*</abbr></span>
           <input
             type="email"
             name="email"
@@ -74,7 +73,7 @@
         </label>
 
         <label class="field">
-          <span>Telefon (optional)</span>
+          <span>{{ 'Telefon (optional)' | t }}</span>
           <input
             type="tel"
             name="phone"
@@ -85,21 +84,21 @@
         </label>
 
         <label class="field">
-          <span>Gewünschter Zeitraum</span>
+          <span>{{ 'Gewünschter Zeitraum' | t }}</span>
           <select name="timeframe" [(ngModel)]="timeframe" [disabled]="submitting()">
             @for (option of timeframeOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+              <option [value]="option.value">{{ option.label | t }}</option>
             }
           </select>
         </label>
 
         <label class="field field-wide">
-          <span>Nachricht (optional)</span>
+          <span>{{ 'Nachricht (optional)' | t }}</span>
           <textarea
             name="message"
             rows="3"
             maxlength="500"
-            placeholder="Besonderheiten, Wünsche, Erreichbarkeit …"
+            [attr.placeholder]="'Besonderheiten, Wünsche, Erreichbarkeit …' | t"
             [(ngModel)]="message"
             [disabled]="submitting()"
           ></textarea>
@@ -112,8 +111,8 @@
             [(ngModel)]="consent"
             [disabled]="submitting()"
           />
-          <span class="consent-text">{{ consentTextPrefix
-            }}<a routerLink="/datenschutz" fragment="leads">Datenschutzerklärung</a>.</span>
+          <span class="consent-text">{{ consentTextPrefix | t
+            }}<a routerLink="/datenschutz" fragment="leads">{{ 'Datenschutzerklärung' | t }}</a>.</span>
         </label>
 
         @if (errorMessage()) {
@@ -122,7 +121,7 @@
 
         <div class="lead-actions">
           <button type="submit" [disabled]="!canSubmit()">
-            {{ submitting() ? 'Wird gesendet …' : 'Anfrage absenden' }}
+            {{ submitting() ? ('Wird gesendet …' | t) : ('Anfrage absenden' | t) }}
           </button>
         </div>
       </form>

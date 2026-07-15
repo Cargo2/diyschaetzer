@@ -12,6 +12,8 @@ import { MaterialListStateService } from '../../services/material-list-state.ser
 import { LocalProjectService } from '../../services/local-project.service';
 import { RoomLimitService } from '../../services/room-limit.service';
 import { WizardStateService } from '../../services/wizard-state.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Raum-Zusammenfassung für Profis (`contractor`), Route `/zusammenfassung_raum`.
@@ -26,13 +28,20 @@ import { WizardStateService } from '../../services/wizard-state.service';
 @Component({
   selector: 'app-room-summary-contractor',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SummaryAssumptionsComponent, PremiumExportButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    SummaryAssumptionsComponent,
+    PremiumExportButtonComponent,
+    TranslatePipe
+  ],
   template: `
     @if (wizardCompleted()) {
       <div class="summary-page">
         <div class="summary-top-actions">
           <app-premium-export-button
-            label="Fliesenleger-Kalkulation als PDF exportieren"
+            [label]="'Fliesenleger-Kalkulation als PDF exportieren' | t"
             hintId="contractor-room-pdf-hint"
             [document]="buildProfessionalDocument"
           />
@@ -45,7 +54,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
 
         <section class="save-room-panel">
           <div class="save-room-info">
-            <p>Angebot / Projekt</p>
+            <p>{{ 'Angebot / Projekt' | t }}</p>
             <h2>{{ payload().room.roomName }}</h2>
           </div>
           @if (!roomSaved()) {
@@ -53,33 +62,33 @@ import { WizardStateService } from '../../services/wizard-state.service';
             <div class="save-room-controls">
               @if (!editingRoomId()) {
                 <label class="offer-picker">
-                  <span>In welches Angebot speichern?</span>
+                  <span>{{ 'In welches Angebot speichern?' | t }}</span>
                   <select [ngModel]="targetOfferId()" (ngModelChange)="targetOfferId.set($event)">
                     @for (project of projects(); track project.id) {
                       <option [value]="project.id">{{ project.name }}</option>
                     }
-                    <option [value]="NEW_OFFER">+ Neues Angebot</option>
+                    <option [value]="NEW_OFFER">{{ '+ Neues Angebot' | t }}</option>
                   </select>
                 </label>
                 @if (targetOfferId() === NEW_OFFER) {
                   <label class="offer-name">
-                    <span>Name des neuen Angebots</span>
+                    <span>{{ 'Name des neuen Angebots' | t }}</span>
                     <input
                       type="text"
                       [ngModel]="newOfferName()"
                       (ngModelChange)="newOfferName.set($event)"
-                      placeholder="Neues Angebot"
+                      [placeholder]="'Neues Angebot' | t"
                     />
                   </label>
                 }
               }
               <button type="button" (click)="saveRoom()" [disabled]="newRoomBlocked">
-                {{ editingRoomId() ? 'Änderungen speichern' : 'Raum speichern' }}
+                {{ editingRoomId() ? ('Änderungen speichern' | t) : ('Raum speichern' | t) }}
               </button>
             </div>
             @if (newRoomBlocked || roomLimitBlocked()) {
               <p class="room-limit-hint" role="alert">
-                Maximal erreicht: {{ roomLimitHint() }} Bestehende Räume kannst du weiter bearbeiten.
+                {{ 'Maximal erreicht:' | t }} {{ roomLimitHint() | t }} {{ 'Bestehende Räume kannst du weiter bearbeiten.' | t }}
               </p>
             }
           } @else {
@@ -87,16 +96,16 @@ import { WizardStateService } from '../../services/wizard-state.service';
               <strong>
                 {{
                   savedExistingRoom()
-                    ? 'Änderungen wurden gespeichert.'
-                    : 'Raum wurde im Angebot „' + savedOfferName() + '" gespeichert.'
+                    ? ('Änderungen wurden gespeichert.' | t)
+                    : (('Raum wurde im Angebot „' | t) + savedOfferName() + ('" gespeichert.' | t))
                 }}
               </strong>
               <div class="save-actions">
-                <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">Weiteren Raum hinzufügen</button>
-                <a routerLink="/projekt-dashboard">Zum Projekt-Dashboard</a>
+                <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">{{ 'Weiteren Raum hinzufügen' | t }}</button>
+                <a routerLink="/projekt-dashboard">{{ 'Zum Projekt-Dashboard' | t }}</a>
               </div>
               @if (roomLimitReached()) {
-                <p class="room-limit-hint" role="alert">{{ roomLimitHint() }}</p>
+                <p class="room-limit-hint" role="alert">{{ roomLimitHint() | t }}</p>
               }
             </div>
           }
@@ -106,19 +115,19 @@ import { WizardStateService } from '../../services/wizard-state.service';
         <section class="offer-section">
           <div class="section-heading">
             <div>
-              <p>Leistungspositionsmodell</p>
-              <h2>Fliesenleger-Leistungspositionen</h2>
+              <p>{{ 'Leistungspositionsmodell' | t }}</p>
+              <h2>{{ 'Fliesenleger-Leistungspositionen' | t }}</h2>
             </div>
           </div>
           <div class="comparison-table-wrap">
             <table class="comparison-table">
               <thead>
                 <tr>
-                  <th>Position</th>
-                  <th>Menge</th>
-                  <th>Einheit</th>
-                  <th>Einheitspreis</th>
-                  <th>Gesamt</th>
+                  <th>{{ 'Position' | t }}</th>
+                  <th>{{ 'Menge' | t }}</th>
+                  <th>{{ 'Einheit' | t }}</th>
+                  <th>{{ 'Einheitspreis' | t }}</th>
+                  <th>{{ 'Gesamt' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,7 +136,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
                     <td>
                       {{ item.label }}
                       @if (item.isOptional) {
-                        <small class="optional-label">optional</small>
+                        <small class="optional-label">{{ 'optional' | t }}</small>
                       }
                     </td>
                     <td>{{ formatNumber(item.quantity, item.unit === 'piece' ? 0 : 2) }}</td>
@@ -137,7 +146,7 @@ import { WizardStateService } from '../../services/wizard-state.service';
                       {{
                         item.isActive
                           ? formatCurrency(item.totalPrice)
-                          : 'nicht eingerechnet'
+                          : ('nicht eingerechnet' | t)
                       }}
                     </td>
                   </tr>
@@ -147,24 +156,24 @@ import { WizardStateService } from '../../services/wizard-state.service';
           </div>
           <dl class="offer-totals">
             <div>
-              <dt>Nettobetrag</dt>
+              <dt>{{ 'Nettobetrag' | t }}</dt>
               <dd>{{ formatCurrency(comparison.professional.offer.netTotal) }}</dd>
             </div>
             <div>
-              <dt>Material laut Auswahl</dt>
+              <dt>{{ 'Material laut Auswahl' | t }}</dt>
               <dd>{{ formatCurrency(comparison.professional.materialCost) }}</dd>
             </div>
             <div>
-              <dt>zzgl. {{ comparison.professional.offer.vatPercent }} % MwSt. (Leistung + Material)</dt>
+              <dt>{{ 'zzgl.' | t }} {{ comparison.professional.offer.vatPercent }} {{ '% MwSt. (Leistung + Material)' | t }}</dt>
               <dd>{{ formatCurrency(comparison.professional.totalCost - comparison.professional.offer.netTotal - comparison.professional.materialCost) }}</dd>
             </div>
             <div class="offer-grand-total">
-              <dt>Gesamtschätzung Fliesenleger</dt>
+              <dt>{{ 'Gesamtschätzung Fliesenleger' | t }}</dt>
               <dd>{{ formatCurrency(comparison.professional.totalCost) }}</dd>
             </div>
           </dl>
           @if (!payload().scope.includeTileMaterial) {
-            <p class="material-note">Ohne Fliesenmaterial kalkuliert.</p>
+            <p class="material-note">{{ 'Ohne Fliesenmaterial kalkuliert.' | t }}</p>
           }
         </section>
 
@@ -172,13 +181,13 @@ import { WizardStateService } from '../../services/wizard-state.service';
           <section class="offer-section warning-section">
             <div class="section-heading">
               <div>
-                <p>Bitte beachten</p>
-                <h2>Hinweise und Risiken</h2>
+                <p>{{ 'Bitte beachten' | t }}</p>
+                <h2>{{ 'Hinweise und Risiken' | t }}</h2>
               </div>
             </div>
             <ul class="info-list">
               @for (warning of comparison.warnings; track warning) {
-                <li>{{ warning }}</li>
+                <li>{{ warning | t }}</li>
               }
             </ul>
           </section>
@@ -186,8 +195,8 @@ import { WizardStateService } from '../../services/wizard-state.service';
       </div>
     } @else {
       <section class="empty-panel">
-        <p>Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.</p>
-        <a routerLink="/raum-anlegen" class="summary-link">Raum anlegen</a>
+        <p>{{ 'Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.' | t }}</p>
+        <a routerLink="/raum-anlegen" class="summary-link">{{ 'Raum anlegen' | t }}</a>
       </section>
     }
   `,
@@ -528,6 +537,7 @@ export class RoomSummaryContractorComponent {
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
+  private readonly i18n = inject(I18nService);
 
   readonly roomLimitReached = this.roomLimit.limitReached;
   readonly roomLimitHint = this.roomLimit.hint;
@@ -578,13 +588,15 @@ export class RoomSummaryContractorComponent {
   }
 
   lineItemUnitLabel(value: string): string {
-    return {
-      pauschal: 'pauschal',
-      m2: 'm²',
-      lfm: 'lfm',
-      piece: 'Stück',
-      hour: 'Std.'
-    }[value] ?? value;
+    const label =
+      {
+        pauschal: 'pauschal',
+        m2: 'm²',
+        lfm: 'lfm',
+        piece: 'Stück',
+        hour: 'Std.'
+      }[value] ?? value;
+    return this.i18n.t(label);
   }
 
   saveRoom(): void {

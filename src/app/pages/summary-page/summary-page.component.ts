@@ -17,6 +17,8 @@ import { RoomLimitService } from '../../services/room-limit.service';
 import { ShareService } from '../../services/share.service';
 import { WizardStateService } from '../../services/wizard-state.service';
 import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-host.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-summary-page',
@@ -27,14 +29,15 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
     SummaryAssumptionsComponent,
     PremiumExportButtonComponent,
     ContractorDirectoryComponent,
-    LeadFormComponent
+    LeadFormComponent,
+    TranslatePipe
   ],
   template: `
     @if (wizardCompleted()) {
       <div class="summary-page">
         <div class="summary-top-actions">
           <app-premium-export-button
-            label="Raum-Zusammenfassung als PDF exportieren"
+            [label]="'Raum-Zusammenfassung als PDF exportieren' | t"
             hintId="room-summary-pdf-hint"
             [document]="buildRoomSummaryDocument"
           />
@@ -47,31 +50,31 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
 
         <section class="save-room-panel">
           <div>
-            <p>Lokales Projekt</p>
+            <p>{{ 'Lokales Projekt' | t }}</p>
             <h2>{{ payload().room.roomName }}</h2>
           </div>
           @if (!roomSaved()) {
             @let newRoomBlocked = !editingRoomId() && roomLimitReached();
             <button type="button" (click)="saveRoom()" [disabled]="newRoomBlocked">
-              {{ editingRoomId() ? 'Änderungen speichern' : 'Raum speichern' }}
+              {{ editingRoomId() ? ('Änderungen speichern' | t) : ('Raum speichern' | t) }}
             </button>
             @if (newRoomBlocked || roomLimitBlocked()) {
               <p class="room-limit-hint" role="alert">
-                Maximal erreicht: {{ roomLimitHint() }} Bestehende Räume kannst du weiter bearbeiten.
+                {{ 'Maximal erreicht:' | t }} {{ roomLimitHint() | t }} {{ 'Bestehende Räume kannst du weiter bearbeiten.' | t }}
               </p>
             }
           } @else {
             <div class="save-success">
               <strong>
-                {{ savedExistingRoom() ? 'Änderungen wurden gespeichert.' : 'Raum wurde gespeichert.' }}
+                {{ savedExistingRoom() ? ('Änderungen wurden gespeichert.' | t) : ('Raum wurde gespeichert.' | t) }}
               </strong>
               <div class="save-actions">
-                <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">Weiteren Raum hinzufügen</button>
-                <a routerLink="/projekt-dashboard">Zum Projekt-Dashboard</a>
-                <button type="button" (click)="openSavedRoomMaterialList()">Materialliste dieses Raumes prüfen</button>
+                <button type="button" (click)="startAnotherRoom()" [disabled]="roomLimitReached()">{{ 'Weiteren Raum hinzufügen' | t }}</button>
+                <a routerLink="/projekt-dashboard">{{ 'Zum Projekt-Dashboard' | t }}</a>
+                <button type="button" (click)="openSavedRoomMaterialList()">{{ 'Materialliste dieses Raumes prüfen' | t }}</button>
               </div>
               @if (roomLimitReached()) {
-                <p class="room-limit-hint" role="alert">{{ roomLimitHint() }}</p>
+                <p class="room-limit-hint" role="alert">{{ roomLimitHint() | t }}</p>
               }
             </div>
           }
@@ -90,8 +93,8 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
             (click)="costOverviewOpen.update((value) => !value)"
           >
             <span>
-              <small>Zusammenfassung DIY</small>
-              <strong>DIY-Kostenschätzung & Materialübersicht</strong>
+              <small>{{ 'Zusammenfassung DIY' | t }}</small>
+              <strong>{{ 'DIY-Kostenschätzung & Materialübersicht' | t }}</strong>
             </span>
             <span class="trigger-total">
               {{ formatCurrency(material.totalDisplayCost) }}
@@ -104,46 +107,46 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
               <div class="panel-section">
                 <div class="section-heading">
                   <div>
-                    <p>Berechnungsgrundlage</p>
-                    <h2>Fliesenmenge & Verschnitt</h2>
+                    <p>{{ 'Berechnungsgrundlage' | t }}</p>
+                    <h2>{{ 'Fliesenmenge & Verschnitt' | t }}</h2>
                   </div>
                 </div>
 
                 <div class="metric-grid">
-                  <div><span>Zu fliesende Fläche</span><b>{{ formatNumber(tile.baseTileAreaM2) }} m²</b></div>
-                  <div><span>Verschnitt</span><b>{{ formatNumber(tile.wasteFactorPercent, 0) }} %</b></div>
-                  <div><span>Inkl. Verschnitt</span><b>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</b></div>
-                  <div><span>Fliesenformat</span><b>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</b></div>
-                  <div><span>Benötigte Fliesen</span><b>{{ tile.tileCount }} Stück</b></div>
-                  <div><span>Fläche nach Stückzahl</span><b>{{ formatNumber(tile.actualTileAreaByCountM2) }} m²</b></div>
+                  <div><span>{{ 'Zu fliesende Fläche' | t }}</span><b>{{ formatNumber(tile.baseTileAreaM2) }} m²</b></div>
+                  <div><span>{{ 'Verschnitt' | t }}</span><b>{{ formatNumber(tile.wasteFactorPercent, 0) }} %</b></div>
+                  <div><span>{{ 'Inkl. Verschnitt' | t }}</span><b>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</b></div>
+                  <div><span>{{ 'Fliesenformat' | t }}</span><b>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</b></div>
+                  <div><span>{{ 'Benötigte Fliesen' | t }}</span><b>{{ tile.tileCount }} {{ 'Stück' | t }}</b></div>
+                  <div><span>{{ 'Fläche nach Stückzahl' | t }}</span><b>{{ formatNumber(tile.actualTileAreaByCountM2) }} m²</b></div>
                 </div>
               </div>
 
               <div class="panel-section cost-section">
                 <div class="section-heading">
                   <div>
-                    <p>Aktuelle Auswahl</p>
-                    <h2>DIY-Materialkosten</h2>
+                    <p>{{ 'Aktuelle Auswahl' | t }}</p>
+                    <h2>{{ 'DIY-Materialkosten' | t }}</h2>
                   </div>
                   <strong>{{ formatCurrency(material.totalDisplayCost) }}</strong>
                 </div>
 
                 <div class="cost-metrics">
                   <div>
-                    <span>Aktive Materialpositionen</span>
+                    <span>{{ 'Aktive Materialpositionen' | t }}</span>
                     <b>{{ material.activeItemCount }}</b>
                   </div>
                   <div>
-                    <span>Deaktivierte Materialpositionen</span>
+                    <span>{{ 'Deaktivierte Materialpositionen' | t }}</span>
                     <b>{{ material.inactiveItemCount }}</b>
                   </div>
                   <div>
-                    <span>Materialkosten gesamt</span>
+                    <span>{{ 'Materialkosten gesamt' | t }}</span>
                     <b>{{ formatCurrency(material.totalDisplayCost) }}</b>
                   </div>
                 </div>
 
-                <a routerLink="/materialliste">Materialliste bearbeiten</a>
+                <a routerLink="/materialliste">{{ 'Materialliste bearbeiten' | t }}</a>
               </div>
             </div>
           }
@@ -159,11 +162,11 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
             (click)="comparisonOpen.update((value) => !value)"
           >
             <span>
-              <small>Kostenvergleich</small>
-              <strong>Eigenleistung vs. Fliesenleger</strong>
+              <small>{{ 'Kostenvergleich' | t }}</small>
+              <strong>{{ 'Eigenleistung vs. Fliesenleger' | t }}</strong>
             </span>
             <span class="trigger-total">
-              {{ formatCurrency(comparison.savings.amount) }} Ersparnis
+              {{ formatCurrency(comparison.savings.amount) }} {{ 'Ersparnis' | t }}
               <i [class.open]="comparisonOpen()">⌄</i>
             </span>
           </button>
@@ -172,54 +175,53 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
             <div id="cost-comparison-panel" class="comparison-panel">
               <div class="comparison-cards">
                 <article class="comparison-card diy-card">
-                  <p>Eigenleistung</p>
+                  <p>{{ 'Eigenleistung' | t }}</p>
                   <h2>{{ formatCurrency(comparison.diy.totalCost) }}</h2>
                   <dl>
                     <div>
-                      <dt>Material & Zubehör</dt>
+                      <dt>{{ 'Material & Zubehör' | t }}</dt>
                       <dd>{{ formatCurrency(comparison.diy.materialCost) }}</dd>
                     </div>
                     <div>
-                      <dt>Puffer {{ comparison.diy.diyBufferPercent }} %</dt>
+                      <dt>{{ 'Puffer' | t }} {{ comparison.diy.diyBufferPercent }} %</dt>
                       <dd>{{ formatCurrency(comparison.diy.diyBufferCost) }}</dd>
                     </div>
                     <div class="total-row">
-                      <dt>Gesamt</dt>
+                      <dt>{{ 'Gesamt' | t }}</dt>
                       <dd>{{ formatCurrency(comparison.diy.totalCost) }}</dd>
                     </div>
                   </dl>
                 </article>
 
                 <article class="comparison-card professional-card">
-                  <p>Fliesenleger</p>
+                  <p>{{ 'Fliesenleger' | t }}</p>
                   <h2>{{ formatCurrency(comparison.professional.totalCost) }}</h2>
                   <dl>
                     <div>
-                      <dt>Leistungspositionen netto</dt>
+                      <dt>{{ 'Leistungspositionen netto' | t }}</dt>
                       <dd>{{ formatCurrency(comparison.professional.offer.netTotal) }}</dd>
                     </div>
                     <div>
-                      <dt>Material laut Auswahl</dt>
+                      <dt>{{ 'Material laut Auswahl' | t }}</dt>
                       <dd>{{ formatCurrency(comparison.professional.materialCost) }}</dd>
                     </div>
                     <div class="total-row">
-                      <dt>Gesamt inkl. MwSt.</dt>
+                      <dt>{{ 'Gesamt inkl. MwSt.' | t }}</dt>
                       <dd>{{ formatCurrency(comparison.professional.totalCost) }}</dd>
                     </div>
                   </dl>
                   @if (!payload().scope.includeTileMaterial) {
-                    <strong class="time-note">Ohne Fliesenmaterial</strong>
+                    <strong class="time-note">{{ 'Ohne Fliesenmaterial' | t }}</strong>
                   }
                 </article>
               </div>
 
               <section class="savings-box">
-                <span>{{ comparison.savings.label }}</span>
+                <span>{{ comparison.savings.label | t }}</span>
                 <strong>{{ formatCurrency(comparison.savings.amount) }}</strong>
                 @if (comparison.savings.percent > 0) {
                   <small>
-                    Das entspricht ca. {{ formatNumber(comparison.savings.percent, 1) }} % der
-                    geschätzten Profi-Kosten.
+                    {{ 'Das entspricht ca.' | t }} {{ formatNumber(comparison.savings.percent, 1) }} {{ '% der geschätzten Profi-Kosten.' | t }}
                   </small>
                 }
               </section>
@@ -227,28 +229,27 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
               <section class="share-box">
                 <div class="share-head">
                   <div>
-                    <p class="share-eyebrow">Kalkulation teilen</p>
-                    <h2>Read-only-Link erzeugen</h2>
+                    <p class="share-eyebrow">{{ 'Kalkulation teilen' | t }}</p>
+                    <h2>{{ 'Read-only-Link erzeugen' | t }}</h2>
                   </div>
                   @if (canShare()) {
                     <button type="button" (click)="share()" [disabled]="sharing()">
-                      {{ sharing() ? 'Link wird erstellt …' : 'Teilen-Link erzeugen' }}
+                      {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link erzeugen' | t) }}
                     </button>
                   }
                 </div>
                 @if (!canShare()) {
                   <p class="share-hint">
-                    Zum Teilen bitte
+                    {{ 'Zum Teilen bitte' | t }}
                     @if (host.crossDomainEnabled) {
-                      <a [href]="host.loginUrl()">anmelden</a>
+                      <a [href]="host.loginUrl()">{{ 'anmelden' | t }}</a>
                     } @else {
-                      <a routerLink="/login">anmelden</a>
+                      <a routerLink="/login">{{ 'anmelden' | t }}</a>
                     }
-                    – ein geteilter Link
-                    speichert eine eingefrorene Momentaufnahme dieser Kalkulation.
+                    {{ '– ein geteilter Link speichert eine eingefrorene Momentaufnahme dieser Kalkulation.' | t }}
                   </p>
                   @if (showCrossDomainProjectHint()) {
-                    <p class="share-hint">{{ crossDomainProjectHint }}</p>
+                    <p class="share-hint">{{ crossDomainProjectHint | t }}</p>
                   }
                 }
                 @if (shareError()) {
@@ -258,12 +259,11 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                   <div class="share-result">
                     <input type="text" readonly [value]="shareUrl()" #shareInput (focus)="shareInput.select()" />
                     <button type="button" (click)="copyShareUrl()">
-                      {{ copied() ? 'Kopiert ✓' : 'Kopieren' }}
+                      {{ copied() ? ('Kopiert ✓' | t) : ('Kopieren' | t) }}
                     </button>
                   </div>
                   <small class="share-note">
-                    Jeder mit diesem Link sieht eine schreibgeschützte Ansicht – ohne deine
-                    übrigen Projektdaten.
+                    {{ 'Jeder mit diesem Link sieht eine schreibgeschützte Ansicht – ohne deine übrigen Projektdaten.' | t }}
                   </small>
                 }
               </section>
@@ -271,11 +271,11 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
               <section class="comparison-section">
                 <div class="section-heading">
                   <div>
-                    <p>Leistungspositionsmodell</p>
-                    <h2>Profi-Angebotspositionen</h2>
+                    <p>{{ 'Leistungspositionsmodell' | t }}</p>
+                    <h2>{{ 'Profi-Angebotspositionen' | t }}</h2>
                   </div>
                   <app-premium-export-button
-                    label="Profi-Kalkulation als PDF exportieren"
+                    [label]="'Profi-Kalkulation als PDF exportieren' | t"
                     hintId="professional-pdf-hint"
                     [document]="buildProfessionalDocument"
                   />
@@ -284,11 +284,11 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                   <table class="comparison-table">
                     <thead>
                       <tr>
-                        <th>Position</th>
-                        <th>Menge</th>
-                        <th>Einheit</th>
-                        <th>Einheitspreis</th>
-                        <th>Gesamt</th>
+                        <th>{{ 'Position' | t }}</th>
+                        <th>{{ 'Menge' | t }}</th>
+                        <th>{{ 'Einheit' | t }}</th>
+                        <th>{{ 'Einheitspreis' | t }}</th>
+                        <th>{{ 'Gesamt' | t }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -297,7 +297,7 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                           <td>
                             {{ item.label }}
                             @if (item.isOptional) {
-                              <small class="optional-label">optional</small>
+                              <small class="optional-label">{{ 'optional' | t }}</small>
                             }
                           </td>
                           <td>{{ formatNumber(item.quantity, item.unit === 'piece' ? 0 : 2) }}</td>
@@ -307,7 +307,7 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                             {{
                               item.isActive
                                 ? formatCurrency(item.totalPrice)
-                                : 'nicht eingerechnet'
+                                : ('nicht eingerechnet' | t)
                             }}
                           </td>
                         </tr>
@@ -317,19 +317,19 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                 </div>
                 <dl class="offer-totals">
                   <div>
-                    <dt>Nettobetrag</dt>
+                    <dt>{{ 'Nettobetrag' | t }}</dt>
                     <dd>{{ formatCurrency(comparison.professional.offer.netTotal) }}</dd>
                   </div>
                   <div>
-                    <dt>Material laut Auswahl</dt>
+                    <dt>{{ 'Material laut Auswahl' | t }}</dt>
                     <dd>{{ formatCurrency(comparison.professional.materialCost) }}</dd>
                   </div>
                   <div>
-                    <dt>zzgl. {{ comparison.professional.offer.vatPercent }} % MwSt. (Leistung + Material)</dt>
+                    <dt>{{ 'zzgl.' | t }} {{ comparison.professional.offer.vatPercent }} {{ '% MwSt. (Leistung + Material)' | t }}</dt>
                     <dd>{{ formatCurrency(comparison.professional.totalCost - comparison.professional.offer.netTotal - comparison.professional.materialCost) }}</dd>
                   </div>
                   <div class="offer-grand-total">
-                    <dt>Gesamtschätzung Fliesenleger</dt>
+                    <dt>{{ 'Gesamtschätzung Fliesenleger' | t }}</dt>
                     <dd>{{ formatCurrency(comparison.professional.totalCost) }}</dd>
                   </div>
                 </dl>
@@ -339,19 +339,19 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                 <section class="comparison-section">
                   <div class="section-heading">
                     <div>
-                      <p>Eigenleistung</p>
-                      <h2>Aufteilung der Materialkosten</h2>
+                      <p>{{ 'Eigenleistung' | t }}</p>
+                      <h2>{{ 'Aufteilung der Materialkosten' | t }}</h2>
                     </div>
                   </div>
                   <dl class="group-list">
                     @for (group of comparison.diy.costGroups; track group.id) {
                       <div>
-                        <dt>{{ group.label }}</dt>
+                        <dt>{{ group.label | t }}</dt>
                         <dd>{{ formatCurrency(group.cost) }}</dd>
                       </div>
                     } @empty {
                       <div>
-                        <dt>Keine aktiven Materialkosten</dt>
+                        <dt>{{ 'Keine aktiven Materialkosten' | t }}</dt>
                         <dd>{{ formatCurrency(0) }}</dd>
                       </div>
                     }
@@ -361,13 +361,13 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                 <section class="comparison-section">
                   <div class="section-heading">
                     <div>
-                      <p>Berechnungsbasis</p>
-                      <h2>Annahmen</h2>
+                      <p>{{ 'Berechnungsbasis' | t }}</p>
+                      <h2>{{ 'Annahmen' | t }}</h2>
                     </div>
                   </div>
                   <ul class="info-list">
                     @for (assumption of comparison.assumptions; track assumption) {
-                      <li>{{ assumption }}</li>
+                      <li>{{ assumption | t }}</li>
                     }
                   </ul>
                 </section>
@@ -377,13 +377,13 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
                 <section class="comparison-section warning-section">
                   <div class="section-heading">
                     <div>
-                      <p>Bitte beachten</p>
-                      <h2>Hinweise und Risiken</h2>
+                      <p>{{ 'Bitte beachten' | t }}</p>
+                      <h2>{{ 'Hinweise und Risiken' | t }}</h2>
                     </div>
                   </div>
                   <ul class="info-list">
                     @for (warning of comparison.warnings; track warning) {
-                      <li>{{ warning }}</li>
+                      <li>{{ warning | t }}</li>
                     }
                   </ul>
                 </section>
@@ -396,8 +396,8 @@ import { AppHostService, CROSS_DOMAIN_PROJECT_HINT } from '../../services/app-ho
       </div>
     } @else {
       <section class="empty-panel">
-        <p>Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.</p>
-        <a routerLink="/raum-anlegen" class="summary-link">Raum anlegen</a>
+        <p>{{ 'Die Zusammenfassung erscheint erst, wenn du den finalen Button im Wizard drückst.' | t }}</p>
+        <a routerLink="/raum-anlegen" class="summary-link">{{ 'Raum anlegen' | t }}</a>
       </section>
     }
   `,
@@ -1064,6 +1064,7 @@ export class SummaryPageComponent {
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
   private readonly shareService = inject(ShareService);
+  private readonly i18n = inject(I18nService);
   /** Zwei-Domain-Betrieb: entscheidet über relative vs. absolute Login-Links. */
   readonly host = inject(AppHostService);
   /** Hinweistext für den Login-CTA (Cross-Domain, anonymes lokales Projekt). */
@@ -1144,13 +1145,15 @@ export class SummaryPageComponent {
   }
 
   lineItemUnitLabel(value: string): string {
-    return {
-      pauschal: 'pauschal',
-      m2: 'm²',
-      lfm: 'lfm',
-      piece: 'Stück',
-      hour: 'Std.'
-    }[value] ?? value;
+    const label =
+      {
+        pauschal: 'pauschal',
+        m2: 'm²',
+        lfm: 'lfm',
+        piece: 'Stück',
+        hour: 'Std.'
+      }[value] ?? value;
+    return this.i18n.t(label);
   }
 
   async share(): Promise<void> {
@@ -1171,7 +1174,9 @@ export class SummaryPageComponent {
       this.shareUrl.set(this.shareService.shareUrl(token));
     } catch (error) {
       console.error('Teilen-Link konnte nicht erstellt werden:', error);
-      this.shareError.set('Der Teilen-Link konnte nicht erstellt werden. Bitte erneut versuchen.');
+      this.shareError.set(
+        this.i18n.t('Der Teilen-Link konnte nicht erstellt werden. Bitte erneut versuchen.')
+      );
     } finally {
       this.sharing.set(false);
     }

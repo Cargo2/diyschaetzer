@@ -5,14 +5,14 @@
   @if (showOptions()) {
     <section class="summary-section">
     <div class="section-header">
-      <p>Gewählte Optionen</p>
+      <p>{{ 'Gewählte Optionen' | t }}</p>
     </div>
 
     <div class="option-grid">
       @for (item of summaryItems(); track item.label) {
         <article class="info-card" [class.muted]="item.muted">
-          <p>{{ item.label }}</p>
-          <strong>{{ item.value }}</strong>
+          <p>{{ item.label | t }}</p>
+          <strong>{{ item.value | t }}</strong>
         </article>
       }
     </div>
@@ -20,14 +20,14 @@
 
     <section class="summary-section">
     <div class="section-header">
-      <p>Vorarbeiten & Untergrund</p>
+      <p>{{ 'Vorarbeiten & Untergrund' | t }}</p>
     </div>
 
     <div class="option-grid">
       @for (item of preparationItems(); track item.label) {
         <article class="info-card" [class.muted]="item.muted">
-          <p>{{ item.label }}</p>
-          <strong>{{ item.value }}</strong>
+          <p>{{ item.label | t }}</p>
+          <strong>{{ item.value | t }}</strong>
         </article>
       }
     </div>
@@ -35,14 +35,14 @@
 
     <section class="summary-section">
     <div class="section-header">
-      <p>Leistungsumfang</p>
+      <p>{{ 'Leistungsumfang' | t }}</p>
     </div>
 
     <div class="option-grid">
       @for (item of scopeItems(); track item.label) {
         <article class="info-card" [class.muted]="item.muted">
-          <p>{{ item.label }}</p>
-          <strong>{{ item.value }}</strong>
+          <p>{{ item.label | t }}</p>
+          <strong>{{ item.value | t }}</strong>
         </article>
       }
     </div>
@@ -51,7 +51,7 @@
     @if (data.openIssues.length > 0) {
       <section class="summary-section">
       <div class="section-header">
-        <p>Noch zu klären</p>
+        <p>{{ 'Noch zu klären' | t }}</p>
       </div>
       <ul class="issue-list">
         @for (issue of data.openIssues; track issue) {
@@ -64,7 +64,7 @@
     @if (data.recommendations.length > 0) {
       <section class="summary-section">
       <div class="section-header">
-        <p>Hinweise</p>
+        <p>{{ 'Hinweise' | t }}</p>
       </div>
       <ul class="issue-list">
         @for (recommendation of data.recommendations; track recommendation) {
@@ -78,25 +78,25 @@
   @if (showAssumptions()) {
     <section class="summary-section">
     <div class="section-header">
-      <p>Flächenübersicht</p>
-      <span>Live aus Badgroesse, Waenden und Aussparungen berechnet</span>
+      <p>{{ 'Flächenübersicht' | t }}</p>
+      <span>{{ 'Live aus Badgroesse, Waenden und Aussparungen berechnet' | t }}</span>
     </div>
 
     <div class="option-grid">
       <article class="info-card">
-        <p>Bodenflaeche</p>
+        <p>{{ 'Bodenflaeche' | t }}</p>
         <strong>{{ formatArea(data.areaSummary.floorAreaM2) }} m²</strong>
       </article>
       <article class="info-card">
-        <p>Erfasste Waende</p>
+        <p>{{ 'Erfasste Waende' | t }}</p>
         <strong>{{ data.walls.length }}</strong>
       </article>
       <article class="info-card">
-        <p>Wandflaechen</p>
+        <p>{{ 'Wandflaechen' | t }}</p>
         <strong>{{ formatArea(data.areaSummary.totalWallTileAreaM2) }} m²</strong>
       </article>
       <article class="info-card">
-        <p>Gesamt zu fliesende Flaeche</p>
+        <p>{{ 'Gesamt zu fliesende Flaeche' | t }}</p>
         <strong>{{ formatArea(data.areaSummary.totalTileAreaM2) }} m²</strong>
       </article>
     </div>
@@ -109,22 +109,22 @@
             <div class="assumption-head">
               <div>
                 <h3>{{ wall.name }}</h3>
-                <p>{{ formatArea(wall.widthM) }} m x {{ formatArea(wall.tileHeightM) }} m gefliest</p>
+                <p>{{ formatArea(wall.widthM) }} m x {{ formatArea(wall.tileHeightM) }} m {{ 'gefliest' | t }}</p>
               </div>
-              <small>{{ wall.openings.length }} Aussparungen</small>
+              <small>{{ wall.openings.length }} {{ 'Aussparungen' | t }}</small>
             </div>
 
             <div class="option-grid">
               <article class="info-card">
-                <p>Bruttoflaeche</p>
+                <p>{{ 'Bruttoflaeche' | t }}</p>
                 <strong>{{ formatArea(wall.grossAreaM2) }} m²</strong>
               </article>
               <article class="info-card">
-                <p>Aussparungen</p>
+                <p>{{ 'Aussparungen' | t }}</p>
                 <strong>{{ formatArea(wall.openingsAreaM2) }} m²</strong>
               </article>
               <article class="info-card">
-                <p>Netto-Fliesenflaeche</p>
+                <p>{{ 'Netto-Fliesenflaeche' | t }}</p>
                 <strong>{{ formatArea(wall.tileAreaM2) }} m²</strong>
               </article>
             </div>
@@ -137,19 +137,19 @@
     <section class="summary-section editable-calculation-assumptions">
       <div class="section-header">
         <div>
-          <p>Bearbeitbare Annahmen</p>
-          <span>Diese Werte beeinflussen Materialmengen und Kosten. Du kannst sie bei Bedarf anpassen.</span>
+          <p>{{ 'Bearbeitbare Annahmen' | t }}</p>
+          <span>{{ 'Diese Werte beeinflussen Materialmengen und Kosten. Du kannst sie bei Bedarf anpassen.' | t }}</span>
         </div>
         <button type="button" class="reset-all-button" (click)="resetAllCalculationAssumptions()">
-          Alle Annahmen zurücksetzen
+          {{ 'Alle Annahmen zurücksetzen' | t }}
         </button>
       </div>
 
       @for (group of editableAssumptionGroups(); track group.label) {
         <section class="calculation-group">
-          <h3>{{ group.label }}</h3>
+          <h3>{{ group.label | t }}</h3>
           @if (group.label === 'Profi-Einheitspreise') {
-            <p class="professional-note">Die Profi-Einheitspreise sind Annahmen für eine unverbindliche Kostenschätzung und ersetzen kein geprüftes Angebot.</p>
+            <p class="professional-note">{{ 'Die Profi-Einheitspreise sind Annahmen für eine unverbindliche Kostenschätzung und ersetzen kein geprüftes Angebot.' | t }}</p>
           }
           <div class="calculation-grid">
             @for (item of group.items; track item.path) {
@@ -165,7 +165,7 @@
                     class="status-badge"
                     [class.user-override]="item.assumption.source === 'user_override'"
                     [class.wizard-source]="item.assumption.source === 'wizard'"
-                  >{{ assumptionStatus(item.assumption) }}</span>
+                  >{{ assumptionStatus(item.assumption) | t }}</span>
                 </span>
                 <span class="input-row">
                   <input
@@ -179,7 +179,7 @@
                   <em>{{ item.assumption.unit }}</em>
                   @if (item.assumption.source === 'user_override') {
                     <button type="button" class="reset-button" (click)="resetCalculationAssumption(item.path)">
-                      Zurücksetzen
+                      {{ 'Zurücksetzen' | t }}
                     </button>
                   }
                 </span>
@@ -192,12 +192,12 @@
 
     <details class="summary-section calculation-assumptions">
       <summary>
-        <strong>Profi Einheitspreise</strong>
-        <span>Preisannahmen für die unverbindliche Profi-Kostenschätzung</span>
+        <strong>{{ 'Profi Einheitspreise' | t }}</strong>
+        <span>{{ 'Preisannahmen für die unverbindliche Profi-Kostenschätzung' | t }}</span>
       </summary>
 
       <div class="calculation-intro">
-        <p>Diese Einheitspreise sind bearbeitbare Annahmen und ersetzen kein geprüftes Handwerkerangebot.</p>
+        <p>{{ 'Diese Einheitspreise sind bearbeitbare Annahmen und ersetzen kein geprüftes Handwerkerangebot.' | t }}</p>
       </div>
 
       @for (section of professionalPriceGroups(); track section.label) {
@@ -216,7 +216,7 @@
                     class="status-badge"
                     [class.user-override]="item.assumption.source === 'user_override'"
                     [class.wizard-source]="item.assumption.source === 'wizard'"
-                  >{{ assumptionStatus(item.assumption) }}</span>
+                  >{{ assumptionStatus(item.assumption) | t }}</span>
                 </span>
                 <span class="input-row">
                   <input
@@ -230,7 +230,7 @@
                   <em>{{ item.assumption.unit }}</em>
                   @if (item.assumption.source === 'user_override') {
                     <button type="button" class="reset-button" (click)="resetCalculationAssumption(item.path)">
-                      Zurücksetzen
+                      {{ 'Zurücksetzen' | t }}
                     </button>
                   }
                 </span>
@@ -243,8 +243,8 @@
 
     <section class="summary-section legacy-room-assumptions" aria-hidden="true">
     <div class="section-header">
-      <p>Raumdetails</p>
-      <span>Maße und Ausstattungswerte, die aus deinen Angaben abgeleitet wurden</span>
+      <p>{{ 'Raumdetails' | t }}</p>
+      <span>{{ 'Maße und Ausstattungswerte, die aus deinen Angaben abgeleitet wurden' | t }}</span>
     </div>
 
     <div class="assumptions-grid">
@@ -252,14 +252,14 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>Fliesen</h3>
-              <p>{{ tileQualityLabel(data.tileQuality) }}</p>
+              <h3>{{ 'Fliesen' | t }}</h3>
+              <p>{{ tileQualityLabel(data.tileQuality) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <label class="field">
-            <span>Preis pro m²</span>
+            <span>{{ 'Preis pro m²' | t }}</span>
             <div class="input-row">
               <input
                 type="number"
@@ -279,15 +279,15 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>Badewanne</h3>
-              <p>{{ bathtubLabel(data.bathtubType) }}</p>
+              <h3>{{ 'Badewanne' | t }}</h3>
+              <p>{{ bathtubLabel(data.bathtubType) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid two-columns">
             <label class="field">
-              <span>Lange</span>
+              <span>{{ 'Lange' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -301,7 +301,7 @@
             </label>
 
             <label class="field">
-              <span>Breite</span>
+              <span>{{ 'Breite' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -321,15 +321,15 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>Dusche</h3>
-              <p>{{ showerLabel(data.showerType) }}</p>
+              <h3>{{ 'Dusche' | t }}</h3>
+              <p>{{ showerLabel(data.showerType) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid two-columns">
             <label class="field">
-              <span>Lange</span>
+              <span>{{ 'Lange' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -343,7 +343,7 @@
             </label>
 
             <label class="field">
-              <span>Breite</span>
+              <span>{{ 'Breite' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -363,15 +363,15 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>Waschtisch</h3>
-              <p>{{ sinkLabel(data.sinkOption) }}</p>
+              <h3>{{ 'Waschtisch' | t }}</h3>
+              <p>{{ sinkLabel(data.sinkOption) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid two-columns">
             <label class="field">
-              <span>Breite</span>
+              <span>{{ 'Breite' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -385,7 +385,7 @@
             </label>
 
             <label class="field">
-              <span>Anzahl Waschplätze</span>
+              <span>{{ 'Anzahl Waschplätze' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -394,7 +394,7 @@
                   [ngModel]="assumptionsState.sink.count"
                   (ngModelChange)="updateSinkCount($event)"
                 />
-                <em>Stück</em>
+                <em>{{ 'Stück' | t }}</em>
               </div>
             </label>
           </div>
@@ -405,15 +405,15 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>WC</h3>
-              <p>{{ toiletLabel(data.toiletOption) }}</p>
+              <h3>{{ 'WC' | t }}</h3>
+              <p>{{ toiletLabel(data.toiletOption) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid two-columns">
             <label class="field">
-              <span>Breite</span>
+              <span>{{ 'Breite' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -427,13 +427,13 @@
             </label>
 
             <label class="field">
-              <span>Installationsart</span>
+              <span>{{ 'Installationsart' | t }}</span>
               <select
                 [ngModel]="assumptionsState.toilet.installationType"
                 (ngModelChange)="updateToiletInstallationType($event)"
               >
                 @for (option of installationTypeOptions; track option.value) {
-                  <option [ngValue]="option.value">{{ option.label }}</option>
+                  <option [ngValue]="option.value">{{ option.label | t }}</option>
                 }
               </select>
             </label>
@@ -445,16 +445,16 @@
         <article class="assumption-card">
           <div class="assumption-head">
             <div>
-              <h3>Heizung</h3>
-              <p>{{ heatingLabel(data.heatingOption) }}</p>
+              <h3>{{ 'Heizung' | t }}</h3>
+              <p>{{ heatingLabel(data.heatingOption) | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid two-columns">
             @if (assumptionsState.heating.towelRadiatorCount > 0) {
               <label class="field">
-                <span>Handtuchheizkorper</span>
+                <span>{{ 'Handtuchheizkorper' | t }}</span>
                 <div class="input-row">
                   <input
                     type="number"
@@ -463,7 +463,7 @@
                     [ngModel]="assumptionsState.heating.towelRadiatorCount"
                     (ngModelChange)="updateTowelRadiatorCount($event)"
                   />
-                  <em>Stück</em>
+                  <em>{{ 'Stück' | t }}</em>
                 </div>
               </label>
             }
@@ -475,15 +475,15 @@
         <article class="assumption-card electrical-card">
           <div class="assumption-head">
             <div>
-              <h3>Elektro & Anschlüsse im Fliesenbereich</h3>
-              <p>Abgeleitet aus Zusatzausstattung und Heizung</p>
+              <h3>{{ 'Elektro & Anschlüsse im Fliesenbereich' | t }}</h3>
+              <p>{{ 'Abgeleitet aus Zusatzausstattung und Heizung' | t }}</p>
             </div>
-            <small>Richtwert, kann angepasst werden</small>
+            <small>{{ 'Richtwert, kann angepasst werden' | t }}</small>
           </div>
 
           <div class="field-grid">
             <label class="field">
-              <span>Zusätzliche Steckdosen</span>
+              <span>{{ 'Zusätzliche Steckdosen' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -492,12 +492,12 @@
                   [ngModel]="assumptionsState.electrical.additionalSocketsCount"
                   (ngModelChange)="updateElectricalAssumption('additionalSocketsCount', $event)"
                 />
-                <em>Stück</em>
+                <em>{{ 'Stück' | t }}</em>
               </div>
             </label>
 
             <label class="field">
-              <span>Spiegel-Stromanschlüsse</span>
+              <span>{{ 'Spiegel-Stromanschlüsse' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -506,12 +506,12 @@
                   [ngModel]="assumptionsState.electrical.mirrorPowerConnectionCount"
                   (ngModelChange)="updateElectricalAssumption('mirrorPowerConnectionCount', $event)"
                 />
-                <em>Stück</em>
+                <em>{{ 'Stück' | t }}</em>
               </div>
             </label>
 
             <label class="field">
-              <span>Wandleuchten-Anschlüsse</span>
+              <span>{{ 'Wandleuchten-Anschlüsse' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -520,12 +520,12 @@
                   [ngModel]="assumptionsState.electrical.wallLightConnectionCount"
                   (ngModelChange)="updateElectricalAssumption('wallLightConnectionCount', $event)"
                 />
-                <em>Stück</em>
+                <em>{{ 'Stück' | t }}</em>
               </div>
             </label>
 
             <label class="field">
-              <span>Lüftungs-Öffnungen</span>
+              <span>{{ 'Lüftungs-Öffnungen' | t }}</span>
               <div class="input-row">
                 <input
                   type="number"
@@ -534,7 +534,7 @@
                   [ngModel]="assumptionsState.electrical.ventilationOpeningCount"
                   (ngModelChange)="updateElectricalAssumption('ventilationOpeningCount', $event)"
                 />
-                <em>Stück</em>
+                <em>{{ 'Stück' | t }}</em>
               </div>
             </label>
 
@@ -549,10 +549,10 @@
     <section class="summary-section json-block">
     <div class="section-header">
       <div>
-        <p>Bereich 4</p>
-        <h2>JSON-Ausgabe</h2>
+        <p>{{ 'Bereich 4' | t }}</p>
+        <h2>{{ 'JSON-Ausgabe' | t }}</h2>
       </div>
-      <button type="button" class="copy-button" (click)="copyJson()">JSON kopieren</button>
+      <button type="button" class="copy-button" (click)="copyJson()">{{ 'JSON kopieren' | t }}</button>
     </div>
 
     @if (copyFeedback()) {

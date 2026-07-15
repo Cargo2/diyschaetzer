@@ -15,11 +15,13 @@ import { MaterialListStateService } from '../../services/material-list-state.ser
 import { ProjectAggregationService } from '../../services/project-aggregation.service';
 import { RoomLimitService } from '../../services/room-limit.service';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
+import { I18nService } from '../../i18n/i18n.service';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-project-summary',
   standalone: true,
-  imports: [CommonModule, PremiumExportButtonComponent],
+  imports: [CommonModule, PremiumExportButtonComponent, TranslatePipe],
   templateUrl: './project-summary.component.html',
   styleUrl: './project-summary.component.css'
 })
@@ -32,6 +34,7 @@ export class ProjectSummaryComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly roomLimit = inject(RoomLimitService);
   private readonly auth = inject(AuthService);
+  private readonly i18n = inject(I18nService);
 
   /** Bei eingeloggtem Profi DIY-Kosten und Ersparnis ausblenden (Anzeige, keine Berechnung). */
   readonly isContractor = this.auth.isContractor;
@@ -106,7 +109,7 @@ export class ProjectSummaryComponent implements OnInit {
   }
 
   deleteRoom(roomId: string): void {
-    if (globalThis.confirm?.('Möchtest du diesen Raum wirklich löschen?') !== false) {
+    if (globalThis.confirm?.(this.i18n.t('Möchtest du diesen Raum wirklich löschen?')) !== false) {
       this.localProject.deleteRoom(roomId);
     }
   }
@@ -170,5 +173,25 @@ export class ProjectSummaryComponent implements OnInit {
       style: 'currency',
       currency: 'EUR'
     }).format(value);
+  }
+
+  /** Aria-Label für den Hinweise-Badge-Button eines Raums. */
+  warningAriaLabel(roomName: string): string {
+    return `${this.i18n.t('Hinweise für')} ${roomName} ${this.i18n.t('anzeigen')}`;
+  }
+
+  /** Aria-Label für die „bestellt"-Checkbox einer Materialposition. */
+  orderedAriaLabel(name: string): string {
+    return `'${name}' ${this.i18n.t('als bestellt markieren')}`;
+  }
+
+  /** Aria-Label für einen Shop-Chip-Link (Anzeige, öffnet neuen Tab). */
+  shopAriaLabel(displayName: string): string {
+    return `${this.i18n.t('Bei')} ${displayName} ${this.i18n.t('ansehen (Anzeige, öffnet neuen Tab)')}`;
+  }
+
+  /** Title-Attribut für einen Shop-Chip-Link. */
+  shopTitle(displayName: string): string {
+    return `${this.i18n.t('Bei')} ${displayName} ${this.i18n.t('ansehen')}`;
   }
 }

@@ -6,38 +6,37 @@
   <section class="material-page">
     <header class="material-header">
       <div>
-        <p>Materialliste</p>
-        <h1>Material und Werkzeug nach Arbeitsschritten</h1>
+        <p>{{ 'Materialliste' | t }}</p>
+        <h1>{{ 'Material und Werkzeug nach Arbeitsschritten' | t }}</h1>
         <span>
-          Die Mengen sind nachvollziehbare Richtwerte aus deinen Wizard-Angaben. Prüfe Gebinde und
-          Herstellerverbrauch vor dem Einkauf.
+          {{ 'Die Mengen sind nachvollziehbare Richtwerte aus deinen Wizard-Angaben. Prüfe Gebinde und Herstellerverbrauch vor dem Einkauf.' | t }}
         </span>
       </div>
       <div class="cost-summary">
-        <span>Aktuelle Materialkosten</span>
+        <span>{{ 'Aktuelle Materialkosten' | t }}</span>
         <strong>{{ formatCurrency(list.totalDisplayCost) }}</strong>
-        <small>Preise aus dem hinterlegten Materialkatalog</small>
+        <small>{{ 'Preise aus dem hinterlegten Materialkatalog' | t }}</small>
         <app-premium-export-button
-          label="Materialliste als PDF exportieren"
+          [label]="'Materialliste als PDF exportieren' | t"
           hintId="material-list-pdf-hint"
           [document]="buildExportDocument"
         />
         <app-premium-export-button
           format="excel"
-          label="Materialliste als Excel exportieren"
+          [label]="'Materialliste als Excel exportieren' | t"
           hintId="material-list-excel-hint"
           [document]="buildExportDocument"
         />
       </div>
     </header>
 
-    <section class="material-controls" aria-label="Materialliste anpassen">
+    <section class="material-controls" [attr.aria-label]="'Materialliste anpassen' | t">
       <div class="optional-toggle">
         <button
           type="button"
           class="toggle-track"
           role="switch"
-          aria-label="Optionale Materialien berücksichtigen"
+          [attr.aria-label]="'Optionale Materialien berücksichtigen' | t"
           [attr.aria-checked]="userState().includeOptionalMaterials"
           [class.active]="userState().includeOptionalMaterials"
           (click)="toggleOptionalMaterials()"
@@ -45,42 +44,42 @@
           <i aria-hidden="true"></i>
         </button>
         <span>
-          <strong>Optionale Materialien berücksichtigen</strong>
+          <strong>{{ 'Optionale Materialien berücksichtigen' | t }}</strong>
           <small>
-            Wenn deaktiviert, werden optionale Materialien aus der Kostenschätzung entfernt.
+            {{ 'Wenn deaktiviert, werden optionale Materialien aus der Kostenschätzung entfernt.' | t }}
           </small>
         </span>
       </div>
       <button type="button" class="reset-button" (click)="resetMaterialOverrides()">
-        Materialliste zurücksetzen
+        {{ 'Materialliste zurücksetzen' | t }}
       </button>
     </section>
 
-    <section class="project-snapshot" aria-label="Projektübersicht">
+    <section class="project-snapshot" [attr.aria-label]="'Projektübersicht' | t">
       <div>
-        <p>Fliesenfläche</p>
-        <strong>{{ formatNumber(tile.baseTileAreaM2) }} m²</strong>
+        <p>{{ 'Fliesenfläche' | t }}</p>
+        <strong>{{ formatNumber(tile.baseTileAreaM2) }} {{ 'm²' | t }}</strong>
       </div>
       <div>
-        <p>Mit Verschnitt</p>
-        <strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</strong>
+        <p>{{ 'Mit Verschnitt' | t }}</p>
+        <strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} {{ 'm²' | t }}</strong>
       </div>
       <div>
-        <p>Fliesenformat</p>
+        <p>{{ 'Fliesenformat' | t }}</p>
         <strong>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</strong>
       </div>
       <div>
-        <p>Aktive Positionen</p>
+        <p>{{ 'Aktive Positionen' | t }}</p>
         <strong>{{ list.activeItemCount }}</strong>
       </div>
       <div>
-        <p>Entfernte Positionen</p>
+        <p>{{ 'Entfernte Positionen' | t }}</p>
         <strong>{{ list.inactiveItemCount }}</strong>
       </div>
     </section>
 
     @if (list.warnings.length > 0) {
-      <section class="warning-list" aria-label="Hinweise zur Materialberechnung">
+      <section class="warning-list" [attr.aria-label]="'Hinweise zur Materialberechnung' | t">
         @for (warning of list.warnings; track warning) {
           <p>{{ warning }}</p>
         }
@@ -97,11 +96,11 @@
           (click)="toggleSection('tile-calculation')"
         >
           <span>
-            <small>Berechnungsgrundlage</small>
-            <strong>Fliesenmenge & Verschnitt</strong>
+            <small>{{ 'Berechnungsgrundlage' | t }}</small>
+            <strong>{{ 'Fliesenmenge & Verschnitt' | t }}</strong>
           </span>
           <span class="accordion-meta">
-            {{ formatNumber(tile.tileAreaWithWasteM2) }} m²
+            {{ formatNumber(tile.tileAreaWithWasteM2) }} {{ 'm²' | t }}
             <i [class.open]="isSectionOpen('tile-calculation')">⌄</i>
           </span>
         </button>
@@ -109,20 +108,19 @@
         @if (isSectionOpen('tile-calculation')) {
           <div id="tile-calculation-panel" class="accordion-panel">
             <div class="tile-calculation-grid">
-              <div><span>Zu fliesende Fläche</span><strong>{{ formatNumber(tile.baseTileAreaM2) }} m²</strong></div>
-              <div><span>Verschnitt</span><strong>{{ formatNumber(tile.wasteFactorPercent, 0) }} %</strong></div>
-              <div><span>Verschnittfläche</span><strong>{{ formatNumber(tile.wasteAreaM2) }} m²</strong></div>
-              <div><span>Fliesenmenge inkl. Verschnitt</span><strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} m²</strong></div>
-              <div><span>Fliesenformat</span><strong>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</strong></div>
-              <div><span>Fläche pro Fliese</span><strong>{{ formatNumber(tile.singleTileAreaM2) }} m²</strong></div>
-              <div><span>Benötigte Fliesen</span><strong>{{ tile.tileCount }} Stück</strong></div>
-              <div><span>Tatsächliche Fläche nach Stückzahl</span><strong>{{ formatNumber(tile.actualTileAreaByCountM2) }} m²</strong></div>
+              <div><span>{{ 'Zu fliesende Fläche' | t }}</span><strong>{{ formatNumber(tile.baseTileAreaM2) }} {{ 'm²' | t }}</strong></div>
+              <div><span>{{ 'Verschnitt' | t }}</span><strong>{{ formatNumber(tile.wasteFactorPercent, 0) }} {{ '%' | t }}</strong></div>
+              <div><span>{{ 'Verschnittfläche' | t }}</span><strong>{{ formatNumber(tile.wasteAreaM2) }} {{ 'm²' | t }}</strong></div>
+              <div><span>{{ 'Fliesenmenge inkl. Verschnitt' | t }}</span><strong>{{ formatNumber(tile.tileAreaWithWasteM2) }} {{ 'm²' | t }}</strong></div>
+              <div><span>{{ 'Fliesenformat' | t }}</span><strong>{{ tile.tileLengthCm }} × {{ tile.tileWidthCm }} cm</strong></div>
+              <div><span>{{ 'Fläche pro Fliese' | t }}</span><strong>{{ formatNumber(tile.singleTileAreaM2) }} {{ 'm²' | t }}</strong></div>
+              <div><span>{{ 'Benötigte Fliesen' | t }}</span><strong>{{ tile.tileCount }} {{ 'Stück' | t }}</strong></div>
+              <div><span>{{ 'Tatsächliche Fläche nach Stückzahl' | t }}</span><strong>{{ formatNumber(tile.actualTileAreaByCountM2) }} {{ 'm²' | t }}</strong></div>
             </div>
 
             @if (!data.scope.includeTileMaterial) {
               <p class="scope-note">
-                Fliesenmaterial ist im Leistungsumfang ausgeschlossen. Die Menge wird nur zur
-                Orientierung angezeigt.
+                {{ 'Fliesenmaterial ist im Leistungsumfang ausgeschlossen. Die Menge wird nur zur Orientierung angezeigt.' | t }}
               </p>
             }
           </div>
@@ -139,7 +137,7 @@
             (click)="toggleSection(section.id)"
           >
             <span>
-              <small>{{ section.items.length }} Artikel</small>
+              <small>{{ section.items.length }} {{ 'Artikel' | t }}</small>
               <strong>{{ section.title }}</strong>
             </span>
             <span class="accordion-meta">
@@ -169,8 +167,8 @@
                           <button
                             type="button"
                             class="state-button remove"
-                            title="Aus Materialliste entfernen"
-                            [attr.aria-label]="item.name + ' aus Materialliste entfernen'"
+                            [title]="'Aus Materialliste entfernen' | t"
+                            [attr.aria-label]="removeAriaLabel(item.name)"
                             (click)="excludeMaterial(item.materialId)"
                           >
                             −
@@ -179,8 +177,8 @@
                           <button
                             type="button"
                             class="state-button add"
-                            title="Zur Materialliste hinzufügen"
-                            [attr.aria-label]="item.name + ' zur Materialliste hinzufügen'"
+                            [title]="'Zur Materialliste hinzufügen' | t"
+                            [attr.aria-label]="addAriaLabel(item.name)"
                             (click)="includeMaterial(item.materialId, item.requirementType === 'optional')"
                           >
                             +
@@ -201,15 +199,15 @@
                       <p class="excluded-note">
                         {{
                           item.excludedReason === 'optional_toggle'
-                            ? 'Durch Toggle ausgeschlossen'
-                            : 'Aus Berechnung entfernt'
+                            ? ('Durch Toggle ausgeschlossen' | t)
+                            : ('Aus Berechnung entfernt' | t)
                         }}
                       </p>
                     }
 
                     <dl class="item-facts">
                       <div>
-                        <dt>Menge</dt>
+                        <dt>{{ 'Menge' | t }}</dt>
                         <dd>
                           @if (item.packageCount !== null) {
                             {{ formatNumber(item.packageCount, 0) }} {{ item.packageUnit }}
@@ -219,12 +217,12 @@
                           } @else if (item.quantity !== null) {
                             {{ formatNumber(item.quantity) }} {{ item.unit }}
                           } @else {
-                            Nach Bedarf
+                            {{ 'Nach Bedarf' | t }}
                           }
                         </dd>
                       </div>
                       <div>
-                        <dt>Einzelpreis</dt>
+                        <dt>{{ 'Einzelpreis' | t }}</dt>
                         <dd>{{ formatCurrency(item.unitPrice) }} @if (item.priceUnit) { / {{ item.priceUnit }} }</dd>
                         @let offers = offersFor(item.materialId);
                         @if (offers.length > 0) {
@@ -233,10 +231,10 @@
                               class="shop-disclosure"
                               tabindex="0"
                               role="note"
-                              aria-label="Anzeige – Affiliate-Werbung, Links führen zu Partner-Shops"
+                              [attr.aria-label]="'Anzeige – Affiliate-Werbung, Links führen zu Partner-Shops' | t"
                             >
                               <span aria-hidden="true">*</span>
-                              <span class="shop-disclosure-tip" aria-hidden="true">Anzeige</span>
+                              <span class="shop-disclosure-tip" aria-hidden="true">{{ 'Anzeige' | t }}</span>
                             </span>
                             @for (offer of offers; track offer.merchantId) {
                               <a
@@ -244,8 +242,8 @@
                                 [href]="offer.url"
                                 [attr.rel]="offer.rel"
                                 target="_blank"
-                                [attr.aria-label]="'Bei ' + offer.displayName + ' ansehen (Anzeige, öffnet neuen Tab)'"
-                                [title]="'Bei ' + offer.displayName + ' ansehen'"
+                                [attr.aria-label]="shopAriaLabel(offer.displayName)"
+                                [title]="shopTitle(offer.displayName)"
                               >
                                 <img
                                   [src]="'shops/' + offer.iconKey + '.svg'"
@@ -259,11 +257,11 @@
                         }
                       </div>
                       <div>
-                        <dt>Berechnung</dt>
+                        <dt>{{ 'Berechnung' | t }}</dt>
                         <dd>{{ item.calculationNote }}</dd>
                       </div>
                       <div>
-                        <dt>Verwendet in</dt>
+                        <dt>{{ 'Verwendet in' | t }}</dt>
                         <dd>{{ item.workStepLabels.join(', ') }}</dd>
                       </div>
                     </dl>
@@ -275,7 +273,7 @@
                         target="_blank"
                         rel="nofollow sponsored noopener"
                       >
-                        Produkt ansehen
+                        {{ 'Produkt ansehen' | t }}
                       </a>
                     }
                   </article>
@@ -289,9 +287,9 @@
   </section>
 } @else {
   <section class="locked-panel">
-    <p class="locked-eyebrow">Materialliste noch nicht verfügbar</p>
-    <h1>Bitte lege zuerst einen Raum an.</h1>
-    <p>Danach berechnen wir Materialmengen und Kosten aus deinen Angaben.</p>
-    <a routerLink="/raum-anlegen">Raum anlegen</a>
+    <p class="locked-eyebrow">{{ 'Materialliste noch nicht verfügbar' | t }}</p>
+    <h1>{{ 'Bitte lege zuerst einen Raum an.' | t }}</h1>
+    <p>{{ 'Danach berechnen wir Materialmengen und Kosten aus deinen Angaben.' | t }}</p>
+    <a routerLink="/raum-anlegen">{{ 'Raum anlegen' | t }}</a>
   </section>
 }
