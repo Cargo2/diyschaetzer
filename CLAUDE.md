@@ -212,6 +212,35 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 - **Phase 16 – Ratgeber + SEO + Prerendering**: Ratgeber wieder im Menü, Markdown-Beiträge (Codegen),
   per-Route-SEO (`SeoService`: Title/Description/Canonical/OG/JSON-LD), `sitemap.xml` + `robots.txt`,
   und **statisches Prerendering (SSG)** der Inhaltsseiten. Details unter „TypeScript / Build-Eigenheiten".
+- **App-Subdomain & Auth-Ausbau**: app.fliesen-kosten.de live (Zwei-Baum-Routing: MarketingShell mit
+  Topmenü [prerendert] vs. Sidebar-AppShell im lazy `app-area`-Baum; `AppHostService` mit Modi
+  app/marketing/standalone, Go-Live-Schalter `APP_DOMAIN_LIVE` in `config/site.config.ts`, Dev-Override
+  `?app-host=1`; dritter Deploy-Workflow `.github/workflows/app.yml` mit Noindex-Overrides aus
+  `deploy/app-subdomain/`; Wizard-Routen existieren in BEIDEN Bäumen – synchron halten). Google-OAuth-
+  Login + Passwort-Bestätigung bei Registrierung; einmaliger Rollen-Claim customer→contractor für
+  OAuth-Signups (RPC `claim_contractor_role`, Migration `0022`, 15-Minuten-Fenster). Login lebt auf
+  app.* (Sessions sind per Origin). Doku: `docs/auth-google.md`, `docs/deploy-app-subdomain.md`,
+  `docs/go-live-checklist.md`.
+- **i18n-Sprachmodus (App-Bereich)**: Laufzeit-Übersetzung DE/PL/EN nur im App-Baum; eigener
+  `I18nService` + impure `| t`-Pipe (`src/app/i18n/`), Deutsch-als-Schlüssel, Fallback gewählte
+  Sprache→EN→DE, Dictionaries als Lazy-Chunks (`dict/{pl,en}.{shell,wizard,offers,invoices,konto}.ts`),
+  Coverage-Spec `i18n-coverage.spec.ts` bricht den Build bei fehlenden/verwaisten Keys; Umschalter in
+  der Sidebar, Persistenz `badprojekt:ui-lang`. WICHTIG als Regel: neue UI-Strings im App-Bereich
+  brauchen PL+EN-Einträge; Dokumente (PDF/XRechnung/geteilte Seite) und Marketing bleiben IMMER
+  deutsch. Muttersprachler-Review der maschinellen Übersetzungen offen. Noch unübersetzt:
+  Projekt-Dashboard, Materialliste, Zusammenfassungs-Seiten.
+- **XRechnung-Ländergating**: `country_code` am Firmenprofil (Migration `0023`), Verkäuferland fließt
+  in die Rechnung; XRechnung-Pflichtfeld-Warnungen/-Export nur für DE-Firmen, §19-Hinweis (Rechnung)
+  nur bei DE-Verkäufer.
+- **Teilen-Link-Ausbau (Tracking/Annahme/Anzahlung)**: Migration `0024` (offer_id, viewed/accepted-
+  Spalten, stabiler Token je Angebot via partiellem Unique-Index, owner-UPDATE-Policy); RPCs
+  `get_shared_offer_page`/`ping_shared_offer` (Zähler max. 1×/10 min)/`accept_shared_offer` (set-once,
+  Name 2–120, flippt `contractor_offers.status` auf accepted). Öffentliche Seite `/angebot/:token`:
+  View-Ping, digitales Annahme-Formular, Angenommen-Banner. Editor: Tracking-Zeile
+  (Geteilt/Angesehen/Angenommen), Anzahlungsrechnung per Klick (`ContractorInvoiceService.
+  buildDepositInvoice`, Prozent vom Brutto mit herausgerechneter USt, §14 Abs. 5-Hinweis).
+  Rechnungs-Editor: „Firmendaten aus Profil aktualisieren"-Button (Verkäufer-Snapshot bewusst
+  eingefroren, §14).
 
 ### Getroffene Entscheidungen
 - **DB (ab Backend-Phase): Supabase / PostgreSQL** (Auth, Row Level Security, Storage, Edge Functions).
@@ -488,6 +517,20 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   14. Nur mit Capacitor sinnvoll (bewusst nachgelagert): Push-Benachrichtigungen
       (Angebot angesehen/angenommen), Kamera fürs Aufmaß-Foto.
 
+- **Angebots-Lifecycle** *(in Arbeit)*: Versionen als eingeklappte Zeilenliste, geteilte Angebote
+  gesperrt (Bearbeiten nur nach bestätigtem Löschen des Links → `deleteForOffer`), angenommene
+  Angebote hart gesperrt + eingerückte „Neue Version"-Zeile, `/angebot/:token` shell-los (ohne
+  Topmenü).
+
+- **Phase 19 – Profi-Ausbau** *(geplant)*: (a) **Bestell-/Einkaufsliste je Auftrag** (Contractor-
+  Ansicht/Export der bereits berechneten Materialmengen; Kalkulations-Pipeline liefert die Daten
+  schon); (b) **eigener Positions- & Textbausteinkatalog** (eigene Positionen/Einleitungs-/
+  Schlusstexte einmal anlegen, in Angeboten wiederverwenden; auch zweisprachige Textbausteine für
+  den Sprachmodus); (c) **Anzahlungs-/Abschlags-/Schlussrechnungs-Kette** (aufbauend auf
+  `buildDepositInvoice`: Abschläge mit Anrechnung, Schlussrechnung mit ausgewiesenen erhaltenen
+  Zahlungen); (d) offene i18n-Folgen (Dashboard/Materialliste/Zusammenfassung übersetzen,
+  Muttersprachler-Review, ggf. PL-Landingpage für Ads).
+
 ### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant
   (`WhiteLabelConfig` vorbereitet). **Bewusst zurückgestellt** – nur bei konkretem Partner-/B2B-Bedarf.
@@ -508,9 +551,9 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   nur noch **Seed + Offline-Fallback**; Laufzeitquelle ist die DB (über `CatalogService`). Bei
   Katalog-Änderungen `tools/generate-catalog-seed.mts` neu laufen lassen und Migration anwenden.
 - Gespeicherte Alträume im localStorage werden beim Laden normalisiert (fehlende Felder ergänzt).
-- **Deploy-Domain:** aktuell **bouletten-contest.de**; **fliesen-kosten.de** ist die Ziel-Domain und
-  steht bereits als `SITE_URL` (Canonical/OG/Sitemap zeigen dorthin – Vorlauf). Sitemap erst in der
-  Search Console einreichen, wenn auf fliesen-kosten.de deployt wird.
+- **Deploy-Domain:** **fliesen-kosten.de** (Marketing/Inhaltsseiten) und **app.fliesen-kosten.de**
+  (App-Bereich, `APP_DOMAIN_LIVE=true`) sind live; **bouletten-contest.de** ist nur noch ein
+  Noindex-Stub. Sitemap ist entsprechend in der Search Console für fliesen-kosten.de einzureichen.
 - **netcup/Plesk-Passenger-Falle:** Ist für die Domain die **Plesk-Node.js-Erweiterung (Passenger)**
   aktiv, liefert der Server auf alle Unterpfade HTTP 500 „Web application could not be started" (nur
   `/` kommt durch). Der statische, prerenderte Build braucht **kein** Node → in Plesk **Node.js
