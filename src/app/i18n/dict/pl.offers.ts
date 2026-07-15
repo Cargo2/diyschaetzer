@@ -128,6 +128,11 @@ export const PL_OFFERS: Record<string, string> = {
   'Position löschen': 'Usuń pozycję',
   '+ Position': '+ Pozycja',
 
+  // --- Katalog-Bausteine (R2-C) ---
+  '+ aus Katalog…': '+ z katalogu…',
+  'Aus Vorlagen einfügen…': 'Wstaw z szablonów…',
+  'Als Vorlage speichern': 'Zapisz jako szablon',
+
   // --- Kalkulationsoptionen / Summen ---
   'Material je Raum ausweisen': 'Wykaż materiał dla każdego pomieszczenia',
   Materialaufschlag: 'Marża na materiał',

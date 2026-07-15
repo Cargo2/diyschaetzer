@@ -96,6 +96,13 @@ export const APP_AREA_ROUTES: Routes = [
               import('../pages/profile/konto-preise.component').then((m) => m.KontoPreiseComponent)
           },
           {
+            path: 'vorlagen',
+            loadComponent: () =>
+              import('../pages/profile/konto-vorlagen.component').then(
+                (m) => m.KontoVorlagenComponent
+              )
+          },
+          {
             path: 'premium',
             loadComponent: () =>
               import('../pages/profile/konto-premium.component').then((m) => m.KontoPremiumComponent)

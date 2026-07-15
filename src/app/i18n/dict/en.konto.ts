@@ -115,5 +115,28 @@ export const EN_KONTO: Record<string, string> = {
   'Max. Anfragen / Monat': 'Max. inquiries / month',
   Kontaktkanal: 'Contact channel',
   'Die Einstellungen konnten nicht geladen werden.': 'The settings could not be loaded.',
-  'Einstellungen gespeichert.': 'Settings saved.'
+  'Einstellungen gespeichert.': 'Settings saved.',
+
+  // --- Vorlagen (Phase R2-B) ---
+  Vorlagen: 'Templates',
+  'Lege wiederverwendbare Positionen und Textbausteine an. Im Angebots-Editor übernimmst du sie mit einem Klick in ein Angebot.':
+    'Create reusable line items and text blocks. In the offer editor, insert them into an offer with a single click.',
+  'Vorlagen werden geladen …': 'Loading templates …',
+  Positionen: 'Items',
+  'Noch keine Positionsvorlagen. Du kannst Positionen auch direkt im Angebots-Editor als Vorlage speichern.':
+    'No item templates yet. You can also save an item as a template directly in the offer editor.',
+  Beschreibung: 'Description',
+  'Optionale Position (Bedarfsposition)': 'Optional line item (subject to agreement)',
+  '+ Neu': '+ New',
+  Einleitungstexte: 'Intro texts',
+  'Noch keine Einleitungstextvorlagen. Du kannst Texte auch direkt im Angebots-Editor als Vorlage speichern.':
+    'No intro text templates yet. You can also save a text as a template directly in the offer editor.',
+  Text: 'Text',
+  Schlusstexte: 'Closing texts',
+  'Noch keine Schlusstextvorlagen. Du kannst Texte auch direkt im Angebots-Editor als Vorlage speichern.':
+    'No closing text templates yet. You can also save a text as a template directly in the offer editor.',
+  'Die Vorlagen konnten nicht geladen werden.': 'The templates could not be loaded.',
+  'Vorlage gespeichert.': 'Template saved.',
+  'Speichern der Vorlage fehlgeschlagen.': 'Saving the template failed.',
+  'Löschen der Vorlage fehlgeschlagen.': 'Deleting the template failed.'
 };

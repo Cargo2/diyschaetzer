@@ -127,6 +127,11 @@ export const EN_OFFERS: Record<string, string> = {
   'Position löschen': 'Delete item',
   '+ Position': '+ Item',
 
+  // --- Katalog-Bausteine (R2-C) ---
+  '+ aus Katalog…': '+ from catalog…',
+  'Aus Vorlagen einfügen…': 'Insert from templates…',
+  'Als Vorlage speichern': 'Save as template',
+
   // --- Kalkulationsoptionen / Summen ---
   'Material je Raum ausweisen': 'Show material per room',
   Materialaufschlag: 'Material surcharge',

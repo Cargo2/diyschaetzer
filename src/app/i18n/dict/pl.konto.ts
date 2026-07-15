@@ -115,5 +115,28 @@ export const PL_KONTO: Record<string, string> = {
   'Max. Anfragen / Monat': 'Maks. zapytań / miesiąc',
   Kontaktkanal: 'Kanał kontaktu',
   'Die Einstellungen konnten nicht geladen werden.': 'Nie udało się załadować ustawień.',
-  'Einstellungen gespeichert.': 'Ustawienia zapisane.'
+  'Einstellungen gespeichert.': 'Ustawienia zapisane.',
+
+  // --- Vorlagen (Phase R2-B) ---
+  Vorlagen: 'Szablony',
+  'Lege wiederverwendbare Positionen und Textbausteine an. Im Angebots-Editor übernimmst du sie mit einem Klick in ein Angebot.':
+    'Twórz wielokrotnego użytku pozycje i szablony tekstowe. W edytorze ofert wstawisz je jednym kliknięciem do oferty.',
+  'Vorlagen werden geladen …': 'Ładowanie szablonów…',
+  Positionen: 'Pozycje',
+  'Noch keine Positionsvorlagen. Du kannst Positionen auch direkt im Angebots-Editor als Vorlage speichern.':
+    'Brak jeszcze szablonów pozycji. Pozycje możesz też zapisać jako szablon bezpośrednio w edytorze ofert.',
+  Beschreibung: 'Opis',
+  'Optionale Position (Bedarfsposition)': 'Pozycja opcjonalna (do uzgodnienia)',
+  '+ Neu': '+ Nowy',
+  Einleitungstexte: 'Teksty wprowadzające',
+  'Noch keine Einleitungstextvorlagen. Du kannst Texte auch direkt im Angebots-Editor als Vorlage speichern.':
+    'Brak jeszcze szablonów tekstu wprowadzającego. Teksty możesz też zapisać jako szablon bezpośrednio w edytorze ofert.',
+  Text: 'Tekst',
+  Schlusstexte: 'Teksty końcowe',
+  'Noch keine Schlusstextvorlagen. Du kannst Texte auch direkt im Angebots-Editor als Vorlage speichern.':
+    'Brak jeszcze szablonów tekstu końcowego. Teksty możesz też zapisać jako szablon bezpośrednio w edytorze ofert.',
+  'Die Vorlagen konnten nicht geladen werden.': 'Nie udało się załadować szablonów.',
+  'Vorlage gespeichert.': 'Szablon zapisany.',
+  'Speichern der Vorlage fehlgeschlagen.': 'Nie udało się zapisać szablonu.',
+  'Löschen der Vorlage fehlgeschlagen.': 'Nie udało się usunąć szablonu.'
 };

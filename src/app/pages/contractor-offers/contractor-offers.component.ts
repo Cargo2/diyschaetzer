@@ -27,6 +27,12 @@ import {
 import { CompanyProfileService } from '../../services/company-profile.service';
 import { ProfileAssumptionDefaultsService } from '../../services/profile-assumption-defaults.service';
 import { ProfessionalLineItemUnit } from '../../services/professional-offer.service';
+import { ContractorSnippetService } from '../../services/contractor-snippet.service';
+import {
+  ContractorSnippet,
+  isPositionSnippet,
+  isTextSnippet
+} from '../../models/contractor-snippet.model';
 import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
 import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
 import { ContractorInvoiceService } from '../../services/contractor-invoice.service';
@@ -81,6 +87,7 @@ export class ContractorOffersComponent implements OnInit {
   private readonly invoiceService = inject(ContractorInvoiceService);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
+  private readonly snippetService = inject(ContractorSnippetService);
 
   /** Für die Vorlage sichtbarer Grenzwert-Hinweis. */
   readonly offerLimitMessage = OFFER_LIMIT_MESSAGE;
@@ -157,6 +164,22 @@ export class ContractorOffersComponent implements OnInit {
   /** Anteil (%) für die Anzahlungsrechnung (Block „Anzahlungsrechnung"). */
   depositPercent = 30;
 
+  /**
+   * Wiederverwendbare Bausteine des Profis (Phase R2). Fire-and-forget geladen
+   * (Fehler geschluckt) – die Katalog-Controls erscheinen nur bei nicht-leerem
+   * Ergebnis, der Editor bleibt ohne sie voll nutzbar (z. B. Backend offline).
+   */
+  readonly snippets = signal<ContractorSnippet[]>([]);
+  readonly positionSnippets = computed(() => this.snippets().filter(isPositionSnippet));
+  readonly introSnippets = computed(() =>
+    this.snippets().filter((snippet) => snippet.kind === 'intro')
+  );
+  readonly outroSnippets = computed(() =>
+    this.snippets().filter((snippet) => snippet.kind === 'outro')
+  );
+  /** Kurzes ✓-Feedback nach „Als Vorlage speichern": Zeilen-`id` bzw. `'intro'`/`'outro'`. */
+  readonly snippetSavedId = signal<string | null>(null);
+
   readonly statusOptions: { value: ContractorOfferStatus; label: string }[] = [
     { value: 'draft', label: CONTRACTOR_OFFER_STATUS_LABELS.draft },
     { value: 'sent', label: CONTRACTOR_OFFER_STATUS_LABELS.sent },
@@ -193,7 +216,18 @@ export class ContractorOffersComponent implements OnInit {
     // Abo-Status + Gesamtzahl der Angebote für die Free-Limit-Anzeige laden.
     await this.subscriptionStatus.ensureLoaded();
     await this.refreshOfferCount();
+    // Bausteine-Katalog: fire-and-forget, blockt den restlichen Ladevorgang nicht.
+    void this.loadSnippets();
     this.loading.set(false);
+  }
+
+  /** Lädt den Bausteine-Katalog des Profis neu (No-op bei Backend-Fehler). */
+  private async loadSnippets(): Promise<void> {
+    try {
+      this.snippets.set(await this.snippetService.list());
+    } catch {
+      // Katalog optional: Editor bleibt ohne die Zusatz-Controls voll nutzbar.
+    }
   }
 
   /**
@@ -727,6 +761,105 @@ export class ContractorOffersComponent implements OnInit {
 
   removeLine(section: ContractorOfferSection, line: ContractorOfferLine): void {
     section.lines = section.lines.filter((entry) => entry !== line);
+  }
+
+  /** Fügt eine Position aus dem Katalog ein (identischer Zeilen-Shape wie {@link addLine}). */
+  insertSnippetLine(section: ContractorOfferSection, snippetId: string): void {
+    if (!snippetId) {
+      return;
+    }
+    const snippet = this.positionSnippets().find((entry) => entry.id === snippetId);
+    if (!snippet || !isPositionSnippet(snippet)) {
+      return;
+    }
+    const data = snippet.data;
+    section.lines.push({
+      id: this.createId(),
+      label: data.label,
+      description: data.description,
+      quantity: data.quantity ?? 1,
+      unit: data.unit,
+      unitPrice: data.unitPrice,
+      isActive: true,
+      isOptional: data.isOptional ?? false,
+      origin: 'custom'
+    });
+  }
+
+  /** Fügt einen Text-Baustein in den Einleitungs-/Schlusstext ein (anhängen, wenn nicht leer). */
+  insertTextSnippet(kind: 'intro' | 'outro', snippetId: string): void {
+    if (!snippetId || !this.offer) {
+      return;
+    }
+    const source = kind === 'intro' ? this.introSnippets() : this.outroSnippets();
+    const snippet = source.find((entry) => entry.id === snippetId);
+    if (!snippet || !isTextSnippet(snippet)) {
+      return;
+    }
+    const current = kind === 'intro' ? this.offer.introText : this.offer.outroText;
+    const merged = current ? `${current}\n${snippet.data.text}` : snippet.data.text;
+    if (kind === 'intro') {
+      this.offer.introText = merged;
+    } else {
+      this.offer.outroText = merged;
+    }
+  }
+
+  /** Speichert eine eigene Position als wiederverwendbaren Baustein (fire-and-forget). */
+  async saveLineAsSnippet(line: ContractorOfferLine): Promise<void> {
+    const snippet: ContractorSnippet = {
+      id: this.createId(),
+      kind: 'position',
+      label: line.label,
+      data: {
+        label: line.label,
+        description: line.description,
+        unit: line.unit,
+        unitPrice: line.unitPrice,
+        quantity: line.quantity,
+        isOptional: line.isOptional
+      },
+      sortOrder: this.snippets().length
+    };
+    try {
+      await this.snippetService.save(snippet);
+      this.showSnippetSaved(line.id);
+      await this.loadSnippets();
+    } catch {
+      // Baustein-Speicherung ist ein Komfort-Feature – Fehler nicht blockierend anzeigen.
+    }
+  }
+
+  /** Speichert Einleitungs-/Schlusstext als wiederverwendbaren Textbaustein (fire-and-forget). */
+  async saveTextAsSnippet(kind: 'intro' | 'outro', text: string): Promise<void> {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+    const snippet: ContractorSnippet = {
+      id: this.createId(),
+      kind,
+      label: trimmed.slice(0, 40),
+      data: { text: trimmed },
+      sortOrder: this.snippets().length
+    };
+    try {
+      await this.snippetService.save(snippet);
+      this.showSnippetSaved(kind);
+      await this.loadSnippets();
+    } catch {
+      // Baustein-Speicherung ist ein Komfort-Feature – Fehler nicht blockierend anzeigen.
+    }
+  }
+
+  /** Kurzes ✓-Feedback (2s) nach dem Speichern eines Bausteins. */
+  private showSnippetSaved(id: string): void {
+    this.snippetSavedId.set(id);
+    setTimeout(() => {
+      if (this.snippetSavedId() === id) {
+        this.snippetSavedId.set(null);
+      }
+    }, 2000);
   }
 
   moveLine(section: ContractorOfferSection, index: number, direction: -1 | 1): void {

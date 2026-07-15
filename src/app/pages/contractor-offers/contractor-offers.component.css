@@ -565,6 +565,34 @@
   margin-top: .5rem;
 }
 
+.add-line-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .5rem;
+}
+
+.add-line-row .add-line {
+  margin-top: 0;
+}
+
+.snippet-select {
+  padding: .3rem .5rem;
+  border: 1px solid #d1d5db;
+  border-radius: .45rem;
+  font: inherit;
+  max-width: 16rem;
+}
+
+.snippet-text-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .35rem;
+}
+
 .offer-foot {
   display: flex;
   align-items: flex-start;

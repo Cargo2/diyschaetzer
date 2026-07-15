@@ -107,6 +107,9 @@
           <a routerLink="/konto/preise" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
             {{ 'Eigene Preise' | t }}
           </a>
+          <a routerLink="/konto/vorlagen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            {{ 'Vorlagen' | t }}
+          </a>
           <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
             @if (nav.hasActiveSubscription()) {
               {{ 'Premium' | t }}

@@ -269,6 +269,26 @@
           <span>{{ 'Einleitungstext (optional)' | t }}</span>
           <textarea rows="2" [(ngModel)]="offer.introText" [ngModelOptions]="{ standalone: true }"
             [placeholder]="'Sehr geehrte …, vielen Dank für Ihre Anfrage. Für die genannten Arbeiten biete ich Ihnen an:' | t" [readonly]="locked()"></textarea>
+          @if (!locked()) {
+            <div class="snippet-text-row">
+              @if (introSnippets().length > 0) {
+                <select #introSelect class="snippet-select"
+                  [attr.aria-label]="'Aus Vorlagen einfügen…' | t"
+                  (change)="insertTextSnippet('intro', introSelect.value); introSelect.value = ''">
+                  <option value="" selected>{{ 'Aus Vorlagen einfügen…' | t }}</option>
+                  @for (snippet of introSnippets(); track snippet.id) {
+                    <option [value]="snippet.id">{{ snippet.label }}</option>
+                  }
+                </select>
+              }
+              @if (offer.introText) {
+                <button type="button" class="btn-light btn-small" (click)="saveTextAsSnippet('intro', offer.introText)"
+                  [title]="'Als Vorlage speichern' | t" [attr.aria-label]="'Als Vorlage speichern' | t">
+                  {{ snippetSavedId() === 'intro' ? '✓' : '💾' }}
+                </button>
+              }
+            </div>
+          }
         </label>
 
         @for (section of offer.sections; track section.id; let si = $index) {
@@ -333,6 +353,12 @@
                     <td class="col-tools" data-label="">
                       <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0 || locked()" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
                       <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1 || locked()" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
+                      @if (!locked() && line.origin === 'custom') {
+                        <button type="button" (click)="saveLineAsSnippet(line)"
+                          [title]="'Als Vorlage speichern' | t" [attr.aria-label]="'Als Vorlage speichern' | t">
+                          {{ snippetSavedId() === line.id ? '✓' : '💾' }}
+                        </button>
+                      }
                       <button type="button" class="btn-danger" [disabled]="locked()" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
@@ -341,7 +367,19 @@
             </table>
 
             @if (!locked()) {
-              <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
+              <div class="add-line-row">
+                <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
+                @if (positionSnippets().length > 0) {
+                  <select #catalogSelect class="snippet-select"
+                    [attr.aria-label]="'+ aus Katalog…' | t"
+                    (change)="insertSnippetLine(section, catalogSelect.value); catalogSelect.value = ''">
+                    <option value="" selected>{{ '+ aus Katalog…' | t }}</option>
+                    @for (snippet of positionSnippets(); track snippet.id) {
+                      <option [value]="snippet.id">{{ snippet.label }}</option>
+                    }
+                  </select>
+                }
+              </div>
             }
           </div>
         }
@@ -414,6 +452,26 @@
           <span>{{ 'Schlusstext (optional)' | t }}</span>
           <textarea rows="3" [(ngModel)]="offer.outroText" [ngModelOptions]="{ standalone: true }"
             [placeholder]="'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.' | t" [readonly]="locked()"></textarea>
+          @if (!locked()) {
+            <div class="snippet-text-row">
+              @if (outroSnippets().length > 0) {
+                <select #outroSelect class="snippet-select"
+                  [attr.aria-label]="'Aus Vorlagen einfügen…' | t"
+                  (change)="insertTextSnippet('outro', outroSelect.value); outroSelect.value = ''">
+                  <option value="" selected>{{ 'Aus Vorlagen einfügen…' | t }}</option>
+                  @for (snippet of outroSnippets(); track snippet.id) {
+                    <option [value]="snippet.id">{{ snippet.label }}</option>
+                  }
+                </select>
+              }
+              @if (offer.outroText) {
+                <button type="button" class="btn-light btn-small" (click)="saveTextAsSnippet('outro', offer.outroText)"
+                  [title]="'Als Vorlage speichern' | t" [attr.aria-label]="'Als Vorlage speichern' | t">
+                  {{ snippetSavedId() === 'outro' ? '✓' : '💾' }}
+                </button>
+              }
+            </div>
+          }
         </label>
 
         <!-- Mobile: Brutto + Speichern immer greifbar (nur auf Handy sichtbar). -->

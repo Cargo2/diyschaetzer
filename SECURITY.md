@@ -156,6 +156,18 @@ Zugriff läuft ausschließlich über SECURITY-DEFINER-Punktfunktionen per Token 
   Schutz beruht auf der **UUID-Token-Entropie** (kein Listing, nur Punktabfrage) und
   serverseitiger Validierung/Set-once-Logik – nicht auf clientseitigen Checks.
 
+## Positions-/Textbausteinkatalog (Migration 0025, `contractor_snippets`)
+
+Wiederverwendbare Angebots-Positionen und Einleitungs-/Schlusstexte je Profi. Neue
+owner-scoped Tabelle `contractor_snippets` (`owner_id` → `auth.users`, ON DELETE CASCADE),
+RLS aktiv mit **vier** Policies `_select_own`/`_insert_own`/`_update_own`/`_delete_own`
+(jeweils `using` bzw. `with check` auf `auth.uid() = owner_id`, Muster aus 0008) →
+default-deny, **keine** öffentlichen Lese-/Schreibpfade. `kind`-Check-Constraint
+(`position`/`intro`/`outro`); die Nutzdaten liegen als vertrauenswürdiger jsonb-Blob `data`
+des eigenen Nutzers (RLS-scoped, strukturell nicht serverseitig validiert – analog Pkt. 11).
+`owner_id` wird aus der Session abgeleitet (`SupabaseContractorSnippetRepository`, nicht aus
+Eingaben → kein IDOR). `updated_at`-Trigger nutzt die Funktion aus 0001 (nicht neu definiert).
+
 ---
 
 ## Vor öffentlichem Livegang (Kurzliste)

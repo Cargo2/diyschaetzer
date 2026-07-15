@@ -1,0 +1,85 @@
+/* Ergänzt profile-page.component.css (gemeinsam via styleUrls) um die Bausteine, die
+   dort noch fehlen: Zeilenliste, Lösch-Bestätigung, Sekundär-/Gefahren-Buttons. */
+
+.snippet-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.snippet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.snippet-label {
+  font-size: 0.92rem;
+  color: #1f2937;
+}
+
+.snippet-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.confirm-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
+.btn-light,
+.btn-danger {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-light {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #1f2937;
+}
+
+.btn-danger {
+  background: #fff;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-new {
+  align-self: flex-start;
+}
+
+.snippet-form {
+  margin-top: 0.5rem;
+}
+
+.field select {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+}
