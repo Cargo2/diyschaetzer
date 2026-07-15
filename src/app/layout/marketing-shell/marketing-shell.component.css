@@ -312,6 +312,14 @@
   padding-inline: 10%;
 }
 
+/* Angebote/Rechnungen nutzen fast die volle Breite: 5 % Abstand je Seite statt
+   der 86rem-Kappung (Seiten selbst begrenzen ihren Inhalt zusätzlich intern,
+   s. `.offers-page`/`.invoices-page` max-width in den jeweiligen Komponenten). */
+.content-stage:has(app-contractor-offers),
+.content-stage:has(app-contractor-invoices) {
+  padding-inline: 5%;
+}
+
 /* ── Footer ──────────────────────────────────────────────────── */
 .site-footer {
   margin-top: auto;
@@ -397,6 +405,13 @@
 
   .footer-inner {
     padding-inline: 1.2rem;
+  }
+
+  /* Wie bei allen anderen Seiten: ab Tablet/Handy den 5 %-Randabstand wieder
+     aussetzen (nicht schmaler als der bisherige Mobil-Stand). */
+  .content-stage:has(app-contractor-offers),
+  .content-stage:has(app-contractor-invoices) {
+    padding-inline: 0;
   }
 }
 

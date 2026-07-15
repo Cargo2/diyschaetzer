@@ -112,18 +112,20 @@ import { ConsentService } from '../../services/consent.service';
       -webkit-backdrop-filter: blur(16px) saturate(1.4);
       border: 1px solid rgba(255, 255, 255, 0.7);
       border-radius: 1.2rem;
-      bottom: 1rem;
+      bottom: max(1rem, env(safe-area-inset-bottom, 0px));
       box-shadow: 0 2px 4px rgba(19, 23, 17, 0.06), 0 24px 48px -16px rgba(61, 39, 22, 0.3);
       display: flex;
       gap: 1rem 1.4rem;
       justify-content: space-between;
+      /* Robustes Zentrier-Muster für fixed-positionierte Elemente: left:50% +
+         translateX(-50%) statt left/right-Kombinationen oder margin:auto, die bei
+         max-width + fixed leicht asymmetrisch werden. Breite über width/min() statt
+         max-width, damit der Rand zu beiden Seiten immer exakt gleich bleibt. */
       left: 50%;
-      margin: 0 auto;
-      max-width: min(94%, 60rem);
       padding: 0.95rem 1.2rem;
       position: fixed;
       transform: translateX(-50%);
-      width: max-content;
+      width: min(60rem, calc(100vw - 2rem));
       z-index: 60;
       animation: rise-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
@@ -264,11 +266,7 @@ import { ConsentService } from '../../services/consent.service';
       .consent-banner {
         align-items: stretch;
         flex-direction: column;
-        left: 0.7rem;
-        right: 0.7rem;
-        max-width: none;
-        transform: none;
-        width: auto;
+        width: calc(100vw - 1.4rem);
       }
 
       .consent-text { max-width: none; }

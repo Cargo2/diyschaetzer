@@ -222,6 +222,46 @@ describe('ContractorInvoicesComponent – gruppierte Liste', () => {
     expect(group.billedTotal).toBe(3000);
   });
 
+  it('derives the group paid state from the invoice statuses (all/some/none paid)', () => {
+    const { component } = setup();
+    component.invoices.set([
+      completeInvoice({ id: 'a1', offerId: 'g1', status: 'paid' }),
+      completeInvoice({ id: 'a2', offerId: 'g1', status: 'paid' }),
+      completeInvoice({ id: 'b1', offerId: 'g2', status: 'sent' }),
+      completeInvoice({ id: 'c1', offerId: 'g3', status: 'paid' }),
+      completeInvoice({ id: 'c2', offerId: 'g3', status: 'draft' })
+    ]);
+    const byKey = new Map(component.groupedInvoices().map((g) => [g.key, g.paidState]));
+    expect(byKey.get('g1')).toBe('paid');
+    expect(byKey.get('g2')).toBe('open');
+    expect(byKey.get('g3')).toBe('partial');
+  });
+
+  it('toggles the accordion so that only one group is expanded at a time', () => {
+    const { component } = setup();
+    expect(component.expandedGroupKey()).toBeNull();
+    component.toggleGroup('o1');
+    expect(component.expandedGroupKey()).toBe('o1');
+    expect(component.isGroupExpanded('o1')).toBe(true);
+    // Andere Gruppe öffnen → vorherige schließt automatisch (nur der Key wird ersetzt).
+    component.toggleGroup('o2');
+    expect(component.expandedGroupKey()).toBe('o2');
+    expect(component.isGroupExpanded('o1')).toBe(false);
+    // Erneuter Klick auf die offene Gruppe schließt sie.
+    component.toggleGroup('o2');
+    expect(component.expandedGroupKey()).toBeNull();
+  });
+
+  it('auto-expands the group of the invoice opened in the editor', () => {
+    const { component } = setup();
+    component.invoices.set([
+      completeInvoice({ id: 'a', offerId: 'o1' }),
+      completeInvoice({ id: 'b', offerId: 'o2' })
+    ]);
+    component.selectInvoice('b');
+    expect(component.expandedGroupKey()).toBe('o2');
+  });
+
   it('marks an invoice as paid by persisting a copy without mutating the list entry', async () => {
     const saved: ContractorInvoice[] = [];
     TestBed.resetTestingModule();

@@ -299,6 +299,14 @@
   padding-inline: 10%;
 }
 
+/* Angebote/Rechnungen nutzen fast die volle Breite: 5 % Abstand je Seite statt
+   der 86rem-Kappung (Seiten selbst begrenzen ihren Inhalt zusätzlich intern,
+   s. `.offers-page`/`.invoices-page` max-width in den jeweiligen Komponenten). */
+.content-stage:has(app-contractor-offers),
+.content-stage:has(app-contractor-invoices) {
+  padding-inline: 5%;
+}
+
 /* ── Tablet: Sidebar schmaler ────────────────────────────────────── */
 @media (max-width: 1024px) {
   .app-shell {
@@ -365,6 +373,11 @@
   }
 
   .content-stage:has(app-admin-shell) {
+    padding-inline: 4%;
+  }
+
+  .content-stage:has(app-contractor-offers),
+  .content-stage:has(app-contractor-invoices) {
     padding-inline: 4%;
   }
 }

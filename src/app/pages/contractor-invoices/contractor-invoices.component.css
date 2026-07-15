@@ -1,7 +1,8 @@
 .invoices-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 4rem;
+  /* Volle Breite: der Seitenrand (5 %) kommt von der Shell (.content-stage:has(app-contractor-invoices)). */
+  max-width: none;
+  margin: 0;
+  padding: 1.5rem 0 4rem;
   display: grid;
   gap: 1.5rem;
 }
@@ -45,17 +46,39 @@
 
 .invoice-group {
   display: grid;
-  gap: .5rem;
+  gap: .4rem;
 }
 
-.group-head {
+/* Gruppenzeile = „die Rechnung" des Auftrags; klickbarer Accordion-Kopf. */
+.group-row {
+  width: 100%;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: .5rem 1rem;
-  flex-wrap: wrap;
-  padding-bottom: .35rem;
-  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+  gap: .6rem;
+  min-height: 2.75rem;
+  padding: .55rem .8rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: .6rem;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.invoice-group.open > .group-row {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  /* Optisch mit dem aufgeklappten Dropdown verbinden. */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.group-caret {
+  color: #047857;
+  font-weight: 700;
+  width: 1rem;
+  flex: 0 0 auto;
+  text-align: center;
 }
 
 .group-title {
@@ -65,16 +88,103 @@
 }
 
 .group-meta {
+  margin-left: auto;
   font-size: .82rem;
   color: #6b7280;
   white-space: nowrap;
 }
 
+.group-status-badge {
+  font-size: .74rem;
+  font-weight: 700;
+  padding: .12rem .55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.group-status-badge[data-paid="paid"] { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.group-status-badge[data-paid="partial"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.group-status-badge[data-paid="open"] { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+
+/* Sammelgruppe „Weitere Rechnungen": dezente Trenner-Überschrift, flache Liste. */
+.standalone-head {
+  font-size: .82rem;
+  font-weight: 700;
+  color: #6b7280;
+  padding: .2rem .2rem .35rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
 .invoice-rows {
   display: grid;
   gap: .4rem;
-  /* Rechnungen einer Kette eingerückt unter dem Gruppenkopf (wie Versions-Zeilen). */
+}
+
+.invoice-rows.flat {
+  /* Standalone-Zeilen leicht eingerückt (wie bisher), ohne Verbindungslinien. */
   padding-left: .35rem;
+}
+
+/* Aufgeklappte Rechnungskette: eingerückt + CSS-Verbindungslinien zur Gruppenzeile. */
+.invoice-rows.chain {
+  padding-left: 2rem;
+  animation: chain-in .16s ease;
+}
+
+@keyframes chain-in {
+  from { opacity: 0; transform: translateY(-.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chain .invoice-row-wrapper {
+  position: relative;
+}
+
+/* Vertikale „Spine"-Linie am linken Rand des eingerückten Bereichs. */
+.chain .invoice-row-wrapper::before {
+  content: "";
+  position: absolute;
+  left: -1.1rem;
+  top: -.4rem;
+  bottom: 0;
+  width: 2px;
+  background: rgba(4, 120, 87, .28);
+}
+
+/* Letztes Kind: Spine endet sauber am Ellbogen (kein Überstand nach unten). */
+.chain .invoice-row-wrapper:last-child::before {
+  bottom: auto;
+  height: calc(50% + .4rem);
+}
+
+/* L-förmiger Ellbogen (horizontaler Konnektor zur Zeile). */
+.chain .invoice-row-wrapper::after {
+  content: "";
+  position: absolute;
+  left: -1.1rem;
+  top: 50%;
+  width: .85rem;
+  height: 2px;
+  background: rgba(4, 120, 87, .28);
+}
+
+/* Pfeilspitze └─▶ am Ende des Ellbogens (Border-Dreieck, nach rechts). */
+.chain .invoice-row {
+  position: relative;
+}
+
+.chain .invoice-row::before {
+  content: "";
+  position: absolute;
+  left: -.32rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: .4rem solid rgba(4, 120, 87, .5);
+  border-top: .3rem solid transparent;
+  border-bottom: .3rem solid transparent;
 }
 
 .invoice-row-wrapper {
@@ -615,6 +725,17 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
 @media (max-width: 768px) {
   .panel { padding: 1rem; }
+
+  /* Gruppenzeile darf umbrechen; Meta rutscht in eine eigene Reihe. */
+  .group-row { flex-wrap: wrap; }
+  .group-meta { margin-left: 0; flex: 1 1 100%; order: 3; }
+
+  /* Verbindungspfeil auf Mobile weglassen (Zeilen brechen um) – nur Linien zeigen. */
+  .invoice-rows.chain { padding-left: 1.5rem; }
+  .chain .invoice-row::before { display: none; }
+  .chain .invoice-row-wrapper::before,
+  .chain .invoice-row-wrapper::after { left: -.85rem; }
+  .chain .invoice-row-wrapper::after { width: .6rem; }
 
   /* Gruppierte Rechnungsliste: Zeile bricht in zwei Reihen um */
   .invoice-row {

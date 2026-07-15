@@ -36,6 +36,12 @@ export const PL_INVOICES: Record<string, string> = {
   'Als bezahlt markieren': 'Oznacz jako zapłaconą',
   Rest: 'Pozostało',
 
+  // --- Accordion der Rechnungskette (Gruppenzeile: Status + Auf-/Zuklappen) ---
+  'Teilweise bezahlt': 'Częściowo zapłacone',
+  Offen: 'Otwarte',
+  'Rechnungen ausklappen': 'Rozwiń faktury',
+  'Rechnungen einklappen': 'Zwiń faktury',
+
   // --- Rechnungsarten (Badge, expliziter switch → Literal-Scan) ---
   Anzahlung: 'Zaliczka',
   Abschlag: 'Rata',

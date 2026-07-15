@@ -36,6 +36,12 @@ export const EN_INVOICES: Record<string, string> = {
   'Als bezahlt markieren': 'Mark as paid',
   Rest: 'Remaining',
 
+  // --- Accordion der Rechnungskette (Gruppenzeile: Status + Auf-/Zuklappen) ---
+  'Teilweise bezahlt': 'Partially paid',
+  Offen: 'Open',
+  'Rechnungen ausklappen': 'Expand invoices',
+  'Rechnungen einklappen': 'Collapse invoices',
+
   // --- Rechnungsarten (Badge, expliziter switch → Literal-Scan) ---
   Anzahlung: 'Deposit',
   Abschlag: 'Interim',

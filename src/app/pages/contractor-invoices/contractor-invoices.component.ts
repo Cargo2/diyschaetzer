@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -68,6 +69,12 @@ interface InvoiceGroup {
    * Teilentgelte bereits über die Vor-Rechnungen gestellt wurden.
    */
   billedTotal: number;
+  /**
+   * Abgeleiteter Bezahlt-Status der Rechnungskette – rein aus den Rechnungsstatus
+   * berechnet, NIE persistiert (die Gruppe ist kein DB-Objekt, kein Phantom-Datensatz):
+   * `'paid'` = alle Rechnungen bezahlt, `'partial'` = manche bezahlt, `'open'` = keine.
+   */
+  paidState: 'paid' | 'partial' | 'open';
 }
 
 /**
@@ -79,7 +86,7 @@ interface InvoiceGroup {
 @Component({
   selector: 'app-contractor-invoices',
   standalone: true,
-  imports: [FormsModule, RouterLink, PremiumExportButtonComponent, TranslatePipe],
+  imports: [NgTemplateOutlet, FormsModule, RouterLink, PremiumExportButtonComponent, TranslatePipe],
   templateUrl: './contractor-invoices.component.html',
   styleUrl: './contractor-invoices.component.css'
 })
@@ -103,6 +110,12 @@ export class ContractorInvoicesComponent implements OnInit {
   readonly invoices = signal<ContractorInvoice[]>([]);
   /** ID der Rechnung, die gerade als „bezahlt" markiert wird (Busy-Guard). */
   readonly markingPaidId = signal<string | null>(null);
+  /**
+   * Key der aktuell aufgeklappten Rechnungskette (Accordion – höchstens EINE Gruppe
+   * gleichzeitig offen; `null` = alle zu). Die Sammelgruppe „Weitere Rechnungen"
+   * (`__none__`) rendert ihre Zeilen immer flach und ignoriert dieses Signal.
+   */
+  readonly expandedGroupKey = signal<string | null>(null);
 
   /**
    * Rechnungen nach Herkunftsangebot gruppiert (ZONELESS: rein aus dem
@@ -122,6 +135,7 @@ export class ContractorInvoicesComponent implements OnInit {
     for (const [key, list] of buckets) {
       const sorted = [...list].sort((a, b) => a.invoiceDate.localeCompare(b.invoiceDate));
       const latest = sorted[sorted.length - 1];
+      const paidCount = sorted.filter((invoice) => invoice.status === 'paid').length;
       groups.push({
         key,
         isNone: key === '__none__',
@@ -132,7 +146,8 @@ export class ContractorInvoicesComponent implements OnInit {
           (sum, invoice) =>
             sum + (invoice.kind === 'final' ? invoicePayableGross(invoice) : invoiceGrossTotal(invoice)),
           0
-        )
+        ),
+        paidState: paidCount === sorted.length ? 'paid' : paidCount > 0 ? 'partial' : 'open'
       });
     }
     groups.sort((a, b) => {
@@ -241,6 +256,22 @@ export class ContractorInvoicesComponent implements OnInit {
   private setWorking(invoice: ContractorInvoice, fromDb: boolean): void {
     this.invoice = normalizeContractorInvoice({ ...invoice });
     this.loadedFromDb.set(fromDb);
+    // Kette der geöffneten Rechnung automatisch aufklappen, damit die aktive Zeile
+    // sichtbar ist (greift bei initialem Laden, takePending, selectInvoice, markPaid).
+    this.expandedGroupKey.set(this.invoice.offerId ?? '__none__');
+  }
+
+  /**
+   * Accordion-Umschalter der Rechnungskette: öffnet die geklickte Gruppe und schließt
+   * damit implizit jede andere (nur der Key wird ersetzt); ein erneuter Klick auf die
+   * bereits offene Gruppe schließt sie.
+   */
+  toggleGroup(key: string): void {
+    this.expandedGroupKey.set(this.expandedGroupKey() === key ? null : key);
+  }
+
+  isGroupExpanded(key: string): boolean {
+    return this.expandedGroupKey() === key;
   }
 
   selectInvoice(id: string): void {
