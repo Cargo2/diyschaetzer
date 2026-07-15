@@ -62,9 +62,9 @@ export const PL_OFFERS: Record<string, string> = {
   'Als Rechnung übernehmen': 'Przenieś jako fakturę',
 
   // --- Versionen ---
-  'Versionen:': 'Wersje:',
   'Noch keine gespeicherte Version.': 'Brak jeszcze zapisanej wersji.',
   '+ Neue Version': '+ Nowa wersja',
+  'Neue Version auf dieser Basis erstellen': 'Utwórz nową wersję na tej podstawie',
   'Version löschen?': 'Usunąć wersję?',
   Ja: 'Tak',
   Nein: 'Nie',

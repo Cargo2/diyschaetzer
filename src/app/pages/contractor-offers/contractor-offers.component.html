@@ -66,36 +66,38 @@
           } @else if (offer) {
             <span class="badge-draft">{{ 'Nicht gespeichert' | t }}</span>
           }
-          @if (!locked()) {
-            <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
-              {{ 'Aus Projekt aktualisieren' | t }}
-            </button>
-            <button
-              type="button"
-              class="btn-primary"
-              [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
-              [title]="newOfferBlocked() ? (offerLimitMessage | t) : ''"
-              (click)="save()"
-            >
-              {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
-            </button>
-          }
-          @if (hasRooms && offer) {
-            <app-premium-export-button
-              [label]="'PDF herunterladen' | t"
-              [format]="'pdf'"
-              [document]="exportDocumentFn"
-            />
-            @if (!tracking() && loadedFromDb()) {
-              <button type="button" class="btn-light" [disabled]="sharing()" (click)="share()">
-                {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link erstellen' | t) }}
+          @if (editorVisible()) {
+            @if (!locked()) {
+              <button type="button" class="btn-light" [disabled]="!hasRooms" (click)="updateFromProject()">
+                {{ 'Aus Projekt aktualisieren' | t }}
+              </button>
+              <button
+                type="button"
+                class="btn-primary"
+                [disabled]="saving() || !offer || !hasRooms || newOfferBlocked()"
+                [title]="newOfferBlocked() ? (offerLimitMessage | t) : ''"
+                (click)="save()"
+              >
+                {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
               </button>
             }
-            <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
-              (click)="createInvoiceFromOffer()"
-              [title]="loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t)">
-              {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Als Rechnung übernehmen' | t) }}
-            </button>
+            @if (hasRooms && offer) {
+              <app-premium-export-button
+                [label]="'PDF herunterladen' | t"
+                [format]="'pdf'"
+                [document]="exportDocumentFn"
+              />
+              @if (!tracking() && loadedFromDb()) {
+                <button type="button" class="btn-light" [disabled]="sharing()" (click)="share()">
+                  {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link erstellen' | t) }}
+                </button>
+              }
+              <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
+                (click)="createInvoiceFromOffer()"
+                [title]="loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t)">
+                {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Als Rechnung übernehmen' | t) }}
+              </button>
+            }
           }
         </div>
       </div>
@@ -107,36 +109,53 @@
         </p>
       }
 
-      <!-- Versionen des Projekts -->
+      <!-- Versionen des Projekts: eingeklappte Zeilenliste -->
       @if (hasRooms && offer) {
-        <div class="versions">
-          <span class="versions-label">{{ 'Versionen:' | t }}</span>
+        <div class="version-list">
           @for (v of offersList(); track v.id) {
-            <button type="button" class="version-chip" [class.active]="isCurrentVersion(v.id!)"
-              (click)="selectVersion(v.id!)">
-              V{{ v.version }} · {{ statusLabel(v.status) }}
-              @if (v.label) { <span class="v-label">– {{ v.label }}</span> }
-            </button>
+            <div class="version-row-wrapper">
+              <button type="button" class="version-row" [class.active]="isCurrentVersion(v.id!)"
+                (click)="toggleVersionRow(v)">
+                <span class="version-number">V{{ v.version }}</span>
+                <span class="version-label">{{ v.label || '–' }}</span>
+                <span class="version-status"
+                  [class.status-draft]="v.status === 'draft'"
+                  [class.status-sent]="v.status === 'sent'"
+                  [class.status-accepted]="v.status === 'accepted'">{{ statusLabel(v.status) }}</span>
+                <span class="version-total">{{ eur(offerGross(v)) }}</span>
+                @if (v.status === 'accepted') {
+                  <span class="version-lock" aria-hidden="true"
+                    [title]="'Dieses Angebot wurde angenommen und ist unveränderlich. Erstelle für Änderungen eine neue Version.' | t">🔒</span>
+                }
+              </button>
+              @if (confirmingDeleteVersionId === v.id) {
+                <span class="confirm-delete">
+                  {{ 'Version löschen?' | t }}
+                  <button type="button" class="btn-danger btn-small" (click)="confirmDeleteVersion(v.id!)">{{ 'Ja' | t }}</button>
+                  <button type="button" class="btn-light btn-small" (click)="cancelDeleteVersion()">{{ 'Nein' | t }}</button>
+                </span>
+              } @else {
+                <button type="button" class="version-delete" (click)="requestDeleteVersion(v.id!)"
+                  [attr.aria-label]="'Diese Version löschen' | t" [title]="'Diese Version löschen' | t">✕</button>
+              }
+            </div>
+            @if (v.status === 'accepted') {
+              <button type="button" class="version-sub-row" [disabled]="limitReached()"
+                [title]="limitReached() ? (offerLimitMessage | t) : ''"
+                (click)="newVersionFrom(v)">
+                ↳ {{ 'Neue Version auf dieser Basis erstellen' | t }}
+              </button>
+            }
           }
           @if (offersList().length === 0) {
             <span class="versions-empty">{{ 'Noch keine gespeicherte Version.' | t }}</span>
           }
-          <button type="button" class="btn-light btn-small" [disabled]="limitReached()"
+          <button type="button" class="btn-light btn-small version-list-footer" [disabled]="limitReached()"
             [title]="limitReached() ? (offerLimitMessage | t) : ''" (click)="newVersion()">{{ '+ Neue Version' | t }}</button>
-          @if (confirmingDeleteVersionId && offer.id === confirmingDeleteVersionId) {
-            <span class="confirm-delete">
-              {{ 'Version löschen?' | t }}
-              <button type="button" class="btn-danger btn-small" (click)="confirmDeleteVersion(offer.id!)">{{ 'Ja' | t }}</button>
-              <button type="button" class="btn-light btn-small" (click)="cancelDeleteVersion()">{{ 'Nein' | t }}</button>
-            </span>
-          } @else if (loadedFromDb()) {
-            <button type="button" class="btn-danger btn-small" (click)="requestDeleteVersion(offer.id!)">
-              {{ 'Diese Version löschen' | t }}
-            </button>
-          }
         </div>
       }
 
+      @if (editorVisible()) {
       @if (saveError()) {
         <p class="offers-message error" role="alert">{{ saveError() }}</p>
       }
@@ -408,6 +427,7 @@
           </button>
         </div>
         </div>
+      }
       }
     </section>
   }

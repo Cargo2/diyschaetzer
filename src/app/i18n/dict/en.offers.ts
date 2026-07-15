@@ -61,9 +61,9 @@ export const EN_OFFERS: Record<string, string> = {
   'Als Rechnung übernehmen': 'Transfer as invoice',
 
   // --- Versionen ---
-  'Versionen:': 'Versions:',
   'Noch keine gespeicherte Version.': 'No saved version yet.',
   '+ Neue Version': '+ New version',
+  'Neue Version auf dieser Basis erstellen': 'Create new version based on this one',
   'Version löschen?': 'Delete version?',
   Ja: 'Yes',
   Nein: 'No',

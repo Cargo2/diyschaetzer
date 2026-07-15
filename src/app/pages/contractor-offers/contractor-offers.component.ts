@@ -116,6 +116,18 @@ export class ContractorOffersComponent implements OnInit {
   readonly projectChanged = signal(false);
   /** Alle Versionen des aktiven Projekts (aus der DB). */
   readonly offersList = signal<ContractorOffer[]>([]);
+  /**
+   * Ausgeklappte Versions-Zeile (deren Editor sichtbar ist). `null` = Liste eingeklappt.
+   * Startet bei `null` und wird bei jeder Neu-Ladung (Projektwechsel) zurückgesetzt.
+   */
+  readonly expandedId = signal<string | null>(null);
+  /**
+   * Editor + Kopf-Aktionen/Feedback/Tracking sind sichtbar, sobald eine Zeile
+   * ausgeklappt ist ODER das Angebot noch nicht gespeichert ist – der Unsaved-Fall
+   * deckt frische Projekte ohne gespeicherte Version UND frisch erzeugte Versionen
+   * ab (denen fehlt die Listen-Zeile zum Ausklappen noch).
+   */
+  readonly editorVisible = computed(() => this.expandedId() !== null || !this.loadedFromDb());
   /** Läuft die Übernahme „Als Rechnung"? */
   readonly creatingInvoice = signal(false);
   readonly invoiceError = signal<string | null>(null);
@@ -265,6 +277,8 @@ export class ContractorOffersComponent implements OnInit {
   private async loadOffers(): Promise<void> {
     const token = ++this.loadToken;
     this.resetFeedback();
+    // Liste startet eingeklappt bei jeder (Neu-)Ladung (Projektwechsel/Erstladung).
+    this.expandedId.set(null);
     const project = this.localProject.getProject();
     let list: ContractorOffer[] = [];
     try {
@@ -369,6 +383,27 @@ export class ContractorOffersComponent implements OnInit {
     return this.offer?.id === id;
   }
 
+  /**
+   * Zeilen-Klick in der Versionsliste: aktive UND bereits ausgeklappte Zeile klappt
+   * ein; sonst wird die Version gewählt und ausgeklappt.
+   */
+  toggleVersionRow(entry: ContractorOffer): void {
+    if (!entry.id) {
+      return;
+    }
+    if (this.isCurrentVersion(entry.id) && this.expandedId() === entry.id) {
+      this.expandedId.set(null);
+    } else {
+      this.selectVersion(entry.id);
+      this.expandedId.set(entry.id);
+    }
+  }
+
+  /** Bruttobetrag einer beliebigen Version (für die Zeilenliste, unabhängig von der Arbeitskopie). */
+  offerGross(entry: ContractorOffer): number {
+    return offerGrossTotal(entry);
+  }
+
   /** Legt eine neue Version als Kopie der aktuellen an (noch nicht gespeichert). */
   newVersion(): void {
     // Ohne Abo bei erreichter Grenze keine neue Version anlegen (wäre ein Insert).
@@ -381,6 +416,24 @@ export class ContractorOffersComponent implements OnInit {
       ...this.offersList().map((offer) => offer.version ?? 0)
     );
     const copy = this.offerService.duplicateAsNewVersion(this.offer, maxVersion + 1);
+    this.setWorking(copy, false);
+  }
+
+  /**
+   * Eingerückte Aktion unter einer ANGENOMMENEN Version: legt darauf aufbauend eine
+   * neue Version an – unabhängig davon, welche Version gerade Arbeitskopie ist.
+   */
+  newVersionFrom(entry: ContractorOffer): void {
+    if (this.limitReached()) {
+      return;
+    }
+    this.resetFeedback();
+    const maxVersion = Math.max(
+      entry.version ?? 0,
+      this.offer?.version ?? 0,
+      ...this.offersList().map((offer) => offer.version ?? 0)
+    );
+    const copy = this.offerService.duplicateAsNewVersion(entry, maxVersion + 1);
     this.setWorking(copy, false);
   }
 
@@ -447,6 +500,9 @@ export class ContractorOffersComponent implements OnInit {
     try {
       await this.repository.save(this.offer);
       this.loadedFromDb.set(true);
+      // Zeile bleibt ausgeklappt: sonst würde der Editor direkt nach dem ersten
+      // Speichern einer neuen Version wieder einklappen (die Liste kannte sie vorher nicht).
+      this.expandedId.set(this.offer.id ?? null);
       // (c) Lock nach dem Speichern: „Angenommen" gespeichert → ab jetzt unveränderlich.
       this.acceptedLock.set(this.offer.status === 'accepted');
       this.saveSuccess.set(this.i18n.t('Angebot gespeichert.'));
