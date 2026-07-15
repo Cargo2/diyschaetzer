@@ -355,6 +355,41 @@ td small { color: var(--ink-soft); display: block; margin-top: 0.25rem; }
 
 .outdoor-badge { display: inline-block; margin-left: 0.4rem; }
 
+/* ── Profi-Bestellliste (R1-A) ───────────────────────────────── */
+.ordered-summary {
+  color: var(--verde-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0.35rem 0 0;
+}
+
+.th-ordered,
+.ordered-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Häkchen zentriert, Tap-Target ≥ 44px (Touch). */
+.ordered-checkbox {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.ordered-checkbox input {
+  cursor: pointer;
+  height: 1.15rem;
+  width: 1.15rem;
+}
+
+/* Abgehakte Zeile dezent gedimmt; Kosten bleiben klar lesbar. */
+tr.ordered-row td { color: var(--ink-soft); }
+tr.ordered-row .pos-name { text-decoration: line-through; }
+tr.ordered-row .cost-cell { color: var(--verde-deep); font-weight: 700; }
+
 /* ── Affiliate-Spalte „Wo" (Phase 9) ─────────────────────────── */
 /* Header und Icons mittig in der Spalte ausrichten (Basis ist rechtsbündig). */
 .th-wo,

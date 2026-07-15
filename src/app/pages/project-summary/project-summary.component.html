@@ -115,6 +115,11 @@
         <div>
           <p class="eyebrow">Projektweite Materialübersicht</p>
           <h2>Materialbedarf aller Räume</h2>
+          @if (isContractor()) {
+            <p class="ordered-summary" role="status">
+              {{ orderedSummary().done }} von {{ orderedSummary().total }} bestellt
+            </p>
+          }
         </div>
         <button type="button" (click)="toggleProjectMaterialList()">
           {{ projectMaterialListOpen() ? 'Materialliste schließen' : 'Projekt-Materialliste anzeigen' }}
@@ -142,6 +147,9 @@
                 <table>
                   <thead>
                     <tr>
+                      @if (isContractor()) {
+                        <th class="th-ordered">Bestellt</th>
+                      }
                       <th>Position</th>
                       <th>Menge</th>
                       @if (showAffiliateColumn()) {
@@ -165,9 +173,21 @@
                   </thead>
                   <tbody>
                     @for (item of section.items; track item.materialId + item.roomIds.join('-')) {
-                      <tr>
+                      <tr [class.ordered-row]="isContractor() && orderedKeys().has(item.aggregationKey)">
+                        @if (isContractor()) {
+                          <td class="ordered-cell">
+                            <label class="ordered-checkbox">
+                              <input
+                                type="checkbox"
+                                [checked]="orderedKeys().has(item.aggregationKey)"
+                                (change)="setMaterialOrdered(item.aggregationKey, $any($event.target).checked)"
+                                [attr.aria-label]="'\'' + item.name + '\' als bestellt markieren'"
+                              />
+                            </label>
+                          </td>
+                        }
                         <td>
-                          <strong>{{ item.name }}</strong>
+                          <strong class="pos-name">{{ item.name }}</strong>
                           @if (item.isOutdoorRelevant) {
                             <span class="outdoor-badge">Außenbereich</span>
                           }
@@ -206,7 +226,7 @@
                         }
                         <td>{{ formatOptionalNumber(item.packageCount) }} {{ item.packageUnit ?? '' }}</td>
                         <td>{{ item.roomNames.join(', ') }}</td>
-                        <td>{{ formatCurrency(item.displayCost ?? 0) }}</td>
+                        <td class="cost-cell">{{ formatCurrency(item.displayCost ?? 0) }}</td>
                       </tr>
                     }
                   </tbody>

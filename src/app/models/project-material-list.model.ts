@@ -16,6 +16,12 @@ export interface ProjectMaterialSourceBreakdown {
 
 export interface ProjectMaterialListItem {
   materialId: string;
+  /**
+   * Stabiler Dedup-Schlüssel der projektweiten Aggregation (identisch zum
+   * internen Map-Key). Dient als persistenter Identifikator z. B. für die
+   * Profi-Bestellliste (`LocalTileProject.orderedMaterialKeys`).
+   */
+  aggregationKey: string;
   name: string;
   articleType: string;
   /** Sektionszuordnung aus den Arbeitsschritten des Katalogartikels. */

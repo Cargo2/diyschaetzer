@@ -131,14 +131,25 @@ export class ExportDataMapperService {
   }
 
   buildProjectMaterialListExportData(
-    projectMaterialListViewModel: ProjectMaterialListViewModel
+    projectMaterialListViewModel: ProjectMaterialListViewModel,
+    orderedKeys?: Set<string>
   ): ExportDocumentData {
+    // Profi-Bestellliste: ist `orderedKeys` gesetzt, wird der Bestellstatus je
+    // Position als „✓"/„☐" in die Positionsbezeichnung gestellt (die Tabellen-
+    // Sections des Export-Builders rendern eine feste Spaltenstruktur; der
+    // Marker erscheint so in beiden Exporten – PDF und Excel – in der Spalte
+    // „Position", ohne die Builder anfassen zu müssen).
     const sections: ExportDocumentSection[] =
       projectMaterialListViewModel.sections.map((section) => ({
         id: section.id,
         title: section.title,
         type: 'table',
-        content: section.items
+        content: orderedKeys
+          ? section.items.map((item) => ({
+              ...item,
+              name: `${orderedKeys.has(item.aggregationKey) ? '✓' : '☐'} ${item.name}`
+            }))
+          : section.items
       }));
     this.addWarningsSection(
       sections,

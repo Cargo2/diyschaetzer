@@ -93,7 +93,7 @@ export class ProjectMaterialListService {
         } else {
           aggregatedItems.set(
             key,
-            this.createItem(item, room, projectLevel, keepPerRoom)
+            this.createItem(item, room, projectLevel, keepPerRoom, key)
           );
         }
 
@@ -162,10 +162,12 @@ export class ProjectMaterialListService {
     item: MaterialListItemViewModel,
     room: SavedRoomCalculation,
     projectLevel: boolean,
-    keepPerRoom: boolean
+    keepPerRoom: boolean,
+    aggregationKey: string
   ): ProjectMaterialListItem {
     return {
       materialId: item.materialId,
+      aggregationKey,
       name: keepPerRoom ? `${item.name} - ${room.roomName}` : item.name,
       articleType: item.articleType,
       sectionId: this.resolveSectionId(item, projectLevel),

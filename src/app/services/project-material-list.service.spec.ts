@@ -52,6 +52,34 @@ describe('ProjectMaterialListService', () => {
     );
   });
 
+  it('exposes a deterministic aggregationKey matching the internal dedup key', () => {
+    const result = service.buildProjectMaterialList([
+      createRoom('room-1', 'Bad EG'),
+      createRoom('room-2', 'Bad OG')
+    ]);
+    const items = result.sections.flatMap((section) => section.items);
+
+    // main_material bleibt je Raum → `${materialId}::room::${roomId}`
+    const tileRoom1 = items.find(
+      (item) => item.materialId === 'tiles_main' && item.roomIds[0] === 'room-1'
+    );
+    expect(tileRoom1?.aggregationKey).toBe('tiles_main::room::room-1');
+
+    // projektweit dedupliziert → `${materialId}::project`
+    const shared = items.find((item) => item.isProjectLevelDeduplicated);
+    expect(shared?.aggregationKey).toBe(`${shared?.materialId}::project`);
+
+    // Verbrauchsmaterial → unit/package-Schlüssel, deterministisch aus den Feldern
+    const adhesive = items.find((item) => item.materialId === 'flexible_tile_adhesive');
+    expect(adhesive?.aggregationKey).toBe(
+      `flexible_tile_adhesive::unit::${adhesive?.unit ?? 'none'}::package::${adhesive?.packageUnit ?? 'none'}`
+    );
+
+    // Alle Schlüssel eindeutig (echte Dedup-Grundlage für die Bestellliste)
+    const keys = items.map((item) => item.aggregationKey);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
   it('respects room exclusions and adds outdoor guidance', () => {
     const indoor = createRoom('room-1', 'Bad EG');
     const outdoor = createRoom('room-2', 'Terrasse', true);

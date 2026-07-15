@@ -268,6 +268,31 @@ export class LocalProjectService {
     }));
   }
 
+  /**
+   * Hakt eine Position der projektweiten Materialliste als „bestellt" ab bzw.
+   * entfernt die Markierung (Profi-Einkaufsliste). Wirkt auf das **aktive**
+   * Projekt und persistiert. `key` = `aggregationKey` der Materialposition.
+   *
+   * Bewusst **ohne** `updatedAt`-Bump: Bestell-Häkchen sind reine Metadaten und
+   * dürfen keine Kalkulations-Änderung signalisieren (sonst würden erzeugte
+   * Angebote fälschlich als veraltet markiert).
+   */
+  setMaterialOrdered(key: string, ordered: boolean): void {
+    const trimmed = typeof key === 'string' ? key.trim() : '';
+    if (!trimmed) {
+      return;
+    }
+    this.updateActiveProject((project) => {
+      const keys = new Set(this.normalizeOrderedMaterialKeys(project.orderedMaterialKeys));
+      if (ordered) {
+        keys.add(trimmed);
+      } else {
+        keys.delete(trimmed);
+      }
+      return { ...project, orderedMaterialKeys: [...keys] };
+    });
+  }
+
   deleteRoom(roomId: string): void {
     this.updateActiveProject((project) => ({
       ...project,
@@ -390,8 +415,25 @@ export class LocalProjectService {
       status: this.normalizeProjectStatus(parsed.status, rooms.length > 0),
       rooms,
       createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : fallback.createdAt,
-      updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : fallback.updatedAt
+      updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : fallback.updatedAt,
+      orderedMaterialKeys: this.normalizeOrderedMaterialKeys(parsed.orderedMaterialKeys)
     };
+  }
+
+  /**
+   * Bereinigt die Profi-Bestellliste: nur nicht-leere Strings, dedupliziert.
+   * Fremdformate (Nicht-Array, Nicht-Strings) fallen auf `[]` zurück – so
+   * überlebt das Feld den Persistenz-Roundtrip, ohne Müll zu übernehmen.
+   */
+  private normalizeOrderedMaterialKeys(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return [
+      ...new Set(
+        value.filter((key): key is string => typeof key === 'string' && key.trim().length > 0)
+      )
+    ];
   }
 
   private normalizeProjectStatus(

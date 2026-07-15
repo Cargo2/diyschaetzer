@@ -41,6 +41,24 @@ export class ProjectSummaryComponent implements OnInit {
   readonly rooms = this.localProject.rooms;
   readonly result = computed(() => this.aggregationService.aggregateProject(this.rooms()));
 
+  /** Aktives Projekt (Quelle der Bestell-Häkchen) – reaktiv über den Service. */
+  private readonly activeProject = this.localProject.project;
+  /** Als „bestellt" markierte Positionen (aggregationKey) des aktiven Projekts. */
+  readonly orderedKeys = computed(
+    () => new Set(this.activeProject().orderedMaterialKeys ?? [])
+  );
+  /** „X von Y bestellt" – nur die aktuell in der Liste vorhandenen Positionen zählen. */
+  readonly orderedSummary = computed(() => {
+    const ordered = this.orderedKeys();
+    const items = this.result().projectMaterialList.sections.flatMap(
+      (section) => section.items
+    );
+    return {
+      done: items.filter((item) => ordered.has(item.aggregationKey)).length,
+      total: items.length
+    };
+  });
+
   // „Wo"-Spalte nur zeigen, wenn überhaupt ein Material ein anzeigbares Angebot
   // hat. hasOffers() liefert bei global deaktiviertem Affiliate leer → Spalte
   // verschwindet dann komplett (reaktiv über die Settings-Signals).
@@ -53,7 +71,10 @@ export class ProjectSummaryComponent implements OnInit {
   // Exportiert die projektweite Materialliste (Mengen inkl. empfohlener Gebinde
   // über alle Räume). Wird erst beim Klick ausgewertet.
   readonly buildProjectExportDocument = (): ExportDocumentData =>
-    this.exportMapper.buildProjectMaterialListExportData(this.result().projectMaterialList);
+    this.exportMapper.buildProjectMaterialListExportData(
+      this.result().projectMaterialList,
+      this.isContractor() ? this.orderedKeys() : undefined
+    );
   readonly projectMaterialListOpen = signal(false);
   readonly openWarningRoomId = signal<string | null>(null);
 
@@ -105,6 +126,11 @@ export class ProjectSummaryComponent implements OnInit {
 
   toggleProjectMaterialList(): void {
     this.projectMaterialListOpen.update((open) => !open);
+  }
+
+  /** Hakt eine Materialposition als „bestellt" ab (Profi-Einkaufsliste). */
+  setMaterialOrdered(aggregationKey: string, ordered: boolean): void {
+    this.localProject.setMaterialOrdered(aggregationKey, ordered);
   }
 
   /**

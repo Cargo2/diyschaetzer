@@ -11,6 +11,7 @@ import {
   ExportOfferGroup
 } from '../models/export-document.model';
 import { MaterialListViewModel } from '../models/material-list.model';
+import { ProjectMaterialListItem } from '../models/project-material-list.model';
 import { createNeutralProductMonetization } from '../models/monetization.model';
 import { CostComparisonViewModel } from './cost-comparison.service';
 import { ExportDataMapperService } from './export-data-mapper.service';
@@ -181,6 +182,38 @@ describe('ExportDataMapperService', () => {
     expect(result.documentType).toBe('project_material_list');
     expect(result.totals.materialTotal).toBe(300);
     expect(result.legalNotice).toBe(ESTIMATE_EXPORT_LEGAL_NOTICE);
+  });
+
+  it('prefixes project material rows with an order glyph when orderedKeys is set', () => {
+    const item = (aggregationKey: string, name: string): ProjectMaterialListItem =>
+      ({ aggregationKey, name, materialId: name } as unknown as ProjectMaterialListItem);
+
+    const result = service.buildProjectMaterialListExportData(
+      {
+        sections: [
+          {
+            id: 'installation',
+            title: 'Verlegematerialien',
+            description: '',
+            totalDisplayCost: 0,
+            items: [item('a::project', 'Kleber'), item('b::project', 'Fugenmasse')]
+          }
+        ],
+        totalDisplayCost: 0,
+        totalCalculatedCost: 0,
+        totalDeduplicatedToolCost: 0,
+        totalConsumableCost: 0,
+        totalMainMaterialCost: 0,
+        activeItemCount: 2,
+        inactiveItemCount: 0,
+        deduplicatedMaterialIds: [],
+        warnings: []
+      },
+      new Set(['a::project'])
+    );
+
+    const rows = result.sections[0].content as Array<{ name: string }>;
+    expect(rows.map((row) => row.name)).toEqual(['✓ Kleber', '☐ Fugenmasse']);
   });
 
   it('maps professional totals without treating the estimate as an offer', () => {
