@@ -293,6 +293,16 @@
   color: #b91c1c;
 }
 
+/* Inline-Bestätigung „Bezahlt markieren?" (neutral, irreversibel-Hinweis). */
+.confirm-markpaid {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem;
+  font-size: .85rem;
+  color: #374151;
+}
+
 /* Editor-Kopf */
 .invoice-head {
   display: flex;
@@ -344,6 +354,41 @@
 .invoices-message.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 .invoices-message.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .invoices-message.warning a { color: #92400e; font-weight: 700; }
+
+/* Datenexport-Sektion (gefilterter ZIP-Export) */
+.export-intro {
+  margin: 0 0 1rem;
+  color: #4b5563;
+  max-width: 72ch;
+  font-size: .9rem;
+}
+
+.export-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+
+.export-fields .meta-field {
+  flex: 1 1 10rem;
+}
+
+.export-actions {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+}
+
+.export-msg {
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.export-msg.success { color: #047857; }
+.export-msg.info { color: #1e40af; }
+.export-msg.error { color: #b91c1c; }
 
 /* Markierung der XRechnung-Pflichtfelder (dezentes Amber) */
 .xr-star {

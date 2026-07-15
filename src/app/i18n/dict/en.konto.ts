@@ -138,5 +138,14 @@ export const EN_KONTO: Record<string, string> = {
   'Die Vorlagen konnten nicht geladen werden.': 'The templates could not be loaded.',
   'Vorlage gespeichert.': 'Template saved.',
   'Speichern der Vorlage fehlgeschlagen.': 'Saving the template failed.',
-  'Löschen der Vorlage fehlgeschlagen.': 'Deleting the template failed.'
+  'Löschen der Vorlage fehlgeschlagen.': 'Deleting the template failed.',
+
+  // --- Premium: Kündigungs-/Löschungs-Hinweis ---
+  'Nach einer Kündigung bleiben deine Angebote und Rechnungen erhalten und lesend zugänglich.':
+    'After cancelling, your offers and invoices remain intact and accessible in read-only mode.',
+  'Eine endgültige Löschung erfolgt erst nach Ablauf der in der Datenschutzerklärung genannten Fristen.':
+    'Permanent deletion only happens once the periods stated in the privacy policy have passed.',
+  'Exportiere deine Rechnungen vorher über den Datenexport.':
+    'Export your invoices beforehand via the data export.',
+  'Mehr zu Rechnungen & Kündigung erfahren': 'Learn more about invoices & cancellation'
 };

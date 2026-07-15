@@ -3,7 +3,8 @@ import { PROFESSIONAL_OFFER_DEFAULTS } from '../config/professional-offer-defaul
 import {
   ContractorOffer,
   ContractorOfferLine,
-  ContractorOfferSection
+  ContractorOfferSection,
+  emptyOfferCustomer
 } from '../models/contractor-offer.model';
 import { offerTodayIso } from '../models/contractor-offer.model';
 import { LocalTileProject } from '../models/local-project.model';
@@ -155,7 +156,7 @@ export class ContractorOfferService {
       offerNumber: '',
       offerDate: offerTodayIso(),
       validUntil: '',
-      customer: { name: '', address: '' },
+      customer: emptyOfferCustomer(),
       introText: defaults?.introText ?? '',
       outroText: defaults?.outroText ?? '',
       materialBreakdown: material.breakdown,
@@ -275,8 +276,8 @@ export class ContractorOfferService {
     fresh.offerDate = previous.offerDate ?? fresh.offerDate;
     fresh.validUntil = previous.validUntil ?? '';
     fresh.customer = previous.customer
-      ? { ...previous.customer }
-      : { name: '', address: '' };
+      ? { ...emptyOfferCustomer(), ...previous.customer }
+      : emptyOfferCustomer();
     fresh.introText = previous.introText ?? '';
     fresh.outroText = previous.outroText ?? '';
     fresh.discountPercent = previous.discountPercent ?? 0;
@@ -341,8 +342,25 @@ export class ContractorOfferService {
         ...section,
         lines: section.lines.map((line) => ({ ...line }))
       })),
-      customer: offer.customer ? { ...offer.customer } : { name: '', address: '' }
+      customer: offer.customer
+        ? { ...emptyOfferCustomer(), ...offer.customer }
+        : emptyOfferCustomer()
     };
+  }
+
+  /**
+   * Schlägt die nächste Angebotsnummer `AN-<JJJJ>-<lfd>` vor: höchste bereits
+   * vergebene laufende Nummer des Jahres + 1, dreistellig aufgefüllt (Muster wie
+   * `nextInvoiceNumber` im Rechnungs-Service).
+   */
+  nextOfferNumber(existing: string[], year: number = new Date().getFullYear()): string {
+    const prefix = `AN-${year}-`;
+    const maxRunning = existing
+      .filter((number) => number.startsWith(prefix))
+      .map((number) => Number.parseInt(number.slice(prefix.length), 10))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0);
+    return `${prefix}${String(maxRunning + 1).padStart(3, '0')}`;
   }
 
   private createId(): string {

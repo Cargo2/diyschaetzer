@@ -2,7 +2,8 @@
 // Deutsch-als-Schlüssel (linker Wert = deutscher Quelltext).
 // Hinweis: 'Angebote'/'Rechnungen'/'Firmenprofil'/'Premium freischalten' sind bereits über
 // en.shell.ts (Navigation) übersetzt, 'PLZ'/'Ort'/'E-Mail'/'IBAN'/'USt-IdNr.'/'Pflicht für
-// XRechnung'/'%'/'MwSt.' bereits über en.konto.ts – hier NICHT erneut definieren.
+// XRechnung'/'%'/'MwSt.' bereits über en.konto.ts, der strukturierte Kundenblock
+// ('Straße & Nr.'/'Land'/'kunde@beispiel.de') über en.invoices.ts – hier NICHT erneut definieren.
 export const EN_OFFERS: Record<string, string> = {
   // --- Nachrichten (TS) ---
   'Limit erreicht – lösche ein Angebot oder schalte Premium frei.':
@@ -21,6 +22,10 @@ export const EN_OFFERS: Record<string, string> = {
     'The partial invoice could not be created. Please try again.',
   'Schlussrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'The final invoice could not be created. Please try again.',
+
+  // --- Premium-Gating der Rechnungs-Erstellen-Buttons (B1, title-Hinweis) ---
+  'Rechnungen erstellen erfordert ein aktives Premium-Abo.':
+    'Creating invoices requires an active Premium subscription.',
 
   // --- Status-/Einheiten-Labels (dynamisch: statusOptions/unitOptions, DYNAMIC_KEYS) ---
   Entwurf: 'Draft',
@@ -99,9 +104,6 @@ export const EN_OFFERS: Record<string, string> = {
     'This project has no rooms yet. First add rooms via the wizard – then you can generate and edit the estimate here.',
   'Kunde / Empfänger': 'Customer / recipient',
   'Name des Kunden': 'Customer name',
-  Anschrift: 'Address',
-  'Straße Nr.': 'Street No.',
-  'PLZ Ort': 'Postal code city',
   Angebotsnummer: 'Offer number',
   'z. B. 2026-042': 'e.g. 2026-042',
   Angebotsdatum: 'Offer date',

@@ -69,6 +69,34 @@
   color: #6b7280;
 }
 
+.head-actions {
+  margin-top: 1rem;
+}
+
+.pdf-btn {
+  min-height: 44px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #047857;
+  border-radius: 0.6rem;
+  background: #fff;
+  color: #047857;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.pdf-btn:disabled {
+  border-color: #9ca3af;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.pdf-error {
+  margin: 0.5rem 0 0;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
 .muted {
   color: #6b7280;
   font-size: 0.85rem;
@@ -258,6 +286,10 @@ td {
   }
 
   .accept-btn {
+    width: 100%;
+  }
+
+  .pdf-btn {
     width: 100%;
   }
 }

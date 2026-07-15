@@ -138,5 +138,14 @@ export const PL_KONTO: Record<string, string> = {
   'Die Vorlagen konnten nicht geladen werden.': 'Nie udało się załadować szablonów.',
   'Vorlage gespeichert.': 'Szablon zapisany.',
   'Speichern der Vorlage fehlgeschlagen.': 'Nie udało się zapisać szablonu.',
-  'Löschen der Vorlage fehlgeschlagen.': 'Nie udało się usunąć szablonu.'
+  'Löschen der Vorlage fehlgeschlagen.': 'Nie udało się usunąć szablonu.',
+
+  // --- Premium: Kündigungs-/Löschungs-Hinweis ---
+  'Nach einer Kündigung bleiben deine Angebote und Rechnungen erhalten und lesend zugänglich.':
+    'Po rezygnacji Twoje oferty i faktury pozostają zachowane i dostępne do odczytu.',
+  'Eine endgültige Löschung erfolgt erst nach Ablauf der in der Datenschutzerklärung genannten Fristen.':
+    'Ostateczne usunięcie następuje dopiero po upływie terminów podanych w polityce prywatności.',
+  'Exportiere deine Rechnungen vorher über den Datenexport.':
+    'Wcześniej wyeksportuj swoje faktury za pomocą eksportu danych.',
+  'Mehr zu Rechnungen & Kündigung erfahren': 'Więcej o fakturach i rezygnacji'
 };

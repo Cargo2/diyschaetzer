@@ -1,0 +1,145 @@
+<section class="hilfe-page">
+  <header class="hilfe-header">
+    <h1>Rechnungen – Anleitung &amp; wichtige Hinweise</h1>
+    <p class="hilfe-intro">
+      Diese Seite erklärt die Rechnungsarten, den Ablauf vom Entwurf bis „Bezahlt", die
+      XRechnung-Voraussetzungen, den Datenexport – und was du unbedingt zur Aufbewahrung
+      deiner Rechnungen wissen solltest.
+    </p>
+    <nav class="toc" aria-label="Inhaltsverzeichnis">
+      <a href="#rechnungsarten">Rechnungsarten</a>
+      <a href="#zustaende">Zustände &amp; Bezahlt-Markierung</a>
+      <a href="#xrechnung">XRechnung</a>
+      <a href="#datenexport">Datenexport</a>
+      <a href="#aufbewahrung">Aufbewahrung</a>
+      <a href="#abo">Abo &amp; Nur-Lese-Modus</a>
+      <a href="#kuendigung">Kündigung &amp; Löschung</a>
+    </nav>
+  </header>
+
+  <section class="panel" id="rechnungsarten">
+    <h2>Rechnungsarten</h2>
+    <dl>
+      <dt>Rechnung</dt>
+      <dd>Die normale Schlussrechnung für eine erbrachte Leistung – ohne Bezug zu vorherigen Zahlungen.</dd>
+
+      <dt>Anzahlungsrechnung</dt>
+      <dd>Wird <strong>vor</strong> Beginn der Arbeiten gestellt, z. B. um Material vorzufinanzieren.</dd>
+
+      <dt>Abschlagsrechnung</dt>
+      <dd>Wird <strong>nach</strong> einem bestimmten Baufortschritt gestellt (z. B. „50 % erledigt").</dd>
+
+      <dt>Schlussrechnung</dt>
+      <dd>
+        Rechnet automatisch alle Anzahlungen und Abschläge <strong>desselben Angebots</strong> an.
+        Der Anrechnungs-Snapshot (welche Zahlungen bereits geflossen sind) wird beim Erstellen der
+        Schlussrechnung eingefroren und ändert sich danach nicht mehr automatisch mit. Willst du die
+        Anrechnung korrigieren, musst du die Schlussrechnung löschen, die betroffenen Abschläge
+        anpassen und die Schlussrechnung neu erstellen.
+      </dd>
+    </dl>
+  </section>
+
+  <section class="panel" id="zustaende">
+    <h2>Zustände</h2>
+    <p>Jede Rechnung durchläuft drei Zustände:</p>
+    <ol>
+      <li><strong>Entwurf</strong> – frei bearbeitbar, noch nicht verschickt.</li>
+      <li><strong>Versendet</strong> – du hast die Rechnung an den Kunden übergeben (PDF/XRechnung).</li>
+      <li>
+        <strong>Bezahlt</strong> – der Zahlungseingang ist erfasst. Eine bezahlte Rechnung wird
+        <strong>unveränderlich</strong>: Beträge, Positionen und Pflichtangaben lassen sich danach
+        nicht mehr bearbeiten.
+      </li>
+    </ol>
+    <p>
+      In der Rechnungsliste markierst du eine Rechnung über den Button
+      „Als bezahlt markieren" – das ist der reguläre Weg in den letzten Zustand.
+    </p>
+  </section>
+
+  <section class="panel" id="xrechnung">
+    <h2>XRechnung</h2>
+    <p>
+      Die XRechnung ist das strukturierte elektronische Rechnungsformat (XML), das
+      <strong>öffentliche Auftraggeber (B2G)</strong> in Deutschland verpflichtend annehmen –
+      und für die Rechnungsstellung an Behörden meist auch verlangen.
+    </p>
+    <p>Voraussetzungen für einen gültigen XRechnung-Export:</p>
+    <ul>
+      <li>Firmensitz in Deutschland.</li>
+      <li>
+        Vollständige Pflichtangaben zu Absender und Empfänger, u. a. Firmenname/Anschrift,
+        Steuernummer oder USt-IdNr., IBAN – <strong>und</strong> die E-Mail-Adresse des
+        Empfängers.
+      </li>
+      <li>
+        Bei Rechnungen an Behörden zusätzlich eine <strong>Käuferreferenz</strong> bzw.
+        <strong>Leitweg-ID</strong>, damit die Rechnung dort zugestellt werden kann.
+      </li>
+    </ul>
+    <p>
+      Fehlen Pflichtangaben, zeigt der Rechnungs-Editor sie dir vor dem Export konkret an, statt
+      eine unvollständige Datei zu erzeugen.
+    </p>
+  </section>
+
+  <section class="panel" id="datenexport">
+    <h2>Datenexport</h2>
+    <p>
+      Auf der Rechnungsseite gibt es eine eigene Export-Sektion: Du wählst einen Zeitraum oder
+      einen Rechnungsnummernbereich aus und erhältst ein <strong>ZIP-Paket</strong> mit
+    </p>
+    <ul>
+      <li>allen passenden Rechnungen als PDF,</li>
+      <li>den zugehörigen XRechnung-XML-Dateien (soweit vorhanden),</li>
+      <li>und einer CSV-Übersicht als Tabellen-Zusammenfassung.</li>
+    </ul>
+    <p>
+      Das Paket wird direkt im Browser zusammengestellt und steht dir sofort zum Download bereit.
+    </p>
+  </section>
+
+  <section class="panel panel-warning" id="aufbewahrung">
+    <h2>Wichtig: Aufbewahrung</h2>
+    <p>
+      <strong>Diese Anwendung ist kein Langzeitarchiv.</strong> Die gesetzliche
+      Aufbewahrungspflicht für Rechnungen (§ 147 AO, GoBD – derzeit 8 bzw. 10 Jahre je nach
+      Belegart) liegt bei dir.
+    </p>
+    <p>
+      Exportiere deine Rechnungen und die zugehörigen Daten regelmäßig in ein geeignetes
+      Archiv- bzw. Buchhaltungssystem und bewahre sie dort revisionssicher auf. Die
+      steuerliche Bereitstellung bei Prüfungen (z. B. Betriebsprüfung, Umsatzsteuer-
+      Sonderprüfung) ist deine eigene Verantwortung.
+    </p>
+  </section>
+
+  <section class="panel" id="abo">
+    <h2>Abo &amp; Nur-Lese-Modus</h2>
+    <p>
+      Läuft dein Premium-Abo nicht (mehr), bleiben alle deine Angebote und Rechnungen
+      vollständig erhalten – du kannst sie weiterhin ansehen, als PDF/XRechnung-XML
+      herunterladen und über den Datenexport sichern. Nur das <strong>Bearbeiten</strong>
+      (neue Positionen, neue Rechnungen, Statusänderungen) ist ohne aktives Abo gesperrt.
+    </p>
+  </section>
+
+  <section class="panel" id="kuendigung">
+    <h2>Kündigung &amp; Löschung</h2>
+    <p>
+      Kündigst du dein Abo, bleiben deine Daten zunächst genauso lesend verfügbar wie im
+      Nur-Lese-Modus oben beschrieben. Eine <strong>endgültige Löschung</strong> deiner Daten
+      erfolgt erst nach Ablauf der in der
+      <a routerLink="/datenschutz">Datenschutzerklärung</a> genannten Fristen (DSGVO).
+    </p>
+    <p>
+      <strong>Exportiere deine Rechnungen deshalb vorher</strong> – über den Datenexport auf der
+      Rechnungsseite –, wenn du sie über die genannten Fristen hinaus benötigst.
+    </p>
+  </section>
+
+  <p class="hilfe-back">
+    <a routerLink="/rechnungen">← Zurück zu den Rechnungen</a>
+  </p>
+</section>

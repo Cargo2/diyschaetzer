@@ -72,6 +72,15 @@ export const APP_AREA_ROUTES: Routes = [
           )
       },
       {
+        // Anwenderdoku „Rechnungen" – synchron mit app.routes.ts (MARKETING_ROUTES) halten.
+        path: 'hilfe/rechnungen',
+        canActivate: [contractorGuard],
+        loadComponent: () =>
+          import('../pages/help/hilfe-rechnungen.component').then(
+            (m) => m.HilfeRechnungenComponent
+          )
+      },
+      {
         path: 'feedback',
         canActivate: [contractorGuard],
         loadComponent: () =>

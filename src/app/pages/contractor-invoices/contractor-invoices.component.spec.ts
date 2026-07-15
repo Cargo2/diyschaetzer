@@ -1,10 +1,13 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { CONTRACTOR_INVOICE_REPOSITORY, ContractorInvoiceRepository } from '../../data-access/contractor-invoice-repository';
+import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
 import { ContractorInvoice, emptyInvoiceCustomer, emptyInvoiceSeller } from '../../models/contractor-invoice.model';
-import { ContractorOfferLine } from '../../models/contractor-offer.model';
+import { ContractorOffer, ContractorOfferLine } from '../../models/contractor-offer.model';
 import { XRechnungExportService } from '../../services/xrechnung-export.service';
 import { CompanyProfileService } from '../../services/company-profile.service';
+import { SubscriptionStatusService } from '../../services/subscription-status.service';
 import { CompanyProfile, emptyCompanyProfile } from '../../models/company-profile.model';
 import { ContractorInvoicesComponent } from './contractor-invoices.component';
 
@@ -68,24 +71,45 @@ function completeInvoice(overrides: Partial<ContractorInvoice> = {}): Contractor
   };
 }
 
-function stubRepository(): ContractorInvoiceRepository {
+/** Angebots-Repository-Stub (Live-Gruppenüberschrift; standardmäßig leer). */
+function offerRepositoryStub(offers: ContractorOffer[] = []): unknown {
   return {
-    listMine: async () => [],
+    listByProject: async () => offers,
+    listMine: async () => offers,
+    countMine: async () => offers.length,
     save: async () => {},
     delete: async () => {}
   };
 }
 
 function setup(
-  profileOverride: Partial<CompanyProfile> = {}
-): { component: ContractorInvoicesComponent; downloads: ContractorInvoice[] } {
+  profileOverride: Partial<CompanyProfile> = {},
+  subscribed = true
+): {
+  component: ContractorInvoicesComponent;
+  downloads: ContractorInvoice[];
+  saved: ContractorInvoice[];
+} {
   const downloads: ContractorInvoice[] = [];
+  const saved: ContractorInvoice[] = [];
+  const repository: ContractorInvoiceRepository = {
+    listMine: async () => [],
+    save: async (invoice: ContractorInvoice) => {
+      saved.push(invoice);
+    },
+    delete: async () => {}
+  };
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     imports: [ContractorInvoicesComponent],
     providers: [
       provideRouter([]),
-      { provide: CONTRACTOR_INVOICE_REPOSITORY, useValue: stubRepository() },
+      { provide: CONTRACTOR_INVOICE_REPOSITORY, useValue: repository },
+      { provide: CONTRACTOR_OFFER_REPOSITORY, useValue: offerRepositoryStub() },
+      {
+        provide: SubscriptionStatusService,
+        useValue: { isActive: signal(subscribed), ensureLoaded: async () => {} }
+      },
       {
         provide: XRechnungExportService,
         useValue: { download: (invoice: ContractorInvoice) => downloads.push(invoice) }
@@ -99,7 +123,7 @@ function setup(
     ]
   });
   const component = TestBed.createComponent(ContractorInvoicesComponent).componentInstance;
-  return { component, downloads };
+  return { component, downloads, saved };
 }
 
 describe('ContractorInvoicesComponent – XRechnung-Pflichtfeld-Gating', () => {
@@ -279,6 +303,11 @@ describe('ContractorInvoicesComponent – gruppierte Liste', () => {
             delete: async () => {}
           }
         },
+        { provide: CONTRACTOR_OFFER_REPOSITORY, useValue: offerRepositoryStub() },
+        {
+          provide: SubscriptionStatusService,
+          useValue: { isActive: signal(true), ensureLoaded: async () => {} }
+        },
         { provide: XRechnungExportService, useValue: { download: () => {} } },
         { provide: CompanyProfileService, useValue: { load: async () => emptyCompanyProfile() } }
       ]
@@ -294,5 +323,109 @@ describe('ContractorInvoicesComponent – gruppierte Liste', () => {
     // Der Listeneintrag selbst wurde nicht in-place mutiert.
     expect(entry.status).toBe('sent');
     expect(component.markingPaidId()).toBeNull();
+  });
+});
+
+describe('ContractorInvoicesComponent – Bezahlt-Lock', () => {
+  it('sperrt eine gespeicherte, bereits bezahlte Rechnung beim Öffnen', () => {
+    const { component } = setup();
+    component.invoices.set([completeInvoice({ id: 'p', status: 'paid' })]);
+    component.selectInvoice('p');
+    expect(component.paidLock()).toBe(true);
+    expect(component.editable()).toBe(false);
+  });
+
+  it('sperrt eine nicht bezahlte Rechnung nicht (Lock aus)', () => {
+    const { component } = setup();
+    component.invoices.set([completeInvoice({ id: 'd', status: 'draft' })]);
+    component.selectInvoice('d');
+    expect(component.paidLock()).toBe(false);
+    expect(component.editable()).toBe(true);
+  });
+
+  it('setzt den Bezahlt-Lock erst NACH dem Speichern (nicht schon bei Statuswahl)', async () => {
+    const { component } = setup();
+    // Statuswahl „Bezahlt" allein sperrt noch nicht (kein setWorking, kein save).
+    component.invoice = completeInvoice({ status: 'paid' });
+    expect(component.paidLock()).toBe(false);
+    expect(component.editable()).toBe(true);
+    await component.save();
+    expect(component.paidLock()).toBe(true);
+    expect(component.editable()).toBe(false);
+  });
+
+  it('editable kombiniert paidLock UND readOnly', () => {
+    const { component } = setup(); // abonniert → readOnly false
+    expect(component.readOnly()).toBe(false);
+    expect(component.editable()).toBe(true);
+    component.paidLock.set(true);
+    expect(component.editable()).toBe(false);
+  });
+});
+
+describe('ContractorInvoicesComponent – Bezahlt-markieren-Bestätigung', () => {
+  it('durchläuft request → cancel → request → confirm und persistiert erst beim Bestätigen', async () => {
+    const { component, saved } = setup();
+    const entry = completeInvoice({ id: 'x', status: 'sent' });
+    component.invoices.set([entry]);
+
+    component.requestMarkPaid('x');
+    expect(component.confirmingMarkPaidId).toBe('x');
+    component.cancelMarkPaid();
+    expect(component.confirmingMarkPaidId).toBeNull();
+    // Ohne Bestätigung wurde nichts persistiert.
+    expect(saved.length).toBe(0);
+
+    component.requestMarkPaid('x');
+    await component.markPaid(entry);
+    expect(saved.length).toBe(1);
+    expect(saved[0].status).toBe('paid');
+    expect(component.confirmingMarkPaidId).toBeNull();
+  });
+});
+
+describe('ContractorInvoicesComponent – Premium-Nur-Lese-Modus', () => {
+  it('ist ohne aktives Abo schreibgeschützt (readOnly, editable false)', () => {
+    const { component } = setup({}, false);
+    expect(component.readOnly()).toBe(true);
+    expect(component.editable()).toBe(false);
+  });
+
+  it('blockt save im Nur-Lese-Modus', async () => {
+    const { component, saved } = setup({}, false);
+    component.invoice = completeInvoice({ status: 'draft' });
+    await component.save();
+    expect(saved.length).toBe(0);
+  });
+
+  it('blockt markPaid im Nur-Lese-Modus', async () => {
+    const { component, saved } = setup({}, false);
+    const entry = completeInvoice({ id: 'x', status: 'sent' });
+    component.invoices.set([entry]);
+    await component.markPaid(entry);
+    expect(saved.length).toBe(0);
+  });
+});
+
+describe('ContractorInvoicesComponent – Live-Gruppenüberschrift', () => {
+  it('folgt dem aktuellen Angebot (Treffer) und fällt sonst auf den Snapshot-Namen zurück', () => {
+    const { component } = setup();
+    component.invoices.set([
+      completeInvoice({ id: 'i1', offerId: 'o1', projectName: 'Alt (eingefroren)' })
+    ]);
+    const group = component.groupedInvoices()[0];
+    // Ohne Treffer in offersById: eingefrorener invoice.projectName.
+    expect(component.groupHeader(group)).toBe('Alt (eingefroren)');
+    // Mit Treffer: aktuelle Angebotsnummer + aktueller Projektname.
+    const offer: ContractorOffer = {
+      id: 'o1',
+      projectId: 'p1',
+      projectName: 'Neu (aktuell)',
+      offerNumber: 'AN-2026-003',
+      vatPercent: 19,
+      sections: []
+    };
+    component.offersById.set(new Map([['o1', offer]]));
+    expect(component.groupHeader(group)).toBe('AN-2026-003 · Neu (aktuell)');
   });
 });

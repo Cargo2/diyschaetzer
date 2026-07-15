@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import {
   ContractorOffer,
   ContractorOfferSection,
+  liftLegacyOfferAddress,
   offerGrossTotal
 } from '../models/contractor-offer.model';
 import {
@@ -383,33 +384,37 @@ export class ContractorInvoiceService {
   }
 
   /**
-   * Best-Effort-Zerlegung der mehrzeiligen Angebots-Anschrift in die
-   * strukturierten Käuferfelder (name/street/PLZ/Ort). Editierbar auf der Seite.
+   * Überführt die Angebots-Anschrift in die strukturierten Käuferfelder. Sind die
+   * strukturierten Felder des Angebots gepflegt (neues Modell), werden sie **direkt
+   * kopiert** (inkl. E-Mail); sonst greift der Legacy-Fallback über die geteilte
+   * PLZ-Zeilen-Heuristik ({@link liftLegacyOfferAddress}) auf das Freitextfeld
+   * `address`. Editierbar auf der Rechnungsseite.
    */
   private parseCustomer(
     source: ContractorOffer['customer']
   ): ContractorInvoiceCustomer {
     const customer = emptyInvoiceCustomer();
     customer.name = source?.name?.trim() ?? '';
-    const lines = (source?.address ?? '')
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-    if (lines.length === 0) {
+    const hasStructured = !!(
+      source?.street?.trim() ||
+      source?.postalCode?.trim() ||
+      source?.city?.trim()
+    );
+    if (hasStructured) {
+      customer.street = source?.street?.trim() ?? '';
+      customer.postalCode = source?.postalCode?.trim() ?? '';
+      customer.city = source?.city?.trim() ?? '';
+      customer.countryCode = source?.countryCode?.trim() || 'DE';
+      customer.email = source?.email?.trim() ?? '';
       return customer;
     }
-    // Letzte Zeile mit „PLZ Ort" (4–5 Ziffern + Rest) als Ort interpretieren.
-    const cityLineIndex = lines.findIndex((line) => /^\d{4,5}\s+\S/.test(line));
-    if (cityLineIndex >= 0) {
-      const match = /^(\d{4,5})\s+(.+)$/.exec(lines[cityLineIndex]);
-      if (match) {
-        customer.postalCode = match[1];
-        customer.city = match[2].trim();
-      }
-      const streetParts = lines.filter((_, index) => index !== cityLineIndex);
-      customer.street = streetParts.join(' ');
-    } else {
-      customer.street = lines.join(' ');
+    // Legacy: mehrzeiliger Freitext → strukturierte Felder (geteilte Heuristik).
+    const lifted = liftLegacyOfferAddress(source?.address);
+    customer.street = lifted.street;
+    customer.postalCode = lifted.postalCode;
+    customer.city = lifted.city;
+    if (source?.email?.trim()) {
+      customer.email = source.email.trim();
     }
     return customer;
   }

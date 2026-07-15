@@ -162,9 +162,26 @@ describe('ContractorOfferService', () => {
     const service = setup(500);
     const proj = project([room('r1', 'Bad OG')]);
     const offer = service.buildOffer(proj);
-    expect(offer.customer).toEqual({ name: '', address: '' });
+    expect(offer.customer).toEqual({
+      name: '',
+      street: '',
+      postalCode: '',
+      city: '',
+      countryCode: 'DE',
+      email: '',
+      address: ''
+    });
     expect(offer.offerNumber).toBe('');
     expect(offer.sourceUpdatedAt).toBe(proj.updatedAt);
+  });
+
+  it('nextOfferNumber: starts at 001, increments the current year, ignores gaps/other years', () => {
+    const service = setup(0);
+    expect(service.nextOfferNumber([], 2026)).toBe('AN-2026-001');
+    expect(service.nextOfferNumber(['AN-2026-001', 'AN-2026-004', 'AN-2025-050'], 2026)).toBe(
+      'AN-2026-005'
+    );
+    expect(service.nextOfferNumber(['AN-2025-099'], 2026)).toBe('AN-2026-001');
   });
 
   it('prefills a fresh offer from profile defaults (texts + surcharge)', () => {

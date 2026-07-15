@@ -92,9 +92,9 @@
                   {{ sharing() ? ('Link wird erstellt …' | t) : ('Teilen-Link erstellen' | t) }}
                 </button>
               }
-              <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb()"
+              <button type="button" class="btn-light" [disabled]="creatingInvoice() || !loadedFromDb() || !isSubscribed()"
                 (click)="createInvoiceFromOffer()"
-                [title]="loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t)">
+                [title]="!isSubscribed() ? ('Rechnungen erstellen erfordert ein aktives Premium-Abo.' | t) : (loadedFromDb() ? ('Nur aktive Pflichtpositionen werden übernommen' | t) : ('Speichere zuerst das Angebot' | t))">
                 {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Als Rechnung übernehmen' | t) }}
               </button>
             }
@@ -233,8 +233,26 @@
               <input type="text" [(ngModel)]="offer.customer!.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Name des Kunden' | t" [readonly]="locked()" />
             </label>
             <label class="meta-field">
-              <span>{{ 'Anschrift' | t }}</span>
-              <textarea rows="3" [(ngModel)]="offer.customer!.address" [ngModelOptions]="{ standalone: true }" [placeholder]="('Straße Nr.' | t) + '\n' + ('PLZ Ort' | t)" [readonly]="locked()"></textarea>
+              <span>{{ 'Straße & Nr.' | t }}</span>
+              <input type="text" [(ngModel)]="offer.customer!.street" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
+            </label>
+            <div class="meta-row">
+              <label class="meta-field meta-narrow">
+                <span>{{ 'PLZ' | t }}</span>
+                <input type="text" [(ngModel)]="offer.customer!.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [readonly]="locked()" />
+              </label>
+              <label class="meta-field">
+                <span>{{ 'Ort' | t }}</span>
+                <input type="text" [(ngModel)]="offer.customer!.city" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
+              </label>
+              <label class="meta-field meta-narrow">
+                <span>{{ 'Land' | t }}</span>
+                <input type="text" [(ngModel)]="offer.customer!.countryCode" [ngModelOptions]="{ standalone: true }" [readonly]="locked()" />
+              </label>
+            </div>
+            <label class="meta-field">
+              <span>{{ 'E-Mail' | t }}</span>
+              <input type="email" [(ngModel)]="offer.customer!.email" [ngModelOptions]="{ standalone: true }" [placeholder]="'kunde@beispiel.de' | t" inputmode="email" [readonly]="locked()" />
             </label>
           </div>
           <div class="meta-numbers">
@@ -441,15 +459,18 @@
               <input type="number" inputmode="decimal" step="1" min="1" max="100"
                 [(ngModel)]="depositPercent" [ngModelOptions]="{ standalone: true }" /> %
             </label>
-            <button type="button" class="btn-light" [disabled]="creatingInvoice()"
+            <button type="button" class="btn-light" [disabled]="creatingInvoice() || !isSubscribed()"
+              [title]="!isSubscribed() ? ('Rechnungen erstellen erfordert ein aktives Premium-Abo.' | t) : ''"
               (click)="createDepositInvoice()">
               {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Anzahlungsrechnung erstellen' | t) }}
             </button>
-            <button type="button" class="btn-light" [disabled]="creatingInvoice()"
+            <button type="button" class="btn-light" [disabled]="creatingInvoice() || !isSubscribed()"
+              [title]="!isSubscribed() ? ('Rechnungen erstellen erfordert ein aktives Premium-Abo.' | t) : ''"
               (click)="createPartialInvoice()">
               {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Abschlagsrechnung erstellen' | t) }}
             </button>
-            <button type="button" class="btn-light deposit-final-btn" [disabled]="creatingInvoice()"
+            <button type="button" class="btn-light deposit-final-btn" [disabled]="creatingInvoice() || !isSubscribed()"
+              [title]="!isSubscribed() ? ('Rechnungen erstellen erfordert ein aktives Premium-Abo.' | t) : ''"
               (click)="createFinalInvoice()">
               {{ creatingInvoice() ? ('Rechnung wird erstellt …' | t) : ('Schlussrechnung erstellen' | t) }}
             </button>

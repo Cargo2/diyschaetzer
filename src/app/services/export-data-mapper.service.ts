@@ -283,6 +283,12 @@ export class ExportDataMapperService {
     const offerMeta: ExportOfferMeta = {
       customerName: offer.customer?.name ?? '',
       customerAddress: offer.customer?.address ?? '',
+      customerAddressLines: this.addressLines(
+        offer.customer?.street ?? '',
+        offer.customer?.postalCode ?? '',
+        offer.customer?.city ?? ''
+      ),
+      customerEmail: offer.customer?.email ?? '',
       offerNumber: offer.offerNumber ?? '',
       offerDate: offer.offerDate ?? '',
       validUntil: offer.validUntil ?? ''

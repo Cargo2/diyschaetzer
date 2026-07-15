@@ -3,6 +3,7 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { SharedOfferPage } from '../../models/shared-offer-tracking.model';
 import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
+import { PdfExportService, PdfExportResult } from '../../services/pdf-export.service';
 import { SharedOfferComponent } from './shared-offer.component';
 
 function makeDoc(): ExportDocumentData {
@@ -37,9 +38,22 @@ function makeShareService(overrides: Partial<ContractorOfferShareService> = {}):
   } as ContractorOfferShareService;
 }
 
+function makePdfExportService(
+  overrides: Partial<PdfExportService> = {}
+): PdfExportService {
+  return {
+    exportDocument: async (): Promise<PdfExportResult> => ({
+      exported: true,
+      reason: 'downloaded'
+    }),
+    ...overrides
+  } as PdfExportService;
+}
+
 async function setup(
   serviceOverrides: Partial<ContractorOfferShareService> = {},
-  token: string | null = 'abc-token'
+  token: string | null = 'abc-token',
+  pdfExportOverrides: Partial<PdfExportService> = {}
 ): Promise<ComponentFixture<SharedOfferComponent>> {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -47,6 +61,7 @@ async function setup(
     providers: [
       provideRouter([]),
       { provide: ContractorOfferShareService, useValue: makeShareService(serviceOverrides) },
+      { provide: PdfExportService, useValue: makePdfExportService(pdfExportOverrides) },
       { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => token } } } }
     ]
   });
@@ -165,5 +180,49 @@ describe('SharedOfferComponent', () => {
     fixture.detectChanges();
 
     expect(component.acceptError()).toContain('Internetverbindung');
+  });
+
+  it('downloads the PDF via PdfExportService.exportDocument with the loaded document', async () => {
+    const exportDocument = vi.fn(async (): Promise<PdfExportResult> => ({
+      exported: true,
+      reason: 'downloaded'
+    }));
+    const fixture = await setup({}, 'abc-token', { exportDocument });
+    const component = fixture.componentInstance;
+
+    await component.downloadPdf();
+    fixture.detectChanges();
+
+    expect(exportDocument).toHaveBeenCalledWith(component.doc());
+    expect(component.pdfExporting()).toBe(false);
+    expect(component.pdfError()).toBeNull();
+  });
+
+  it('shows a German error message when the PDF export fails', async () => {
+    const fixture = await setup({}, 'abc-token', {
+      exportDocument: async (): Promise<PdfExportResult> => ({
+        exported: false,
+        reason: 'generation_failed'
+      })
+    });
+    const component = fixture.componentInstance;
+
+    await component.downloadPdf();
+    fixture.detectChanges();
+
+    expect(component.pdfError()).toContain('nicht erzeugt werden');
+    expect(fixture.nativeElement.textContent).toContain('nicht erzeugt werden');
+  });
+
+  it('renders a PDF download button that is disabled while exporting', async () => {
+    const fixture = await setup();
+    const component = fixture.componentInstance;
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.pdf-btn');
+    expect(button.textContent).toContain('Als PDF herunterladen');
+
+    component.pdfExporting.set(true);
+    fixture.detectChanges();
+    expect(button.disabled).toBe(true);
+    expect(button.textContent).toContain('PDF wird erstellt');
   });
 });

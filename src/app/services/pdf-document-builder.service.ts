@@ -219,10 +219,19 @@ export class PdfDocumentBuilderService {
     if (meta.customerName) {
       customerStack.push({ text: meta.customerName, bold: true });
     }
-    if (meta.customerAddress) {
-      customerStack.push({ text: meta.customerAddress });
+    // Strukturierte Zeilen bevorzugen; alte Snapshots fallen auf das Freitextfeld zurück.
+    const addressLines = meta.customerAddressLines?.length
+      ? meta.customerAddressLines
+      : meta.customerAddress
+        ? [meta.customerAddress]
+        : [];
+    for (const line of addressLines) {
+      customerStack.push({ text: line });
     }
-    if (!meta.customerName && !meta.customerAddress) {
+    if (meta.customerEmail) {
+      customerStack.push({ text: meta.customerEmail });
+    }
+    if (!meta.customerName && addressLines.length === 0 && !meta.customerEmail) {
       customerStack.push({ text: '—' });
     }
 

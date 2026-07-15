@@ -46,6 +46,24 @@ export class PdfExportService {
   }
 
   /**
+   * Erzeugt aus dem neutralen Exportmodell ein PDF als **Blob** – verhaltensgleich
+   * zu {@link exportDocument} (gleicher Builder + Branding-Overlay), aber OHNE
+   * Auslieferung (kein Download/Share) und ohne Access-Result. Für den Sammel-/
+   * ZIP-Export (mehrere Rechnungen in einer ZIP) gebraucht; das Feature-Gating
+   * bleibt beim Aufrufer/der Editor-Auslieferung.
+   */
+  async renderBlob(data: ExportDocumentData): Promise<Blob> {
+    const pdfMake = await this.loadPdfMake();
+    const definition = this.builder.build(this.branding.applyTo(data));
+    return this.toBlob(pdfMake.createPdf(definition));
+  }
+
+  /** Promise-Wrapper um den `getBlob`-Callback (ohne Download/Share-Seiteneffekt). */
+  private toBlob(pdf: PdfDoc): Promise<Blob> {
+    return new Promise<Blob>((resolve) => pdf.getBlob((blob: Blob) => resolve(blob)));
+  }
+
+  /**
    * Liefert das PDF aus. Auf Geräten mit Datei-Sharing (mobil, v. a. iOS/Android)
    * über die **Web Share API** (Teilen-/Speichern-Dialog) – dort ist der klassische
    * `download()` unzuverlässig (iOS-Safari). Sonst klassischer Download über einen

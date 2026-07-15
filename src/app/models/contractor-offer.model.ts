@@ -31,11 +31,77 @@ export interface ContractorOfferSection {
   lines: ContractorOfferLine[];
 }
 
-/** Anschrift des Angebotsempfängers (Kunde). */
+/**
+ * Anschrift des Angebotsempfängers (Kunde) – strukturiert, damit die Rechnung
+ * (§ 14 UStG / XRechnung) die Felder direkt übernehmen kann. `address` ist das
+ * Legacy-Freitextfeld älterer Angebote: bleibt optional erhalten (wird beim
+ * Normalisieren in die strukturierten Felder gehoben), damit alte gespeicherte
+ * Angebote weiter geladen und die geteilten Snapshots weiter gerendert werden.
+ */
 export interface ContractorOfferCustomer {
   name: string;
-  /** Mehrzeilige Anschrift (Straße, PLZ Ort …). */
-  address: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  /** Land (ISO 3166-1 alpha-2, Default `DE`). */
+  countryCode: string;
+  email: string;
+  /** Legacy: mehrzeilige Freitext-Anschrift (Straße, PLZ Ort …). */
+  address?: string;
+}
+
+/** Leere strukturierte Kundenanschrift (Formular-/Lade-Default). */
+export function emptyOfferCustomer(): ContractorOfferCustomer {
+  return { name: '', street: '', postalCode: '', city: '', countryCode: 'DE', email: '', address: '' };
+}
+
+/**
+ * Hebt eine mehrzeilige Freitext-Anschrift in Straße/PLZ/Ort (PLZ-Zeilen-
+ * Heuristik: erste Zeile `PLZ Ort` = 4–5 Ziffern + Rest, übrige Zeilen = Straße).
+ * Geteilt zwischen Angebots-Normalisierung und dem Rechnungs-Fallback.
+ */
+export function liftLegacyOfferAddress(address: string | null | undefined): {
+  street: string;
+  postalCode: string;
+  city: string;
+} {
+  const lines = (address ?? '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (lines.length === 0) {
+    return { street: '', postalCode: '', city: '' };
+  }
+  const cityLineIndex = lines.findIndex((line) => /^\d{4,5}\s+\S/.test(line));
+  if (cityLineIndex >= 0) {
+    const match = /^(\d{4,5})\s+(.+)$/.exec(lines[cityLineIndex]);
+    const postalCode = match ? match[1] : '';
+    const city = match ? match[2].trim() : '';
+    const street = lines.filter((_, index) => index !== cityLineIndex).join(' ');
+    return { street, postalCode, city };
+  }
+  return { street: lines.join(' '), postalCode: '', city: '' };
+}
+
+/**
+ * Normalisiert die Kundenanschrift: strukturierte Defaults auffüllen und – falls
+ * die strukturierten Felder leer, aber ein Legacy-Freitext (`address`) vorhanden
+ * ist – diesen per {@link liftLegacyOfferAddress} in die Felder heben. Der
+ * Freitext bleibt danach erhalten (wird beim nächsten Speichern mitgeschrieben,
+ * schadet aber nicht).
+ */
+function normalizeOfferCustomer(
+  customer: ContractorOfferCustomer | undefined
+): ContractorOfferCustomer {
+  const base = { ...emptyOfferCustomer(), ...(customer ?? {}) };
+  const hasStructured = !!(base.street.trim() || base.postalCode.trim() || base.city.trim());
+  if (!hasStructured && base.address?.trim()) {
+    const lifted = liftLegacyOfferAddress(base.address);
+    base.street = lifted.street;
+    base.postalCode = lifted.postalCode;
+    base.city = lifted.city;
+  }
+  return base;
 }
 
 /** Bearbeitungsstand eines Angebots (Versionierung). */
@@ -205,7 +271,7 @@ export function normalizeContractorOffer(offer: ContractorOffer): ContractorOffe
     offerNumber: offer.offerNumber ?? '',
     offerDate: offer.offerDate ?? offerTodayIso(),
     validUntil: offer.validUntil ?? '',
-    customer: offer.customer ?? { name: '', address: '' },
+    customer: normalizeOfferCustomer(offer.customer),
     introText: offer.introText ?? '',
     outroText: offer.outroText ?? '',
     materialBreakdown: offer.materialBreakdown ?? false,

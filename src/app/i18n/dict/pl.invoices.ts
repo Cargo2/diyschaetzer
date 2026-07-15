@@ -20,6 +20,16 @@ export const PL_INVOICES: Record<string, string> = {
   // --- Status-Label (dynamisch, DYNAMIC_KEYS) ---
   Bezahlt: 'Zapłacona',
 
+  // --- Bezahlt-Lock / Premium-Nur-Lese / Archiv-Hinweis (B1) ---
+  'Diese Rechnung ist bezahlt und unveränderlich.': 'Ta faktura jest opłacona i nie można jej już zmienić.',
+  'Bezahlt markieren? Die Rechnung ist danach unveränderlich.':
+    'Oznaczyć jako opłaconą? Faktura stanie się potem niezmienna.',
+  'Ohne Premium-Abo sind Rechnungen schreibgeschützt. Deine Daten bleiben erhalten — Ansehen, PDF/XML und Datenexport sind weiterhin möglich.':
+    'Bez abonamentu Premium faktury są tylko do odczytu. Twoje dane pozostają zachowane — podgląd, PDF/XML i eksport danych są nadal dostępne.',
+  'Hinweis: Es gibt keine Langzeitarchivierung. Die gesetzliche Aufbewahrung (§ 147 AO / GoBD) obliegt dir — exportiere Rechnungen regelmäßig in dein Archiv- oder Buchhaltungssystem.':
+    'Uwaga: brak długoterminowej archiwizacji. Ustawowe przechowywanie (§ 147 AO / GoBD) należy do Ciebie — regularnie eksportuj faktury do swojego systemu archiwizacji lub księgowości.',
+  'Mehr in der Anleitung': 'Więcej w instrukcji',
+
   // --- Seite / Liste ---
   'Rechnungen entstehen aus einem gespeicherten Angebot über': 'Faktury powstają z zapisanej oferty przez',
   '. Hier verwaltest du sie, lädst PDF und XRechnung (XML) herunter und passt Pflichtangaben (§ 14 UStG) an.':
@@ -122,5 +132,19 @@ export const PL_INVOICES: Record<string, string> = {
   'PLZ (Kunde)': 'Kod pocztowy (klient)',
   'Ort (Kunde)': 'Miejscowość (klient)',
   'E-Mail des Kunden (Pflicht für XRechnung-Versand)': 'E-mail klienta (wymagany do wysyłki e-faktury XRechnung)',
-  'Mindestens eine aktive Position': 'Co najmniej jedna aktywna pozycja'
+  'Mindestens eine aktive Position': 'Co najmniej jedna aktywna pozycja',
+
+  // --- Datenexport (B2: ZIP – PDFs + XRechnung-XML + CSV) ---
+  Datenexport: 'Eksport danych',
+  'Exportiere Rechnungen als ZIP — PDFs, XRechnung-XML und CSV-Übersicht — für dein Archiv- oder Buchhaltungssystem.':
+    'Eksportuj faktury jako ZIP — pliki PDF, XML e-faktury XRechnung i zestawienie CSV — do swojego systemu archiwizacji lub księgowości.',
+  'Zeitraum von': 'Okres od',
+  'Zeitraum bis': 'Okres do',
+  'Nummer von': 'Numer od',
+  'Nummer bis': 'Numer do',
+  'ZIP exportieren': 'Eksportuj ZIP',
+  'Export läuft …': 'Trwa eksport…',
+  'Rechnungen exportiert.': 'faktur wyeksportowano.',
+  'Keine Rechnungen im gewählten Bereich.': 'Brak faktur w wybranym zakresie.',
+  'Export fehlgeschlagen. Bitte erneut versuchen.': 'Eksport nie powiódł się. Spróbuj ponownie.'
 };

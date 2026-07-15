@@ -338,7 +338,34 @@ export class ContractorOffersComponent implements OnInit {
       this.setWorking(latest, true, project);
     } else {
       const fresh = this.offerService.buildOffer(project, undefined, this.offerDefaults);
+      // Frisches V1 bekommt automatisch die nächste Angebotsnummer (projektübergreifend).
+      if (!fresh.offerNumber) {
+        await this.assignNextOfferNumber(fresh, token);
+        if (token !== this.loadToken) {
+          return; // Ein neuerer Projektwechsel hat diese Ladung überholt.
+        }
+      }
       this.setWorking(fresh, false, project);
+    }
+  }
+
+  /**
+   * Vergibt die nächste Angebotsnummer `AN-<JJJJ>-<NNN>` an ein frisch erzeugtes
+   * Angebot – auf Basis aller (projektübergreifend) gespeicherten Angebotsnummern
+   * des Profis. Bei Backend-Fehler bleibt die Nummer leer (im Editor manuell
+   * überschreibbar). Das Ladungs-Token schützt gegen schnelle Projektwechsel.
+   */
+  private async assignNextOfferNumber(offer: ContractorOffer, token: number): Promise<void> {
+    try {
+      const numbers = (await this.repository.listMine())
+        .map((entry) => entry.offerNumber ?? '')
+        .filter((number) => number.length > 0);
+      if (token !== this.loadToken) {
+        return;
+      }
+      offer.offerNumber = this.offerService.nextOfferNumber(numbers);
+    } catch {
+      // Ohne Nummernliste bleibt die Angebotsnummer leer – editierbar im Editor.
     }
   }
 

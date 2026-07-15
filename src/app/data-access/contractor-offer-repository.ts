@@ -11,6 +11,11 @@ export interface ContractorOfferRepository {
   /** Alle Angebote/Versionen eines Projekts (aufsteigend nach Version). */
   listByProject(projectId: string): Promise<ContractorOffer[]>;
   /**
+   * Alle Angebote/Versionen des angemeldeten Profis (projektübergreifend, owner-
+   * scoped über RLS) – Basis u. a. für die automatische Angebotsnummer.
+   */
+  listMine(): Promise<ContractorOffer[]>;
+  /**
    * Anzahl ALLER gespeicherten Angebote/Versionen des angemeldeten Profis
    * (projektübergreifend) – Basis für die Free-Limit-Anzeige (max. 3), die den
    * serverseitigen Trigger spiegelt.

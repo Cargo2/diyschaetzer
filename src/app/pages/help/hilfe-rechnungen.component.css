@@ -1,0 +1,135 @@
+.hilfe-page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.hilfe-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+}
+
+.hilfe-intro {
+  margin: 0 0 1rem;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toc a {
+  font-size: 0.85rem;
+  color: #047857;
+  text-decoration: none;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  text-decoration: underline;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  padding: 1.25rem 1.4rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.panel p {
+  margin: 0 0 0.75rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.panel p:last-child {
+  margin-bottom: 0;
+}
+
+.panel ul,
+.panel ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.3rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.panel ul:last-child,
+.panel ol:last-child {
+  margin-bottom: 0;
+}
+
+.panel li {
+  margin-bottom: 0.35rem;
+}
+
+.panel dl {
+  margin: 0;
+}
+
+.panel dt {
+  font-weight: 700;
+  margin-top: 0.9rem;
+  color: #111827;
+}
+
+.panel dt:first-child {
+  margin-top: 0;
+}
+
+.panel dd {
+  margin: 0.25rem 0 0;
+  color: #374151;
+  line-height: 1.55;
+}
+
+.panel-warning {
+  border-color: #fbbf24;
+  background: #fffbeb;
+}
+
+.panel-warning h2 {
+  color: #92400e;
+}
+
+.panel-warning p {
+  color: #78350f;
+}
+
+.hilfe-back {
+  margin: 0.5rem 0 0;
+}
+
+.hilfe-back a {
+  color: #047857;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hilfe-back a:hover,
+.hilfe-back a:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .hilfe-page {
+    padding: 1rem 0.7rem 3rem;
+  }
+
+  .panel {
+    padding: 1rem 1.1rem;
+  }
+}

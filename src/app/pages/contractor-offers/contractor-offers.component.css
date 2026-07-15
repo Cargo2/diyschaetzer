@@ -430,6 +430,16 @@
   gap: .25rem;
 }
 
+.meta-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: .6rem;
+}
+
+.meta-narrow {
+  max-width: 7rem;
+}
+
 .meta-field span {
   font-size: .8rem;
   font-weight: 600;

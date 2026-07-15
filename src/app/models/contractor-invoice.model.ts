@@ -264,7 +264,7 @@ export function invoiceAsOffer(invoice: ContractorInvoice): ContractorOffer {
     vatPercent: toNumber(invoice.vatPercent),
     discountPercent: toNumber(invoice.discountPercent),
     sections: invoice.sections,
-    customer: { name: invoice.customer.name, address: '' }
+    customer: { ...invoice.customer, address: '' }
   } as ContractorOffer;
 }
 

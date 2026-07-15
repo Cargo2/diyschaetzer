@@ -20,6 +20,16 @@ export const EN_INVOICES: Record<string, string> = {
   // --- Status-Label (dynamisch, DYNAMIC_KEYS) ---
   Bezahlt: 'Paid',
 
+  // --- Bezahlt-Lock / Premium-Nur-Lese / Archiv-Hinweis (B1) ---
+  'Diese Rechnung ist bezahlt und unveränderlich.': 'This invoice is paid and can no longer be changed.',
+  'Bezahlt markieren? Die Rechnung ist danach unveränderlich.':
+    'Mark as paid? The invoice becomes unchangeable afterwards.',
+  'Ohne Premium-Abo sind Rechnungen schreibgeschützt. Deine Daten bleiben erhalten — Ansehen, PDF/XML und Datenexport sind weiterhin möglich.':
+    'Without a Premium subscription, invoices are read-only. Your data is retained — viewing, PDF/XML and data export remain available.',
+  'Hinweis: Es gibt keine Langzeitarchivierung. Die gesetzliche Aufbewahrung (§ 147 AO / GoBD) obliegt dir — exportiere Rechnungen regelmäßig in dein Archiv- oder Buchhaltungssystem.':
+    'Note: there is no long-term archiving. Statutory retention (Sec. 147 German Fiscal Code / GoBD) is your responsibility — export invoices regularly into your archiving or accounting system.',
+  'Mehr in der Anleitung': 'More in the guide',
+
   // --- Seite / Liste ---
   'Rechnungen entstehen aus einem gespeicherten Angebot über': 'Invoices are created from a saved offer via',
   '. Hier verwaltest du sie, lädst PDF und XRechnung (XML) herunter und passt Pflichtangaben (§ 14 UStG) an.':
@@ -122,5 +132,19 @@ export const EN_INVOICES: Record<string, string> = {
   'PLZ (Kunde)': 'Postal code (customer)',
   'Ort (Kunde)': 'City (customer)',
   'E-Mail des Kunden (Pflicht für XRechnung-Versand)': 'Customer email (required for XRechnung delivery)',
-  'Mindestens eine aktive Position': 'At least one active line item'
+  'Mindestens eine aktive Position': 'At least one active line item',
+
+  // --- Datenexport (B2: ZIP – PDFs + XRechnung-XML + CSV) ---
+  Datenexport: 'Data export',
+  'Exportiere Rechnungen als ZIP — PDFs, XRechnung-XML und CSV-Übersicht — für dein Archiv- oder Buchhaltungssystem.':
+    'Export invoices as a ZIP — PDFs, XRechnung XML and a CSV overview — for your archiving or accounting system.',
+  'Zeitraum von': 'Period from',
+  'Zeitraum bis': 'Period to',
+  'Nummer von': 'Number from',
+  'Nummer bis': 'Number to',
+  'ZIP exportieren': 'Export ZIP',
+  'Export läuft …': 'Export running …',
+  'Rechnungen exportiert.': 'invoices exported.',
+  'Keine Rechnungen im gewählten Bereich.': 'No invoices in the selected range.',
+  'Export fehlgeschlagen. Bitte erneut versuchen.': 'Export failed. Please try again.'
 };

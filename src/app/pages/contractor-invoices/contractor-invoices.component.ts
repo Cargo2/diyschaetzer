@@ -25,6 +25,7 @@ import {
   SettledPayment
 } from '../../models/contractor-invoice.model';
 import {
+  ContractorOffer,
   ContractorOfferLine,
   ContractorOfferSection,
   offerLineNumber,
@@ -39,9 +40,12 @@ import {
 } from '../../services/contractor-invoice.service';
 import { CompanyProfileService } from '../../services/company-profile.service';
 import { CONTRACTOR_INVOICE_REPOSITORY } from '../../data-access/contractor-invoice-repository';
+import { CONTRACTOR_OFFER_REPOSITORY } from '../../data-access/contractor-offer-repository';
+import { SubscriptionStatusService } from '../../services/subscription-status.service';
 import { ExportDataMapperService } from '../../services/export-data-mapper.service';
 import { ContractorBrandingService } from '../../services/contractor-branding.service';
 import { XRechnungExportService } from '../../services/xrechnung-export.service';
+import { InvoiceExportService } from '../../services/invoice-export.service';
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
 import { I18nService } from '../../i18n/i18n.service';
@@ -92,11 +96,14 @@ interface InvoiceGroup {
 })
 export class ContractorInvoicesComponent implements OnInit {
   private readonly repository = inject(CONTRACTOR_INVOICE_REPOSITORY);
+  private readonly offerRepository = inject(CONTRACTOR_OFFER_REPOSITORY);
   private readonly invoiceService = inject(ContractorInvoiceService);
   private readonly companyProfile = inject(CompanyProfileService);
   private readonly exportMapper = inject(ExportDataMapperService);
   private readonly branding = inject(ContractorBrandingService);
   private readonly xrechnung = inject(XRechnungExportService);
+  private readonly invoiceExport = inject(InvoiceExportService);
+  private readonly subscriptionStatus = inject(SubscriptionStatusService);
   private readonly i18n = inject(I18nService);
 
   readonly loading = signal(true);
@@ -110,6 +117,54 @@ export class ContractorInvoicesComponent implements OnInit {
   readonly invoices = signal<ContractorInvoice[]>([]);
   /** ID der Rechnung, die gerade als „bezahlt" markiert wird (Busy-Guard). */
   readonly markingPaidId = signal<string | null>(null);
+
+  // ---- Datenexport (ZIP: PDFs + XRechnung-XMLs + CSV-Übersicht) -------------
+  /** Optionaler Zeitraum-Filter (ISO `yyyy-mm-dd`); leer = offen. */
+  exportDateFrom = '';
+  exportDateTo = '';
+  /** Optionaler Rechnungsnummern-Filter (String-Bereich); leer = offen. */
+  exportNumberFrom = '';
+  exportNumberTo = '';
+  /** Läuft der ZIP-Export gerade? Sperrt die Sektion nur während des Exports. */
+  readonly exporting = signal(false);
+  /** Zahl der zuletzt exportierten Rechnungen (für die Ergebnismeldung). */
+  readonly exportedCount = signal(0);
+  /** Ergebnis der letzten Exportaktion (steuert die Meldung). */
+  readonly exportState = signal<'success' | 'empty' | 'error' | null>(null);
+
+  /**
+   * Bezahlt-Lock: `true`, sobald die im Editor offene Rechnung **bezahlt und
+   * gespeichert** ist – dann ist sie unveränderlich (§-14-Snapshot bleibt ehrlich).
+   * Bewusst ein Signal, NICHT aus `invoice.status` abgeleitet: der Lock greift erst
+   * NACH dem Speichern, nicht schon beim Wählen von „Bezahlt" im Status-Dropdown.
+   * Gesetzt an genau drei Stellen: {@link setWorking} (Laden), {@link save} (nach
+   * erfolgreichem Speichern) und – via `setWorking` – in {@link markPaid}.
+   */
+  readonly paidLock = signal(false);
+
+  /**
+   * Premium-Nur-Lese-Modus (client-seitig v1): ohne aktives Abo ist das
+   * Rechnungs-SCHREIBEN gesperrt (Ansehen/PDF/XML/Export bleiben frei). Bewusst
+   * hier direkt aus dem {@link SubscriptionStatusService} abgeleitet und NICHT
+   * über `FeatureAccessService`, um den Zyklus FeatureAccess ↔ SubscriptionStatus
+   * zu vermeiden (SubscriptionStatusService injiziert FeatureAccessService bereits).
+   */
+  readonly readOnly = computed(() => !this.subscriptionStatus.isActive());
+
+  /**
+   * Kombinierte Bearbeitbarkeit: nur wenn die Rechnung weder bezahlt-gesperrt noch
+   * abo-schreibgeschützt ist. Die Editor-Templates binden EINHEITLICH hieran, statt
+   * `paidLock`/`readOnly` doppelt zu streuen.
+   */
+  readonly editable = computed(() => !this.paidLock() && !this.readOnly());
+
+  /**
+   * Angebote des Profis nach `id` (projektübergreifend), einmalig beim Laden geholt.
+   * Basis der Live-Gruppenüberschrift: Wird ein Angebot umbenannt, folgt der
+   * Rechnungs-Gruppenkopf dem **aktuellen** Angebotsnamen statt dem eingefrorenen
+   * `invoice.projectName`. Leer (Backend-Fehler) ⇒ Fallback auf den Snapshot-Namen.
+   */
+  readonly offersById = signal<Map<string, ContractorOffer>>(new Map());
   /**
    * Key der aktuell aufgeklappten Rechnungskette (Accordion – höchstens EINE Gruppe
    * gleichzeitig offen; `null` = alle zu). Die Sammelgruppe „Weitere Rechnungen"
@@ -162,6 +217,8 @@ export class ContractorInvoicesComponent implements OnInit {
   /** Editierbare Arbeitskopie der aktuellen Rechnung. */
   invoice: ContractorInvoice | null = null;
   confirmingDeleteId: string | null = null;
+  /** ID der Rechnung, deren „Bezahlt markieren" gerade bestätigt werden soll. */
+  confirmingMarkPaidId: string | null = null;
 
   /**
    * Aufgabe X1: XRechnung ist nur für Betriebe mit Sitz in Deutschland relevant
@@ -233,13 +290,59 @@ export class ContractorInvoicesComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     // Frisch aus dem Angebot übernommene (noch ungespeicherte) Rechnung abholen.
     const pending = this.invoiceService.takePending();
+    // Abo-Status für den Nur-Lese-Modus laden (No-op ohne Browser/Supabase/Profi).
+    await this.subscriptionStatus.ensureLoaded();
     await this.loadList();
+    // Angebots-Metadaten (für die Live-Gruppenüberschrift) parallel/danach – Fehler geschluckt.
+    await this.loadOffersMeta();
     if (pending) {
       this.setWorking(pending, false);
     } else if (this.invoices().length > 0) {
       this.setWorking(this.invoices()[0], true);
     }
     this.loading.set(false);
+  }
+
+  /**
+   * Lädt alle Angebote des Profis (projektübergreifend) und indiziert sie nach
+   * `id` für die Live-Gruppenüberschrift. Fehler werden geschluckt – dann greift
+   * der Fallback auf den eingefrorenen `invoice.projectName` der Gruppe.
+   */
+  private async loadOffersMeta(): Promise<void> {
+    try {
+      const offers = await this.offerRepository.listMine();
+      const map = new Map<string, ContractorOffer>();
+      for (const offer of offers) {
+        if (offer.id) {
+          map.set(offer.id, offer);
+        }
+      }
+      this.offersById.set(map);
+    } catch {
+      // Backend offline o. Ä.: Gruppenkopf nutzt den eingefrorenen Snapshot-Namen.
+    }
+  }
+
+  /**
+   * Live-Gruppenüberschrift einer Rechnungskette: folgt dem **aktuellen**
+   * Angebot (Umbenennung), sofern es (noch) existiert. Darstellung bewusst schlank:
+   * `„AN-… · Projektname"` (Angebotsnummer nur wenn vergeben; Versions-`label` nur
+   * ergänzt, wenn gesetzt und ungleich dem Namen). Ohne Angebotstreffer (gelöscht /
+   * Backend-Fehler) bleibt der eingefrorene `invoice.projectName` der Gruppe stehen.
+   */
+  groupHeader(group: InvoiceGroup): string {
+    const offer = this.offersById().get(group.key);
+    if (!offer) {
+      return group.title || '—';
+    }
+    const name = (offer.projectName || group.title || '—').trim();
+    const number = offer.offerNumber?.trim();
+    const label = offer.label?.trim();
+    let header = number ? `${number} · ${name}` : name;
+    if (label && label !== name) {
+      header += ` · ${label}`;
+    }
+    return header;
   }
 
   private async loadList(): Promise<void> {
@@ -256,6 +359,9 @@ export class ContractorInvoicesComponent implements OnInit {
   private setWorking(invoice: ContractorInvoice, fromDb: boolean): void {
     this.invoice = normalizeContractorInvoice({ ...invoice });
     this.loadedFromDb.set(fromDb);
+    // Bezahlt-Lock nur für eine gespeicherte, bereits bezahlte Rechnung (greift auch
+    // nach markPaid, das über diese Methode einspeist); frische/übernommene: kein Lock.
+    this.paidLock.set(fromDb && this.invoice.status === 'paid');
     // Kette der geöffneten Rechnung automatisch aufklappen, damit die aktive Zeile
     // sichtbar ist (greift bei initialem Laden, takePending, selectInvoice, markPaid).
     this.expandedGroupKey.set(this.invoice.offerId ?? '__none__');
@@ -297,7 +403,8 @@ export class ContractorInvoicesComponent implements OnInit {
   // ---- Speichern / Löschen -------------------------------------------------
 
   async save(): Promise<void> {
-    if (!this.invoice) {
+    // Nicht speicherbar ohne Rechnung, unter Bezahlt-Lock oder im Abo-Nur-Lese-Modus.
+    if (!this.invoice || !this.editable()) {
       return;
     }
     this.resetFeedback();
@@ -306,6 +413,8 @@ export class ContractorInvoicesComponent implements OnInit {
     try {
       await this.repository.save(this.invoice);
       this.loadedFromDb.set(true);
+      // Bezahlt-Lock greift jetzt (nach dem Speichern), wenn „Bezahlt" gewählt wurde.
+      this.paidLock.set(this.invoice.status === 'paid');
       this.saveSuccess.set(this.i18n.t('Rechnung gespeichert.'));
       await this.loadList();
     } catch (error) {
@@ -329,7 +438,7 @@ export class ContractorInvoicesComponent implements OnInit {
    * wird erst mit „Speichern" persistiert.
    */
   async refreshSellerFromProfile(): Promise<void> {
-    if (!this.invoice) {
+    if (!this.invoice || !this.editable()) {
       return;
     }
     this.resetFeedback();
@@ -359,6 +468,11 @@ export class ContractorInvoicesComponent implements OnInit {
 
   async confirmDelete(id: string): Promise<void> {
     this.confirmingDeleteId = null;
+    // Löschen bleibt unter dem Bezahlt-Lock erlaubt, im Abo-Nur-Lese-Modus jedoch nicht
+    // (Datenerhalt-Zusage: „Deine Daten bleiben erhalten").
+    if (this.readOnly()) {
+      return;
+    }
     try {
       await this.repository.delete(id);
     } catch {
@@ -383,6 +497,34 @@ export class ContractorInvoicesComponent implements OnInit {
     this.xrechnung.download(sanitizeContractorInvoice(this.invoice));
   }
 
+  /**
+   * Sammel-Export aller Rechnungen (gefiltert) als ZIP – PDFs + XRechnung-XMLs +
+   * CSV-Übersicht fürs Archiv/Buchhaltungssystem. Bewusst unabhängig vom Editor und
+   * vom Nur-Lese-Modus: der Export bleibt auch ohne Abo möglich (Datenerhalt-Zusage).
+   * Leere Filter = alle Rechnungen. Nur während des laufenden Exports gesperrt.
+   */
+  async exportInvoices(): Promise<void> {
+    if (this.exporting()) {
+      return;
+    }
+    this.exportState.set(null);
+    this.exporting.set(true);
+    try {
+      const { count } = await this.invoiceExport.exportZip(this.invoices(), {
+        dateFrom: this.exportDateFrom || undefined,
+        dateTo: this.exportDateTo || undefined,
+        numberFrom: this.exportNumberFrom || undefined,
+        numberTo: this.exportNumberTo || undefined
+      });
+      this.exportedCount.set(count);
+      this.exportState.set(count > 0 ? 'success' : 'empty');
+    } catch {
+      this.exportState.set('error');
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
   private buildExportData(): ExportDocumentData {
     const data = this.exportMapper.buildContractorInvoiceExportData(
       sanitizeContractorInvoice(this.invoice!)
@@ -393,6 +535,9 @@ export class ContractorInvoicesComponent implements OnInit {
   // ---- Editieren -----------------------------------------------------------
 
   addLine(section: ContractorOfferSection): void {
+    if (!this.editable()) {
+      return;
+    }
     section.lines.push({
       id: this.createId(),
       label: 'Neue Position',
@@ -407,14 +552,23 @@ export class ContractorInvoicesComponent implements OnInit {
   }
 
   removeLine(section: ContractorOfferSection, line: ContractorOfferLine): void {
+    if (!this.editable()) {
+      return;
+    }
     section.lines = section.lines.filter((entry) => entry !== line);
   }
 
   moveLine(section: ContractorOfferSection, index: number, direction: -1 | 1): void {
+    if (!this.editable()) {
+      return;
+    }
     this.swap(section.lines, index, index + direction);
   }
 
   addSection(): void {
+    if (!this.editable()) {
+      return;
+    }
     this.invoice?.sections.push({
       id: this.createId(),
       kind: 'custom',
@@ -424,12 +578,18 @@ export class ContractorInvoicesComponent implements OnInit {
   }
 
   removeSection(section: ContractorOfferSection): void {
+    if (!this.editable()) {
+      return;
+    }
     if (this.invoice) {
       this.invoice.sections = this.invoice.sections.filter((entry) => entry !== section);
     }
   }
 
   moveSection(index: number, direction: -1 | 1): void {
+    if (!this.editable()) {
+      return;
+    }
     if (this.invoice) {
       this.swap(this.invoice.sections, index, index + direction);
     }
@@ -539,13 +699,26 @@ export class ContractorInvoicesComponent implements OnInit {
     return this.invoice ? invoicePayableGross(this.invoice) : 0;
   }
 
+  /** Öffnet die Inline-Bestätigung „Bezahlt markieren?" für eine Listenzeile. */
+  requestMarkPaid(id: string): void {
+    this.confirmingMarkPaidId = id;
+  }
+
+  cancelMarkPaid(): void {
+    this.confirmingMarkPaidId = null;
+  }
+
   /**
-   * Markiert eine Rechnung als bezahlt (Quick-Action der Liste). Persistiert eine
+   * Markiert eine Rechnung als bezahlt (bestätigte Quick-Action der Liste – die
+   * Aktion ist faktisch irreversibel, siehe Bezahlt-Lock). Persistiert eine
    * **Kopie** mit `status: 'paid'` (KEINE In-Place-Mutation des Listeneintrags),
-   * lädt danach die Liste neu und spiegelt den Stand in den offenen Editor.
+   * lädt danach die Liste neu und spiegelt den Stand in den offenen Editor (wodurch
+   * `setWorking` dort den Bezahlt-Lock setzt).
    */
   async markPaid(invoice: ContractorInvoice): Promise<void> {
-    if (invoice.status === 'paid' || this.markingPaidId() !== null || !invoice.id) {
+    this.confirmingMarkPaidId = null;
+    // Im Abo-Nur-Lese-Modus ist auch das Bezahlt-Markieren gesperrt.
+    if (this.readOnly() || invoice.status === 'paid' || this.markingPaidId() !== null || !invoice.id) {
       return;
     }
     this.resetFeedback();

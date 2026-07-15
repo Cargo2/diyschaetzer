@@ -95,7 +95,15 @@ export interface ExportBrandingData {
 /** Kopfdaten eines Profi-Angebots (Empfänger + Angebotsmeta) für den Export-Header. */
 export interface ExportOfferMeta {
   customerName: string;
+  /**
+   * Legacy-Freitext-Anschrift (eine Zeile). Für **alte** gespeicherte Snapshots
+   * beibehalten; neue Exporte füllen zusätzlich {@link customerAddressLines}.
+   */
   customerAddress: string;
+  /** Strukturierte Anschriftszeilen (Straße, „PLZ Ort"). Bevorzugt vor `customerAddress`. */
+  customerAddressLines: string[];
+  /** E-Mail des Kunden. */
+  customerEmail: string;
   offerNumber: string;
   offerDate: string;
   validUntil: string;

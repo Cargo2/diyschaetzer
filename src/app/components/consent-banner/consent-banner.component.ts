@@ -122,12 +122,25 @@ import { ConsentService } from '../../services/consent.service';
          max-width + fixed leicht asymmetrisch werden. Breite über width/min() statt
          max-width, damit der Rand zu beiden Seiten immer exakt gleich bleibt. */
       left: 50%;
+      /* vh-Fallback für ältere Browser ohne dvh-Support, danach dvh überschreiben. */
+      max-height: calc(100vh - 2rem);
+      max-height: calc(100dvh - 2rem);
+      overflow-y: auto;
       padding: 0.95rem 1.2rem;
       position: fixed;
       transform: translateX(-50%);
       width: min(60rem, calc(100vw - 2rem));
       z-index: 60;
-      animation: rise-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      /* Eigene Keyframes statt der globalen rise-in (styles.css): die dortigen
+         Keyframes animieren nur translateY und würden mit fill-mode "both" das
+         statische translateX(-50%) dauerhaft überschreiben (Banner läuft aus der
+         Bildschirmmitte statt zentriert zu bleiben). Hier wird -50% mitanimiert. */
+      animation: consent-rise-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes consent-rise-in {
+      from { opacity: 0; transform: translate(-50%, 14px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
     }
 
     .consent-text {

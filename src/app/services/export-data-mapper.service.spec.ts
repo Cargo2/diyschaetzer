@@ -391,6 +391,49 @@ describe('ExportDataMapperService', () => {
     expect(result.totals.grossTotal).toBe(2421.65);
   });
 
+  it('builds structured customer address lines and email in the offer meta', () => {
+    const result = service.buildContractorOfferExportData({
+      projectId: 'p1',
+      projectName: 'Sanierung',
+      vatPercent: 19,
+      customer: {
+        name: 'Erika Beispiel',
+        street: 'Musterweg 3',
+        postalCode: '50667',
+        city: 'Köln',
+        countryCode: 'DE',
+        email: 'erika@example.com',
+        address: 'Musterweg 3\n50667 Köln'
+      },
+      sections: [
+        {
+          id: 'r1',
+          kind: 'room',
+          title: 'Bad',
+          lines: [
+            {
+              id: 'r1:a',
+              label: 'Verlegen',
+              description: '',
+              quantity: 1,
+              unit: 'pauschal',
+              unitPrice: 100,
+              isActive: true,
+              isOptional: false,
+              origin: 'generated'
+            }
+          ]
+        }
+      ]
+    });
+
+    expect(result.offerMeta?.customerName).toBe('Erika Beispiel');
+    expect(result.offerMeta?.customerAddressLines).toEqual(['Musterweg 3', '50667 Köln']);
+    expect(result.offerMeta?.customerEmail).toBe('erika@example.com');
+    // Legacy-Freitext bleibt als Fallback erhalten.
+    expect(result.offerMeta?.customerAddress).toBe('Musterweg 3\n50667 Köln');
+  });
+
   describe('buildContractorInvoiceExportData taxNote (Aufgabe X1: § 19-Hinweis nur für DE)', () => {
     it('adds the § 19 UStG notice for a German seller at 0 % VAT', () => {
       const result = service.buildContractorInvoiceExportData(invoiceWithSeller('DE', 0));

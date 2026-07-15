@@ -22,7 +22,7 @@ function offerWithMixedLines(): ContractorOffer {
     vatPercent: 19,
     discountPercent: 10,
     outroText: 'Zahlbar in 14 Tagen.',
-    customer: { name: 'Max Muster', address: 'Musterweg 3\n50667 Köln' },
+    customer: { name: 'Max Muster', address: 'Musterweg 3\n50667 Köln' } as ContractorOffer['customer'],
     sections: [
       {
         id: 'site_setup',
@@ -160,6 +160,50 @@ describe('ContractorInvoiceService.buildFromOffer', () => {
     expect(invoice.invoiceNumber).toMatch(/^RE-\d{4}-001$/);
     expect(invoice.serviceDate).toBe(invoice.invoiceDate);
     expect(invoice.dueDate > invoice.invoiceDate).toBe(true);
+  });
+});
+
+describe('ContractorInvoiceService.buildFromOffer customer parsing', () => {
+  const service = new ContractorInvoiceService();
+
+  it('copies structured customer fields directly (incl. e-mail), ignoring the legacy address', () => {
+    const offer: ContractorOffer = {
+      ...offerWithMixedLines(),
+      customer: {
+        name: 'Erika Beispiel',
+        street: 'Neue Gasse 7',
+        postalCode: '10115',
+        city: 'Berlin',
+        countryCode: 'AT',
+        email: 'erika@example.com',
+        // Freitext bewusst abweichend → darf NICHT gewinnen, wenn strukturiert vorhanden.
+        address: 'Alte Str. 1\n99999 Anderswo'
+      }
+    };
+    const invoice = service.buildFromOffer(offer, profile(), []);
+    expect(invoice.customer).toMatchObject({
+      name: 'Erika Beispiel',
+      street: 'Neue Gasse 7',
+      postalCode: '10115',
+      city: 'Berlin',
+      countryCode: 'AT',
+      email: 'erika@example.com'
+    });
+  });
+
+  it('falls back to the legacy freetext heuristic when structured fields are empty', () => {
+    const offer: ContractorOffer = {
+      ...offerWithMixedLines(),
+      customer: { name: 'Max Muster', address: 'Musterweg 3\n50667 Köln' } as ContractorOffer['customer']
+    };
+    const invoice = service.buildFromOffer(offer, profile(), []);
+    expect(invoice.customer).toMatchObject({
+      name: 'Max Muster',
+      street: 'Musterweg 3',
+      postalCode: '50667',
+      city: 'Köln',
+      countryCode: 'DE'
+    });
   });
 });
 
@@ -355,7 +399,7 @@ function offerForFinal(): ContractorOffer {
     vatPercent: 0,
     discountPercent: 0,
     outroText: 'Zahlbar in 14 Tagen.',
-    customer: { name: 'Kunde', address: 'Weg 1\n12345 Stadt' },
+    customer: { name: 'Kunde', address: 'Weg 1\n12345 Stadt' } as ContractorOffer['customer'],
     sections: [
       {
         id: 'room',

@@ -105,6 +105,16 @@ export const MARKETING_ROUTES: Routes = [
         (m) => m.ContractorLeadsComponent
       )
   },
+  {
+    // Anwenderdoku „Rechnungen" (Rechnungsarten/Zustände/XRechnung/Datenexport/
+    // Aufbewahrung/Kündigung). Bewusst DEUTSCH-only, kein i18n-Wrapping.
+    path: 'hilfe/rechnungen',
+    canActivate: [appRedirectGuard, contractorGuard],
+    loadComponent: () =>
+      import('./pages/help/hilfe-rechnungen.component').then(
+        (m) => m.HilfeRechnungenComponent
+      )
+  },
   // Double-Opt-in-Bestätigung: öffentlich (kein Guard), rein clientseitig – nie prerendern.
   {
     path: 'lead-bestaetigen/:token',

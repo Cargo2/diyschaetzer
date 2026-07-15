@@ -538,6 +538,9 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   Angebots-Editor.
   (d) i18n-Rest erledigt (Dashboard/Materialliste/Zusammenfassungen/Annahmen/Lead-Formular, ~320
   Key-Paare). **Offen**: Muttersprachler-Review aller Dictionaries, ggf. PL-Landingpage für Ads.
+  (e) Anwenderdoku `/hilfe/rechnungen` + Kündigungs-Hinweis auf `/konto/premium` + PDF-Download-
+  Button auf der öffentlichen Angebotsseite ergänzt. **Offen**: automatisierte Löschung nach
+  Ablauf der Kündigungsfrist (DSGVO) – aktuell nur kommunikative Zusage, keine technische Umsetzung.
 
 ### Zurückgestellt / nicht relevant
 - **Phase 16 – White-Label**: Mandanten-Branding, Partner-Katalog-Scope, Feature-Auswahl je Tenant

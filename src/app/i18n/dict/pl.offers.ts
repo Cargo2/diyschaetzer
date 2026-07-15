@@ -2,7 +2,8 @@
 // Förmliches Polnisch. Deutsch-als-Schlüssel (linker Wert = deutscher Quelltext).
 // Hinweis: 'Angebote'/'Rechnungen'/'Firmenprofil'/'Premium freischalten' sind bereits über
 // pl.shell.ts (Navigation) übersetzt, 'PLZ'/'Ort'/'E-Mail'/'IBAN'/'USt-IdNr.'/'Pflicht für
-// XRechnung'/'%'/'MwSt.' bereits über pl.konto.ts – hier NICHT erneut definieren.
+// XRechnung'/'%'/'MwSt.' bereits über pl.konto.ts, der strukturierte Kundenblock
+// ('Straße & Nr.'/'Land'/'kunde@beispiel.de') über pl.invoices.ts – hier NICHT erneut definieren.
 export const PL_OFFERS: Record<string, string> = {
   // --- Nachrichten (TS) ---
   'Limit erreicht – lösche ein Angebot oder schalte Premium frei.':
@@ -21,6 +22,10 @@ export const PL_OFFERS: Record<string, string> = {
     'Nie udało się utworzyć faktury częściowej. Spróbuj ponownie.',
   'Schlussrechnung konnte nicht erstellt werden. Bitte erneut versuchen.':
     'Nie udało się utworzyć faktury końcowej. Spróbuj ponownie.',
+
+  // --- Premium-Gating der Rechnungs-Erstellen-Buttons (B1, title-Hinweis) ---
+  'Rechnungen erstellen erfordert ein aktives Premium-Abo.':
+    'Tworzenie faktur wymaga aktywnego abonamentu Premium.',
 
   // --- Status-/Einheiten-Labels (dynamisch: statusOptions/unitOptions, DYNAMIC_KEYS) ---
   Entwurf: 'Szkic',
@@ -100,9 +105,6 @@ export const PL_OFFERS: Record<string, string> = {
     'Ten projekt nie ma jeszcze pomieszczeń. Najpierw dodaj pomieszczenia w kreatorze – potem możesz tutaj utworzyć i edytować wycenę.',
   'Kunde / Empfänger': 'Klient / odbiorca',
   'Name des Kunden': 'Nazwa klienta',
-  Anschrift: 'Adres',
-  'Straße Nr.': 'Ulica nr',
-  'PLZ Ort': 'Kod pocztowy miejscowość',
   Angebotsnummer: 'Numer oferty',
   'z. B. 2026-042': 'np. 2026-042',
   Angebotsdatum: 'Data oferty',

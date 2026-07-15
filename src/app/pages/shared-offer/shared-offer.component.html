@@ -25,8 +25,15 @@
             @if (d.offerMeta?.customerName) {
               <div class="cust-name">{{ d.offerMeta?.customerName }}</div>
             }
-            @if (d.offerMeta?.customerAddress) {
+            @if (d.offerMeta?.customerAddressLines?.length) {
+              @for (line of d.offerMeta?.customerAddressLines; track $index) {
+                <div class="cust-addr">{{ line }}</div>
+              }
+            } @else if (d.offerMeta?.customerAddress) {
               <div class="cust-addr">{{ d.offerMeta?.customerAddress }}</div>
+            }
+            @if (d.offerMeta?.customerEmail) {
+              <div class="cust-addr">{{ d.offerMeta?.customerEmail }}</div>
             }
           </div>
           <div class="meta">
@@ -44,6 +51,20 @@
         @if (d.subtitle) {
           <p class="subtitle">Projekt: {{ d.subtitle }}</p>
         }
+
+        <div class="head-actions">
+          <button
+            type="button"
+            class="pdf-btn"
+            [disabled]="pdfExporting()"
+            (click)="downloadPdf()"
+          >
+            {{ pdfExporting() ? 'PDF wird erstellt …' : 'Als PDF herunterladen' }}
+          </button>
+          @if (pdfError()) {
+            <p class="pdf-error">{{ pdfError() }}</p>
+          }
+        </div>
       </header>
 
       @if (d.introText) {

@@ -6,6 +6,7 @@ import {
   ExportOfferGroup
 } from '../../models/export-document.model';
 import { ContractorOfferShareService } from '../../services/contractor-offer-share.service';
+import { PdfExportService } from '../../services/pdf-export.service';
 
 const NAME_MIN_LENGTH = 2;
 const NAME_MAX_LENGTH = 120;
@@ -27,12 +28,17 @@ const NAME_MAX_LENGTH = 120;
 export class SharedOfferComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly shareService = inject(ContractorOfferShareService);
+  private readonly pdfExport = inject(PdfExportService);
 
   private token: string | null = null;
 
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly doc = signal<ExportDocumentData | null>(null);
+
+  /** PDF-Download-Status (Lazy-Chunk lädt pdfmake erst beim Klick). */
+  readonly pdfExporting = signal(false);
+  readonly pdfError = signal<string | null>(null);
 
   /** Annahme-Status (aus dem Laden oder nach erfolgreichem `accept()`). */
   readonly acceptedAt = signal<string | null>(null);
@@ -132,6 +138,31 @@ export class SharedOfferComponent implements OnInit {
       }
     } finally {
       this.accepting.set(false);
+    }
+  }
+
+  /** Erzeugt das PDF direkt aus dem geladenen Export-Snapshot (kein Login nötig). */
+  async downloadPdf(): Promise<void> {
+    const data = this.doc();
+    if (!data || this.pdfExporting()) {
+      return;
+    }
+    this.pdfExporting.set(true);
+    this.pdfError.set(null);
+    try {
+      const result = await this.pdfExport.exportDocument(data);
+      if (!result.exported) {
+        this.pdfError.set(
+          'Das PDF konnte nicht erzeugt werden. Bitte versuchen Sie es erneut.'
+        );
+      }
+    } catch (error) {
+      console.error('PDF-Download für geteiltes Angebot fehlgeschlagen:', error);
+      this.pdfError.set(
+        'Das PDF konnte nicht erzeugt werden. Bitte versuchen Sie es erneut.'
+      );
+    } finally {
+      this.pdfExporting.set(false);
     }
   }
 

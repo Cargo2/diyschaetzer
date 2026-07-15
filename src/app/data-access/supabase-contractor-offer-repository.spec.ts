@@ -157,4 +157,44 @@ describe('SupabaseContractorOfferRepository', () => {
     const repo = setup(makeClient({ userId: null }));
     expect(await repo.countMine()).toBe(0);
   });
+
+  it('listMine maps all own offers (columns overriding offer_data), no project filter', async () => {
+    const offer = makeOffer();
+    const repo = setup({
+      auth: { getUser: async () => ({ data: { user: { id: 'user-1' } } }) },
+      from: () => ({
+        select: () => ({
+          order: async () => ({
+            data: [
+              {
+                id: 'off-7',
+                project_id: 'proj-9',
+                owner_id: 'user-1',
+                offer_data: offer,
+                version: 3,
+                status: 'accepted',
+                label: 'final'
+              }
+            ],
+            error: null
+          })
+        })
+      })
+    });
+
+    const list = await repo.listMine();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({
+      id: 'off-7',
+      projectId: 'proj-9',
+      version: 3,
+      status: 'accepted',
+      label: 'final'
+    });
+  });
+
+  it('listMine returns an empty list when no session', async () => {
+    const repo = setup(makeClient({ userId: null }));
+    expect(await repo.listMine()).toEqual([]);
+  });
 });

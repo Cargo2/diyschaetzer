@@ -8,6 +8,19 @@
     </p>
   </header>
 
+  <!-- Archiv-Hinweis: keine Langzeitarchivierung in der App (immer sichtbar). -->
+  <p class="invoices-message info" role="note">
+    {{ 'Hinweis: Es gibt keine Langzeitarchivierung. Die gesetzliche Aufbewahrung (§ 147 AO / GoBD) obliegt dir — exportiere Rechnungen regelmäßig in dein Archiv- oder Buchhaltungssystem.' | t }}
+    <a routerLink="/hilfe/rechnungen">{{ 'Mehr in der Anleitung' | t }}</a>
+  </p>
+
+  @if (readOnly()) {
+    <p class="invoices-message info" role="status">
+      {{ 'Ohne Premium-Abo sind Rechnungen schreibgeschützt. Deine Daten bleiben erhalten — Ansehen, PDF/XML und Datenexport sind weiterhin möglich.' | t }}
+      <a routerLink="/konto/premium">{{ 'Premium freischalten' | t }}</a>
+    </p>
+  }
+
   @if (loading()) {
     <p class="invoices-status">{{ 'Rechnungen werden geladen …' | t }}</p>
   } @else {
@@ -45,7 +58,7 @@
                   [attr.aria-label]="isGroupExpanded(group.key) ? ('Rechnungen einklappen' | t) : ('Rechnungen ausklappen' | t)"
                   (click)="toggleGroup(group.key)">
                   <span class="group-caret" aria-hidden="true">{{ isGroupExpanded(group.key) ? '▾' : '▸' }}</span>
-                  <span class="group-title">{{ group.title || '—' }}</span>
+                  <span class="group-title">{{ groupHeader(group) }}</span>
                   <span class="group-meta">
                     {{ group.invoices.length }} {{ 'Rechnungen' | t }} · {{ 'Σ gestellt' | t }} {{ eur(group.billedTotal) }}
                   </span>
@@ -71,6 +84,47 @@
       }
     </section>
 
+    <!-- Datenexport: gefilterter ZIP-Export (PDFs + XRechnung-XML + CSV-Übersicht).
+         Bewusst auch im Nur-Lese-Modus voll funktionsfähig (Datenerhalt/Aufbewahrung). -->
+    @if (invoices().length > 0) {
+      <section class="panel">
+        <h2>{{ 'Datenexport' | t }}</h2>
+        <p class="export-intro">
+          {{ 'Exportiere Rechnungen als ZIP — PDFs, XRechnung-XML und CSV-Übersicht — für dein Archiv- oder Buchhaltungssystem.' | t }}
+        </p>
+        <div class="export-fields">
+          <label class="meta-field">
+            <span>{{ 'Zeitraum von' | t }}</span>
+            <input type="date" [(ngModel)]="exportDateFrom" [ngModelOptions]="{ standalone: true }" [disabled]="exporting()" />
+          </label>
+          <label class="meta-field">
+            <span>{{ 'Zeitraum bis' | t }}</span>
+            <input type="date" [(ngModel)]="exportDateTo" [ngModelOptions]="{ standalone: true }" [disabled]="exporting()" />
+          </label>
+          <label class="meta-field">
+            <span>{{ 'Nummer von' | t }}</span>
+            <input type="text" [(ngModel)]="exportNumberFrom" [ngModelOptions]="{ standalone: true }" placeholder="RE-2026-001" [disabled]="exporting()" />
+          </label>
+          <label class="meta-field">
+            <span>{{ 'Nummer bis' | t }}</span>
+            <input type="text" [(ngModel)]="exportNumberTo" [ngModelOptions]="{ standalone: true }" placeholder="RE-2026-001" [disabled]="exporting()" />
+          </label>
+        </div>
+        <div class="export-actions">
+          <button type="button" class="btn-primary" [disabled]="exporting()" (click)="exportInvoices()">
+            {{ exporting() ? ('Export läuft …' | t) : ('ZIP exportieren' | t) }}
+          </button>
+          @if (exportState() === 'success') {
+            <span class="export-msg success" role="status">{{ exportedCount() }} {{ 'Rechnungen exportiert.' | t }}</span>
+          } @else if (exportState() === 'empty') {
+            <span class="export-msg info" role="status">{{ 'Keine Rechnungen im gewählten Bereich.' | t }}</span>
+          } @else if (exportState() === 'error') {
+            <span class="export-msg error" role="alert">{{ 'Export fehlgeschlagen. Bitte erneut versuchen.' | t }}</span>
+          }
+        </div>
+      </section>
+    }
+
     <!-- Geteilte Rechnungszeile (Kette + Sammelgruppe). -->
     <ng-template #invoiceRow let-item="item">
       <button type="button" class="invoice-row" [class.active]="isCurrent(item.id)"
@@ -91,20 +145,32 @@
         <span class="status-badge" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
       </button>
       <div class="row-quick">
-        @if (item.status !== 'paid') {
-          <button type="button" class="btn-light btn-small mark-paid"
-            [disabled]="markingPaidId() !== null"
-            (click)="markPaid(item)">{{ 'Als bezahlt markieren' | t }}</button>
+        @if (item.status !== 'paid' && !readOnly()) {
+          @if (confirmingMarkPaidId === item.id) {
+            <span class="confirm-markpaid">
+              {{ 'Bezahlt markieren? Die Rechnung ist danach unveränderlich.' | t }}
+              <button type="button" class="btn-primary btn-small"
+                [disabled]="markingPaidId() !== null"
+                (click)="markPaid(item)">{{ 'Ja' | t }}</button>
+              <button type="button" class="btn-light btn-small" (click)="cancelMarkPaid()">{{ 'Nein' | t }}</button>
+            </span>
+          } @else {
+            <button type="button" class="btn-light btn-small mark-paid"
+              [disabled]="markingPaidId() !== null"
+              (click)="requestMarkPaid(item.id!)">{{ 'Als bezahlt markieren' | t }}</button>
+          }
         }
-        @if (confirmingDeleteId === item.id) {
-          <span class="confirm-delete">
-            {{ 'Sicher?' | t }}
-            <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">{{ 'Ja' | t }}</button>
-            <button type="button" class="btn-light btn-small" (click)="cancelDelete()">{{ 'Nein' | t }}</button>
-          </span>
-        } @else {
-          <button type="button" class="row-delete" (click)="requestDelete(item.id!)"
-            [attr.aria-label]="'Löschen' | t" [title]="'Löschen' | t">✕</button>
+        @if (!readOnly()) {
+          @if (confirmingDeleteId === item.id) {
+            <span class="confirm-delete">
+              {{ 'Sicher?' | t }}
+              <button type="button" class="btn-danger btn-small" (click)="confirmDelete(item.id!)">{{ 'Ja' | t }}</button>
+              <button type="button" class="btn-light btn-small" (click)="cancelDelete()">{{ 'Nein' | t }}</button>
+            </span>
+          } @else {
+            <button type="button" class="row-delete" (click)="requestDelete(item.id!)"
+              [attr.aria-label]="'Löschen' | t" [title]="'Löschen' | t">✕</button>
+          }
         }
       </div>
     </ng-template>
@@ -120,7 +186,7 @@
             } @else {
               <span class="badge-draft">{{ 'Nicht gespeichert' | t }}</span>
             }
-            <button type="button" class="btn-primary" [disabled]="saving()" (click)="save()">
+            <button type="button" class="btn-primary" [disabled]="saving() || !editable()" (click)="save()">
               {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
             </button>
             <app-premium-export-button
@@ -141,6 +207,12 @@
             }
           </div>
         </div>
+
+        @if (paidLock()) {
+          <p class="invoices-message info" role="status">
+            {{ 'Diese Rechnung ist bezahlt und unveränderlich.' | t }}
+          </p>
+        }
 
         @if (!xrApplicable()) {
           <p class="invoices-message info" role="status">
@@ -173,29 +245,29 @@
             <legend>{{ 'Rechnungsempfänger' | t }}</legend>
             <label class="meta-field">
               <span>{{ 'Name / Firma' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Kundenname' | t" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.name)" />
+              <input type="text" [(ngModel)]="invoice.customer.name" [ngModelOptions]="{ standalone: true }" [placeholder]="'Kundenname' | t" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.name)" />
             </label>
             <label class="meta-field">
               <span>{{ 'Straße & Nr.' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.customer.street" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.street)" />
+              <input type="text" [(ngModel)]="invoice.customer.street" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.street)" />
             </label>
             <div class="meta-row">
               <label class="meta-field meta-narrow">
                 <span>{{ 'PLZ' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="text" [(ngModel)]="invoice.customer.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.postalCode)" />
+                <input type="text" [(ngModel)]="invoice.customer.postalCode" [ngModelOptions]="{ standalone: true }" inputmode="numeric" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.postalCode)" />
               </label>
               <label class="meta-field">
                 <span>{{ 'Ort' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="text" [(ngModel)]="invoice.customer.city" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.city)" />
+                <input type="text" [(ngModel)]="invoice.customer.city" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.city)" />
               </label>
               <label class="meta-field meta-narrow">
                 <span>{{ 'Land' | t }}</span>
-                <input type="text" [(ngModel)]="invoice.customer.countryCode" [ngModelOptions]="{ standalone: true }" />
+                <input type="text" [(ngModel)]="invoice.customer.countryCode" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
               </label>
             </div>
             <label class="meta-field">
               <span>{{ 'E-Mail' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" [placeholder]="'kunde@beispiel.de' | t" inputmode="email" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.email)" />
+              <input type="email" [(ngModel)]="invoice.customer.email" [ngModelOptions]="{ standalone: true }" [placeholder]="'kunde@beispiel.de' | t" inputmode="email" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.customer.email)" />
               @if (xrApplicable()) {
                 <small class="meta-hint">{{ 'Elektronische Adresse des Empfängers – Pflichtangabe der XRechnung (BT-49).' | t }}</small>
               }
@@ -206,26 +278,26 @@
             <legend>{{ 'Rechnungsdaten' | t }}</legend>
             <label class="meta-field">
               <span>{{ 'Rechnungsnummer' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.invoiceNumber" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceNumber)" />
+              <input type="text" [(ngModel)]="invoice.invoiceNumber" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceNumber)" />
             </label>
             <div class="meta-row">
               <label class="meta-field">
                 <span>{{ 'Rechnungsdatum' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="date" [(ngModel)]="invoice.invoiceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceDate)" />
+                <input type="date" [(ngModel)]="invoice.invoiceDate" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.invoiceDate)" />
               </label>
               <label class="meta-field">
                 <span>{{ 'Zahlbar bis' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="date" [(ngModel)]="invoice.dueDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && isBlank(invoice.dueDate)" />
+                <input type="date" [(ngModel)]="invoice.dueDate" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.dueDate)" />
               </label>
             </div>
             <div class="meta-row">
               <label class="meta-field">
                 <span>{{ 'Leistungsdatum' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="date" [(ngModel)]="invoice.serviceDate" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
+                <input type="date" [(ngModel)]="invoice.serviceDate" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
                 <span>{{ 'Status' | t }}</span>
-                <select [(ngModel)]="invoice.status" [ngModelOptions]="{ standalone: true }">
+                <select [(ngModel)]="invoice.status" [ngModelOptions]="{ standalone: true }" [disabled]="!editable()">
                   @for (option of statusOptions; track option.value) {
                     <option [value]="option.value">{{ option.label | t }}</option>
                   }
@@ -235,16 +307,16 @@
             <div class="meta-row">
               <label class="meta-field">
                 <span>{{ 'Leistungszeitraum von' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="date" [(ngModel)]="invoice.servicePeriodStart" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
+                <input type="date" [(ngModel)]="invoice.servicePeriodStart" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
               <label class="meta-field">
                 <span>{{ 'bis' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-                <input type="date" [(ngModel)]="invoice.servicePeriodEnd" [ngModelOptions]="{ standalone: true }" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
+                <input type="date" [(ngModel)]="invoice.servicePeriodEnd" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && xrServiceDateMissing()" />
               </label>
             </div>
             <label class="meta-field">
               <span>{{ 'Käuferreferenz / Leitweg-ID (BT-10)' | t }} @if (xrApplicable()) { <span class="xr-star" [title]="'Pflicht für XRechnung' | t">*</span> }</span>
-              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" [placeholder]="'n/a (bei Behörden: Leitweg-ID)' | t" [class.xr-missing]="xrApplicable() && isBlank(invoice.buyerReference)" />
+              <input type="text" [(ngModel)]="invoice.buyerReference" [ngModelOptions]="{ standalone: true }" [placeholder]="'n/a (bei Behörden: Leitweg-ID)' | t" [readonly]="!editable()" [class.xr-missing]="xrApplicable() && isBlank(invoice.buyerReference)" />
               @if (xrApplicable()) {
                 <small class="meta-hint">{{ 'Pflichtfeld der XRechnung. Bei öffentlichen Auftraggebern die Leitweg-ID eintragen, sonst „n/a".' | t }}</small>
               }
@@ -273,7 +345,7 @@
           <button
             type="button"
             class="btn-light btn-small"
-            [disabled]="refreshingSeller()"
+            [disabled]="refreshingSeller() || !editable()"
             (click)="refreshSellerFromProfile()"
             [title]="'Absender-/Steuer-/Bankdaten aus dem aktuellen Firmenprofil in diese Rechnung übernehmen' | t"
           >
@@ -284,6 +356,7 @@
         <label class="invoice-text">
           <span>{{ 'Einleitungstext (optional)' | t }}</span>
           <textarea rows="2" [(ngModel)]="invoice.introText" [ngModelOptions]="{ standalone: true }"
+            [readonly]="!editable()"
             [placeholder]="'Sehr geehrte …, für die ausgeführten Arbeiten berechne ich Ihnen:' | t"></textarea>
         </label>
 
@@ -293,13 +366,13 @@
               <span class="pos-badge">
                 {{ section.kind === 'site_setup' ? '–' : (('Pos.' | t) + ' ' + posNumber(section)) }}
               </span>
-              <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" />
+              <input class="section-title" [(ngModel)]="section.title" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
               <span class="section-subtotal">{{ eur(sectionSubtotal(section)) }}</span>
               <span class="section-actions">
-                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0" [title]="'Nach oben' | t">↑</button>
-                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === invoice.sections.length - 1" [title]="'Nach unten' | t">↓</button>
+                <button type="button" (click)="moveSection(si, -1)" [disabled]="si === 0 || !editable()" [title]="'Nach oben' | t">↑</button>
+                <button type="button" (click)="moveSection(si, 1)" [disabled]="si === invoice.sections.length - 1 || !editable()" [title]="'Nach unten' | t">↓</button>
                 @if (section.kind === 'custom') {
-                  <button type="button" class="btn-danger" (click)="removeSection(section)">{{ 'Gruppe löschen' | t }}</button>
+                  <button type="button" class="btn-danger" (click)="removeSection(section)" [disabled]="!editable()">{{ 'Gruppe löschen' | t }}</button>
                 }
               </span>
             </div>
@@ -322,37 +395,37 @@
                   <tr [class.inactive]="!line.isActive">
                     <td class="col-pos" data-label="Pos">{{ lineNumber(section, line) }}</td>
                     <td class="col-label">
-                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" />
-                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input" [(ngModel)]="line.label" [ngModelOptions]="{ standalone: true }" [placeholder]="'Bezeichnung' | t" [readonly]="!editable()" />
+                      <input class="cell-input cell-desc" [placeholder]="'Beschreibung (optional)' | t" [(ngModel)]="line.description" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
                     </td>
                     <td class="col-num" data-label="Menge">
-                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.quantity" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
                     </td>
                     <td class="col-unit" data-label="Einheit">
-                      <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }">
+                      <select class="cell-input" [(ngModel)]="line.unit" [ngModelOptions]="{ standalone: true }" [disabled]="!editable()">
                         @for (option of unitOptions; track option.value) {
                           <option [value]="option.value">{{ option.label | t }}</option>
                         }
                       </select>
                     </td>
                     <td class="col-num" data-label="Einheitspreis">
-                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.unitPrice" [ngModelOptions]="{ standalone: true }" />
+                      <input class="cell-input num" type="number" inputmode="decimal" step="0.01" min="0" [(ngModel)]="line.unitPrice" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
                     </td>
                     <td class="col-num total" data-label="Gesamt">{{ eur(lineTotal(line)) }}</td>
                     <td class="col-active" data-label="Aktiv">
-                      <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" />
+                      <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" [disabled]="!editable()" />
                     </td>
                     <td class="col-tools" data-label="">
-                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
-                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
-                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
+                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0 || !editable()" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
+                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1 || !editable()" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
+                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [disabled]="!editable()" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
 
-            <button type="button" class="btn-light add-line" (click)="addLine(section)">{{ '+ Position' | t }}</button>
+            <button type="button" class="btn-light add-line" (click)="addLine(section)" [disabled]="!editable()">{{ '+ Position' | t }}</button>
           </div>
         }
 
@@ -360,7 +433,7 @@
           <label class="opt">
             <span>{{ 'Nachlass' | t }}</span>
             <input type="number" inputmode="decimal" step="0.5" min="0" [(ngModel)]="invoice.discountPercent"
-              [ngModelOptions]="{ standalone: true }" /> %
+              [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" /> %
           </label>
         </div>
 
@@ -398,7 +471,7 @@
         }
 
         <div class="invoice-foot">
-          <button type="button" class="btn-light" (click)="addSection()">{{ '+ Gruppe hinzufügen' | t }}</button>
+          <button type="button" class="btn-light" (click)="addSection()" [disabled]="!editable()">{{ '+ Gruppe hinzufügen' | t }}</button>
 
           <div class="totals">
             <div class="total-row">
@@ -415,7 +488,7 @@
             <div class="total-row">
               <span>
                 {{ 'zzgl.' | t }}
-                <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="invoice.vatPercent" [ngModelOptions]="{ standalone: true }" />
+                <input class="vat-input" type="number" inputmode="decimal" step="0.1" min="0" [(ngModel)]="invoice.vatPercent" [ngModelOptions]="{ standalone: true }" [readonly]="!editable()" />
                 % {{ 'MwSt.' | t }}
               </span>
               <span>{{ eur(vatAmount()) }}</span>
@@ -435,6 +508,7 @@
         <label class="invoice-text">
           <span>{{ 'Schlusstext (optional)' | t }}</span>
           <textarea rows="3" [(ngModel)]="invoice.outroText" [ngModelOptions]="{ standalone: true }"
+            [readonly]="!editable()"
             [placeholder]="'Zahlungsbedingungen, Dank … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug auf das unten genannte Konto.' | t"></textarea>
         </label>
       </section>
