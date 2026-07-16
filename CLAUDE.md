@@ -161,6 +161,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Ratgeber + SEO (Phase 16) | Beiträge `src/content/ratgeber/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/ratgeber-articles.ts` (+ `public/sitemap.xml`); `models/ratgeber.model.ts`, `services/ratgeber.service.ts`, `pages/guide/` (Übersicht + `ratgeber-article.component.ts`); `services/seo.service.ts`, `config/site.config.ts`, `public/robots.txt` |
 | Prerendering/SSG (Phase 16) | `app/app.routes.server.ts`, `app/app.config.server.ts`, `src/main.server.ts`, `outputMode: static` in `angular.json`; Prerender-Guard in `data-access/supabase-client.ts` |
 | SEO-Kostenseiten (Phase 17) | Markdown `src/content/kosten/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/cost-pages.ts` (+ Sitemap); `models/cost-page.model.ts`, `services/cost-page.service.ts`, `pages/cost/cost-page.component.ts`; Route `/kosten/:slug` (prerendert); CTA-Deep-Link `/raum-anlegen?raum=<roomType>` (gelesen in `wizard-page.component.ts`) |
+| PWA (Phase 18 Stufe 3) | `ngsw-config.json` (Index = `index.csr.html`!), `public/manifest.webmanifest`, `public/icons/`, `services/install-prompt.service.ts`, `services/online-status.service.ts`, `components/offline-banner/`, SW-Provider in `app.config.ts`, Cache-Header in `public/.htaccess` + `deploy/app-subdomain/.htaccess` |
 
 ## Roadmap
 
@@ -497,16 +498,27 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   8. **Safe-Area-Insets** (`viewport-fit=cover` + `env(safe-area-inset-*)`) für die sticky
      Kopfleiste, den Footer und die mobile Speicherleiste; `theme-color` gesetzt.
 
-  **Stufe 3 – PWA (installierbare „App light") — OFFEN:**
-  9. `ng add @angular/pwa`: `manifest.webmanifest`, Icon-Satz (Basis: vorhandenes Favicon-SVG),
-     `theme-color`, Apple-Touch-Icon, Service Worker (`ngsw`). **Kompatibel mit statischem
-     netcup-Hosting** (nur HTTPS nötig); `.htaccess` ergänzen: `ngsw.json`/`ngsw-worker.js`
-     dürfen nicht gecacht/umgeschrieben werden (Passenger-Hinweis beachten).
-  10. Offline-Strategie: App-Shell + Assets precachen; der anonyme Offline-Fallback
-      (TS-Katalog) existiert bereits – sauberer „Offline"-Hinweis in Angebots-/Projektflows
-      statt Fehlermeldung (Supabase braucht Netz). Später optional: Outbox/Sync für Angebote.
-  11. Install-Prompt gezielt für eingeloggte Profis („Als App installieren", `beforeinstallprompt`
-      + iOS-Anleitung), nicht global aufdringlich.
+  **Stufe 3 – PWA (installierbare „App light") — ERLEDIGT:**
+  9. Service Worker (`ngsw`) verdrahtet: `@angular/service-worker` (exakt `21.2.17` gepinnt –
+     `21.2.18` verlangt Core `21.2.18` als Peer; bei Angular-Update mitziehen),
+     `"serviceWorker": "ngsw-config.json"` in der production-Config, `provideServiceWorker` in
+     `app.config.ts`. **WICHTIG:** `ngsw-config.json` hat `"index": "/index.csr.html"` (die
+     Client-Shell) – NICHT `/index.html` (= prerenderte Marketing-Startseite); prerenderte
+     `*.html` werden bewusst nicht precached. `public/manifest.webmanifest` (theme `#11574a`,
+     background `#f3efe6`, `start_url: "/"` – auf app.* landet man im Projekt-Dashboard) +
+     Icon-Satz `public/icons/` (192/512/512-maskable/apple-touch, aus `favicon.svg` per
+     `npx @resvg/resvg-js-cli` gerendert). `.htaccess` (beide: `public/` + `deploy/app-subdomain/`)
+     liefern `ngsw.json`/`ngsw-worker.js` mit `Cache-Control: no-cache` + `webmanifest`-MIME;
+     Deploy-Workflows prüfen die ngsw-Artefakte. Ein Build/SW/Manifest für alle drei Hosts.
+     Nach SW-Aktivierung werden Navigationen auch auf der Marketing-Domain aus der Client-Shell
+     bedient (Standard-ngsw; bei Bedarf über `navigationUrls` eingrenzbar).
+  10. Offline-Hinweis: `OnlineStatusService` (Signal `isOnline`) + globales dezentes
+      `OfflineBannerComponent` (in `app.html` neben dem Consent-Banner, prerender-sicher).
+      Später optional: Outbox/Sync für Angebote.
+  11. Install-Prompt nur für eingeloggte Profis im App-Host: `InstallPromptService`
+      (`beforeinstallprompt`/`appinstalled`, iOS-Erkennung + Safari-Anleitung, Standalone-
+      Erkennung), Sidebar-Footer-Eintrag „Als App installieren" (i18n DE/PL/EN). Neue Specs:
+      `install-prompt.service.spec.ts`, `online-status.service.spec.ts`.
 
   **Stufe 4 – Profi-App (Angebote) auf dieser Basis — OFFEN:**
   12. **Entscheidung PWA-only vs. Capacitor** (nur wenn Store-Präsenz/Push/Kamera gebraucht):

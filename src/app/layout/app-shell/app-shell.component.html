@@ -178,6 +178,27 @@
         </select>
       </label>
 
+      @if (nav.isAuthenticated() && nav.isContractor() && installPrompt.canInstall() && !installPrompt.isStandalone()) {
+        <div class="install-block">
+          <button
+            type="button"
+            class="nav-link install-link"
+            [attr.aria-expanded]="installPrompt.isIos() ? iosHintOpen() : null"
+            [attr.aria-label]="'Als App installieren' | t"
+            (click)="onInstallClick()"
+          >
+            <span class="install-icon" aria-hidden="true">⤓</span>
+            {{ 'Als App installieren' | t }}
+          </button>
+
+          @if (installPrompt.isIos() && iosHintOpen()) {
+            <p class="install-ios-hint" role="note">
+              {{ 'Tippe auf das Teilen-Symbol und dann auf „Zum Home-Bildschirm", um die App zu installieren.' | t }}
+            </p>
+          }
+        </div>
+      }
+
       <nav class="app-micro-footer" [attr.aria-label]="'Rechtliches' | t">
         <a [href]="legalUrls.impressum">{{ 'Impressum' | t }}</a>
         <a [href]="legalUrls.datenschutz">{{ 'Datenschutz' | t }}</a>

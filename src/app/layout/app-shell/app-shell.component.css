@@ -179,6 +179,36 @@
   outline-offset: 1px;
 }
 
+/* ── PWA-Installations-Hinweis (dezent, an nav-link angelehnt) ──── */
+.install-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.install-link {
+  min-height: 2.75rem;
+  color: var(--verde-deep);
+  font-size: 0.86rem;
+}
+
+.install-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.install-ios-hint {
+  margin: 0 0.4rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.6rem;
+  background: rgba(17, 87, 74, 0.07);
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
 .app-micro-footer {
   display: flex;
   flex-wrap: wrap;

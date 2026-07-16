@@ -11,6 +11,17 @@
   # Zusätzlich zur robots.txt: per HTTP-Header noindex/nofollow erzwingen,
   # auch für Crawler, die robots.txt ignorieren oder Header auswerten.
   Header set X-Robots-Tag "noindex, nofollow"
+
+  # PWA: Service-Worker (ngsw-worker.js) und Manifest (ngsw.json) NIE cachen,
+  # damit Clients nach einem Deploy zuverlässig Updates erhalten.
+  <FilesMatch "^(ngsw-worker\.js|ngsw\.json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Korrekten MIME-Typ für das Web-App-Manifest ausliefern.
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
 </IfModule>
 
 <IfModule mod_rewrite.c>

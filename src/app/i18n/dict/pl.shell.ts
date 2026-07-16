@@ -34,5 +34,10 @@ export const PL_SHELL: Record<string, string> = {
   Datenschutz: 'Ochrona danych',
   Kontakt: 'Kontakt',
   'Cookie-Einstellungen': 'Ustawienia plików cookie',
-  'Sprache wählen': 'Wybierz język'
+  'Sprache wählen': 'Wybierz język',
+  'Als App installieren': 'Zainstaluj jako aplikację',
+  'Tippe auf das Teilen-Symbol und dann auf „Zum Home-Bildschirm", um die App zu installieren.':
+    'Dotknij ikony Udostępnij, a następnie „Do ekranu początkowego", aby zainstalować aplikację.',
+  'Du bist offline – Änderungen werden lokal gespeichert und nicht mit deinem Konto synchronisiert.':
+    'Jesteś offline – zmiany są zapisywane lokalnie i nie są synchronizowane z Twoim kontem.'
 };

@@ -6,6 +6,20 @@
 # clientseitig gerenderten Routen (Rechner, Admin, Login, /geteilt/<token>, F5 darauf)
 # fallen auf den CSR-Shell index.csr.html zurück – NICHT auf index.html, das jetzt die
 # prerenderte Startseite ist.
+
+# PWA: Der Service-Worker (ngsw-worker.js) und sein Manifest (ngsw.json) dürfen
+# NIE gecacht werden, sonst bekommen Clients nach einem Deploy keine Updates.
+<IfModule mod_headers.c>
+  <FilesMatch "^(ngsw-worker\.js|ngsw\.json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Korrekten MIME-Typ für das Web-App-Manifest ausliefern.
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /

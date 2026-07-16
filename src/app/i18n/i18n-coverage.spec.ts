@@ -45,6 +45,7 @@ import { DYNAMIC_KEYS_LEADS } from './dynamic-keys/leads';
 /** Glob-fähige Quell-Liste der gewrappten Bereiche (relativ zum Repo-Root). */
 const SCANNED_FILES = [
   'src/app/layout/app-shell/app-shell.component.html',
+  'src/app/components/offline-banner/offline-banner.component.ts',
   'src/app/components/wizard/wizard.component.ts',
   'src/app/components/wizard/wizard.component.html',
   'src/app/pages/contractor-offers/*.html',

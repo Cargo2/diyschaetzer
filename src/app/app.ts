@@ -1,6 +1,7 @@
 import { Component, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConsentBannerComponent } from './components/consent-banner/consent-banner.component';
+import { OfflineBannerComponent } from './components/offline-banner/offline-banner.component';
 import { AuthService } from './services/auth.service';
 import { ProjectSessionSyncService } from './services/project-session-sync.service';
 import { CatalogService } from './services/catalog.service';
@@ -10,14 +11,15 @@ import { SubscriptionStatusService } from './services/subscription-status.servic
 
 /**
  * Root-Komponente (WP1, Zwei-Domain-Vorbereitung): bewusst minimal – nur der
- * Top-Level-`router-outlet` (Marketing- vs. App-Baum, siehe app.routes.ts) und
- * der Consent-Banner, plus die appweiten eager Singletons/Effects, die unter
+ * Top-Level-`router-outlet` (Marketing- vs. App-Baum, siehe app.routes.ts),
+ * der Consent-Banner und der globale Offline-Hinweis, plus die appweiten eager
+ * Singletons/Effects, die unter
  * BEIDEN Shells laufen müssen. Das heutige Topmenü/Footer lebt jetzt in der
  * MarketingShell (`layout/marketing-shell/`).
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ConsentBannerComponent],
+  imports: [RouterOutlet, ConsentBannerComponent, OfflineBannerComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

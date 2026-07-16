@@ -1,5 +1,6 @@
-import { ApplicationConfig, inject, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { PROJECT_REPOSITORY } from './data-access/project-repository';
@@ -26,5 +27,11 @@ export const appConfig: ApplicationConfig = {
         inject(SUPABASE_CLIENT) ? inject(SupabaseCatalogRepository) : new LocalCatalogRepository(),
     },
     provideClientHydration(withEventReplay()),
+    // PWA: registriert den ngsw-Service-Worker nur im Prod-Build (nicht im Dev)
+    // und erst, wenn die App stabil ist, um den initialen Start nicht zu bremsen.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

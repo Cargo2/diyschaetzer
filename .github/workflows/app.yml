@@ -73,7 +73,10 @@ jobs:
 
       - name: Build-Ausgabe prüfen
         if: steps.secret-check.outputs.skip != 'true'
-        run: test -f dist/project3/browser/index.html
+        run: |
+          test -f dist/project3/browser/index.html
+          test -f dist/project3/browser/ngsw.json
+          test -f dist/project3/browser/ngsw-worker.js
 
       - name: App-Subdomain-Overrides einspielen
         if: steps.secret-check.outputs.skip != 'true'

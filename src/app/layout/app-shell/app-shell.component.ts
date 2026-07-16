@@ -1,9 +1,10 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { injectShellNavState } from '../shell-nav-state';
 import { absoluteUrl } from '../../config/site.config';
 import { I18nService, UiLang } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { InstallPromptService } from '../../services/install-prompt.service';
 
 /**
  * App-Shell (Phase 18, WP2): echte Profi-Sidebar-Navigation (Ubersuggest-Stil) für
@@ -25,6 +26,23 @@ export class AppShellComponent {
 
   /** Laufzeit-Übersetzung (nur App-Bereich). Template nutzt `i18n.lang()` + `| t`. */
   readonly i18n = inject(I18nService);
+
+  /** PWA-Installations-Hinweis (Sidebar-Eintrag, nur für installierbare Profis). */
+  readonly installPrompt = inject(InstallPromptService);
+
+  /** iOS-Anleitung (Teilen → Zum Home-Bildschirm) ein-/ausgeklappt. */
+  readonly iosHintOpen = signal(false);
+
+  /**
+   * Klick auf „Als App installieren": Chromium löst den nativen Prompt aus, iOS
+   * (kein Prompt) klappt stattdessen die Safari-Anleitung auf/zu.
+   */
+  async onInstallClick(): Promise<void> {
+    const outcome = await this.installPrompt.promptInstall();
+    if (outcome === 'ios') {
+      this.iosHintOpen.update((open) => !open);
+    }
+  }
 
   constructor() {
     // Gespeicherte Sprachwahl übernehmen – greift NUR im App-Host (Gate im Service),
