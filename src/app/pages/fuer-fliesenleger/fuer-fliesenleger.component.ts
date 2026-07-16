@@ -55,8 +55,8 @@ export class FuerFliesenlegerComponent implements OnInit {
     {
       question: 'Was kostet Premium?',
       answer:
-        'Der erste Monat ist gratis, danach 29,99 € pro Monat zzgl. gesetzlicher Umsatzsteuer. ' +
-        'Das Abo ist monatlich kündbar; du gehst keine lange Vertragsbindung ein.'
+        'Der erste Monat ist gratis, danach 29,99 € pro Monat. Gemäß § 19 UStG wird keine ' +
+        'Umsatzsteuer berechnet. Das Abo ist monatlich kündbar; du gehst keine lange Vertragsbindung ein.'
     },
     {
       question: 'Was ist eine XRechnung – und betrifft mich die E-Rechnungspflicht?',
