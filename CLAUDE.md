@@ -161,7 +161,7 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 | Ratgeber + SEO (Phase 16) | Beiträge `src/content/ratgeber/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/ratgeber-articles.ts` (+ `public/sitemap.xml`); `models/ratgeber.model.ts`, `services/ratgeber.service.ts`, `pages/guide/` (Übersicht + `ratgeber-article.component.ts`); `services/seo.service.ts`, `config/site.config.ts`, `public/robots.txt` |
 | Prerendering/SSG (Phase 16) | `app/app.routes.server.ts`, `app/app.config.server.ts`, `src/main.server.ts`, `outputMode: static` in `angular.json`; Prerender-Guard in `data-access/supabase-client.ts` |
 | SEO-Kostenseiten (Phase 17) | Markdown `src/content/kosten/*.md` → Codegen `tools/generate-ratgeber.mts` → `src/app/content/cost-pages.ts` (+ Sitemap); `models/cost-page.model.ts`, `services/cost-page.service.ts`, `pages/cost/cost-page.component.ts`; Route `/kosten/:slug` (prerendert); CTA-Deep-Link `/raum-anlegen?raum=<roomType>` (gelesen in `wizard-page.component.ts`) |
-| PWA (Phase 18 Stufe 3) | `ngsw-config.json` (Index = `index.csr.html`!), `public/manifest.webmanifest`, `public/icons/`, `services/install-prompt.service.ts`, `services/online-status.service.ts`, `components/offline-banner/`, SW-Provider in `app.config.ts`, Cache-Header in `public/.htaccess` + `deploy/app-subdomain/.htaccess` |
+| PWA (Phase 18 Stufe 3) | `ngsw-config.json` (Index = `index.csr.html`!), `public/manifest.webmanifest`, `public/pwa-icons/`, `services/install-prompt.service.ts`, `services/online-status.service.ts`, `components/offline-banner/`, SW-Provider in `app.config.ts`, Cache-Header in `public/.htaccess` + `deploy/app-subdomain/.htaccess` |
 
 ## Roadmap
 
@@ -506,7 +506,8 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
      Client-Shell) – NICHT `/index.html` (= prerenderte Marketing-Startseite); prerenderte
      `*.html` werden bewusst nicht precached. `public/manifest.webmanifest` (theme `#11574a`,
      background `#f3efe6`, `start_url: "/"` – auf app.* landet man im Projekt-Dashboard) +
-     Icon-Satz `public/icons/` (192/512/512-maskable/apple-touch, aus `favicon.svg` per
+     Icon-Satz `public/pwa-icons/` (192/512/512-maskable/apple-touch – NICHT `/icons/`,
+     das ist ein reservierter Apache-Alias auf netcup und liefert 404; aus `favicon.svg` per
      `npx @resvg/resvg-js-cli` gerendert). `.htaccess` (beide: `public/` + `deploy/app-subdomain/`)
      liefern `ngsw.json`/`ngsw-worker.js` mit `Cache-Control: no-cache` + `webmanifest`-MIME;
      Deploy-Workflows prüfen die ngsw-Artefakte. Ein Build/SW/Manifest für alle drei Hosts.
