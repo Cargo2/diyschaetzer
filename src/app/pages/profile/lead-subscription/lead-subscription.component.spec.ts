@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { PAYPAL_CONFIG } from '../../../config/commercial.config';
 import { SUBSCRIPTION_REPOSITORY } from '../../../data-access/subscription-repository';
 import { Subscription } from '../../../models/subscription.model';
 import { AuthService } from '../../../services/auth.service';
@@ -126,22 +127,25 @@ describe('LeadSubscriptionComponent', () => {
     );
   });
 
-  // fliesen-kosten hat noch KEIN PayPal-Produkt/-Plan (PAYPAL_CONFIG leer): das SDK
-  // wird nie geladen (auch nicht mit Consent) und statt des Buttons erscheint der
-  // neutrale „wird eingerichtet"-Hinweis (Setup-Karte), keine Consent-Karte.
-  it('does NOT load the PayPal SDK and shows the setup notice while PayPal is not configured', async () => {
+  // PAYPAL_CONFIG ist seit der Sandbox-/Live-Einrichtung befüllt: mit Consent für
+  // externe Dienste lädt das SDK (mit der konfigurierten Client-ID) und der
+  // PayPal-Button-Container erscheint; die Setup-Karte gibt es nicht mehr.
+  it('loads the PayPal SDK and renders the button container when PayPal is configured and consent is granted', async () => {
     const { fixture, loadCalls } = await setup({ subscription: null, grantExternal: true });
-    expect(loadCalls).toEqual([]);
-    expect(fixture.componentInstance.paymentConfigured).toBe(false);
-    expect(fixture.nativeElement.querySelector('.setup-card')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.paypal-container')).toBeNull();
+    expect(fixture.componentInstance.paymentConfigured).toBe(true);
+    expect(loadCalls).toEqual([PAYPAL_CONFIG.clientId]);
+    expect(fixture.nativeElement.querySelector('.paypal-container')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.setup-card')).toBeNull();
     expect(fixture.nativeElement.querySelector('.consent-card')).toBeNull();
   });
 
-  it('also shows the setup notice (no SDK) without external-services consent', async () => {
+  // Ohne Consent für externe Dienste darf das SDK nie geladen werden; statt des
+  // Buttons erscheint die Consent-Karte.
+  it('does NOT load the SDK and shows the consent card without external-services consent', async () => {
     const { fixture, loadCalls } = await setup({ subscription: null, grantExternal: false });
     expect(loadCalls).toEqual([]);
-    expect(fixture.nativeElement.querySelector('.setup-card')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.consent-card')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.paypal-container')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.setup-card')).toBeNull();
   });
 });

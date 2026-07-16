@@ -113,7 +113,7 @@
           <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
             @if (nav.hasActiveSubscription()) {
               {{ 'Premium' | t }}
-              <span class="abo-dot" [attr.title]="'Lead-Abo aktiv' | t" [attr.aria-label]="'Aktiv' | t"></span>
+              <span class="abo-dot" [attr.title]="'Premium-Abo aktiv' | t" [attr.aria-label]="'Aktiv' | t"></span>
             } @else {
               {{ 'Premium freischalten' | t }}
             }
@@ -131,7 +131,7 @@
             <button
               type="button"
               class="nav-link disabled"
-              [attr.title]="'Erfordert aktives Lead-Abo' | t"
+              [attr.title]="'Erfordert aktives Premium-Abo' | t"
               (click)="nav.goToPremium()"
             >
               {{ 'Anfragen empfangen' | t }}

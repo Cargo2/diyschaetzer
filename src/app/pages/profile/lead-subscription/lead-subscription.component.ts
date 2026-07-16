@@ -174,7 +174,7 @@ export class LeadSubscriptionComponent implements OnInit {
       if (result.ok) {
         this.subscription.set(result.subscription);
         this.successMsg.set(
-          'Dein Lead-Abo ist aktiv. Du wirst ab sofort bei neuen Anfragen berücksichtigt.'
+          'Dein Premium-Abo ist aktiv. Du kannst ab sofort alle Profi-Funktionen nutzen und wirst bei neuen Anfragen berücksichtigt.'
         );
         this.activated.emit();
       } else {

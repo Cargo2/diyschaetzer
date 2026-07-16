@@ -26,9 +26,9 @@ export const EN_SHELL: Record<string, string> = {
   Hauptnavigation: 'Main navigation',
   'Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden.':
     'Please add a room first and complete the inputs so the results can be calculated.',
-  'Lead-Abo aktiv': 'Lead subscription active',
+  'Premium-Abo aktiv': 'Premium subscription active',
   Aktiv: 'Active',
-  'Erfordert aktives Lead-Abo': 'Requires an active lead subscription',
+  'Erfordert aktives Premium-Abo': 'Requires an active Premium subscription',
   Rechtliches: 'Legal',
   Impressum: 'Legal notice',
   Datenschutz: 'Privacy',

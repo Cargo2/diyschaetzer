@@ -45,12 +45,15 @@ export class FuerFliesenlegerComponent implements OnInit {
 
   readonly faq: readonly FaqItem[] = [
     {
-      question: 'Was bekomme ich mit Premium – und was ist kostenlos?',
+      question: 'Was bekomme ich mit dem Premium-Abo – und was ist kostenlos?',
       answer:
-        'Kostenlos kannst du bis zu 3 Angebote speichern und den Kostenrechner voll nutzen. ' +
-        'Premium (1. Monat gratis, danach 29,99 €/Monat) schaltet unbegrenzt Angebote frei, du erhältst bestätigte ' +
-        'Kundenanfragen aus deinen PLZ-Gebieten und dein Betrieb erscheint mit Kontaktdaten ' +
-        'direkt im Kostenrechner in deiner Region.'
+        'Kostenlos kannst du bis zu 3 Angebote speichern, daraus Rechnungen samt XRechnung ' +
+        'erstellen und den Kostenrechner voll nutzen. Das Premium-Abo (1. Monat gratis, danach ' +
+        '29,99 €/Monat) schaltet alle Profi-Funktionen ohne Limit frei – unbegrenzte Angebote, ' +
+        'die komplette Rechnungskette inkl. Anzahlungs-, Abschlags- und Schlussrechnung, ' +
+        'Textbausteine und Angebots-Links mit Annahme-Tracking. Zusätzlich erhältst du ' +
+        'bestätigte Kundenanfragen aus deinen PLZ-Gebieten und dein Betrieb erscheint mit ' +
+        'Kontaktdaten direkt im Kostenrechner deiner Region.'
     },
     {
       question: 'Was kostet Premium?',
@@ -65,6 +68,28 @@ export class FuerFliesenlegerComponent implements OnInit {
         'wird ab 2027 für B2B-Geschäfte in Deutschland schrittweise zur Pflicht (ab 2028 für alle ' +
         'Betriebe). Der XRechnung-Export ist in der App enthalten – ein Klick, fertig – und steht ' +
         'auch Free-Konten zur Verfügung.'
+    },
+    {
+      question: 'Kann ich Anzahlungs-, Abschlags- und Schlussrechnungen stellen?',
+      answer:
+        'Ja. Aus einem angenommenen Angebot erzeugst du die komplette Rechnungskette: ' +
+        'Anzahlungs-, Abschlags- und Schlussrechnung. Bereits gestellte und bezahlte Beträge ' +
+        'werden in der Schlussrechnung nach § 14 Abs. 5 UStG angerechnet, den offenen ' +
+        'Restbetrag berechnet die App automatisch.'
+    },
+    {
+      question: 'Wie funktioniert der Angebots-Link mit Annahme-Tracking?',
+      answer:
+        'Statt einer PDF-Datei schickst du deinem Kunden einen Link. Er öffnet das Angebot ' +
+        'online und kann es direkt digital annehmen. Im Angebot siehst du den Status – ' +
+        'geteilt, angesehen und angenommen – und weißt so, woran du bist.'
+    },
+    {
+      question: 'Kann ich die App auf dem Handy installieren?',
+      answer:
+        'Ja. Die App lässt sich als PWA direkt auf dem Smartphone installieren und startet ' +
+        'dann wie eine native App – ohne Umweg über einen App-Store. So erstellst und teilst ' +
+        'du Angebote und Rechnungen auch unterwegs auf der Baustelle.'
     },
     {
       question: 'Wie viele Anfragen bekomme ich?',
@@ -95,9 +120,10 @@ export class FuerFliesenlegerComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.setPage({
-      title: 'Für Fliesenleger: bestätigte Kundenanfragen im Monats-Abo',
+      title: 'Für Fliesenleger: Angebote, Rechnungen & XRechnung im Premium-Abo',
       description:
-        'Für Fliesenleger: Angebote & Rechnungen in Minuten, XRechnung (ab 2027 Pflicht) inklusive, ' +
+        'Für Fliesenleger: Angebote & Rechnungen in Minuten, komplette Rechnungskette, ' +
+        'XRechnung (ab 2027 Pflicht) inklusive, Angebots-Links mit Annahme-Tracking – plus ' +
         'bestätigte Anfragen aus deinen PLZ-Gebieten. 1. Monat gratis.',
       path: '/fuer-fliesenleger',
       jsonLd: {

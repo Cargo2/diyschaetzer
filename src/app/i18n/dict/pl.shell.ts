@@ -26,9 +26,9 @@ export const PL_SHELL: Record<string, string> = {
   Hauptnavigation: 'Nawigacja główna',
   'Bitte lege zuerst einen Raum an und schließe die Eingaben ab, damit die Ergebnisse berechnet werden.':
     'Najpierw dodaj pomieszczenie i uzupełnij dane, aby obliczyć wyniki.',
-  'Lead-Abo aktiv': 'Abonament zapytań aktywny',
+  'Premium-Abo aktiv': 'Abonament Premium aktywny',
   Aktiv: 'Aktywny',
-  'Erfordert aktives Lead-Abo': 'Wymaga aktywnego abonamentu zapytań',
+  'Erfordert aktives Premium-Abo': 'Wymaga aktywnego abonamentu Premium',
   Rechtliches: 'Informacje prawne',
   Impressum: 'Nota prawna',
   Datenschutz: 'Ochrona danych',

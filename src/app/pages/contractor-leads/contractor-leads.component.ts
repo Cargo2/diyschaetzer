@@ -35,10 +35,10 @@ import {
       @if (showInactiveAboBanner()) {
         <div class="abo-banner" role="status">
           <span>
-            Du erhältst aktuell <strong>keine neuen Anfragen</strong> – dein Lead-Abo ist nicht
+            Du erhältst aktuell <strong>keine neuen Anfragen</strong> – dein Premium-Abo ist nicht
             aktiv. Bereits zugeteilte Anfragen bleiben sichtbar.
           </span>
-          <a routerLink="/konto/premium" class="abo-banner-cta">Lead-Abo aktivieren</a>
+          <a routerLink="/konto/premium" class="abo-banner-cta">Premium-Abo aktivieren</a>
         </div>
       }
 

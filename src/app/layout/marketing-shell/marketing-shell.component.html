@@ -140,7 +140,7 @@
                 <a routerLink="/konto/premium" routerLinkActive="active" class="tab-button" (click)="closeMenu()">
                   @if (hasActiveSubscription()) {
                     Premium
-                    <span class="abo-dot" title="Lead-Abo aktiv" aria-label="Aktiv"></span>
+                    <span class="abo-dot" title="Premium-Abo aktiv" aria-label="Aktiv"></span>
                   } @else {
                     Premium freischalten
                   }
@@ -153,7 +153,7 @@
                   <button
                     type="button"
                     class="tab-button disabled"
-                    title="Erfordert aktives Lead-Abo"
+                    title="Erfordert aktives Premium-Abo"
                     (click)="goToPremium()"
                   >
                     Anfragen empfangen
