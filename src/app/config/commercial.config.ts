@@ -33,10 +33,10 @@ export const COMMERCIAL_CONFIG = {
  * inkl. PAYPAL_ENV=live). Sind clientId/planId leer, rendert die Premium-Seite
  * keinen PayPal-Button, sondern einen „wird eingerichtet"-Hinweis (SDK lädt nie).
  */
-export const PAYPAL_CONFIG = {
+export const PAYPAL_CONFIG: { clientId: string; planId: string } = {
   clientId: 'AT-gTtO0Q2JC_wxouTtoSLjzRx3GDROubobzptr4TtyjeF7CMeUJjdmw6vu1CGLBviEW8VA-_aurVHDf',
   planId: 'P-2PN34529P22069453NJINWHI'
-} as const;
+};
 
 export const DEFAULT_WHITE_LABEL_CONFIG: WhiteLabelConfig = {
   tenantId: null,
