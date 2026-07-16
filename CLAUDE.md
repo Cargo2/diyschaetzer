@@ -521,6 +521,12 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
       `install-prompt.service.spec.ts`, `online-status.service.spec.ts`.
 
   **Stufe 4 – Profi-App (Angebote) auf dieser Basis — OFFEN:**
+  - **TWA-Vorbereitung vorliegend** (Trusted Web Activity → Play Store via Bubblewrap, ohne
+    Capacitor): `public/.well-known/assetlinks.json` mit Platzhalter-Fingerprint
+    (`REPLACE-WITH-PLAY-APP-SIGNING-SHA256`), Package-Name `de.fliesenkosten.app`, Manifest um
+    `id`/`description`/`dir` ergänzt; Schritt-für-Schritt-Anleitung in `docs/twa-android.md`.
+    **Offen (nur vom Nutzer erledigbar):** Google-Play-Console-Account anlegen, `.aab` bauen/
+    hochladen, den Play-App-Signing-SHA-256 aus der Console in `assetlinks.json` eintragen + deployen.
   12. **Entscheidung PWA-only vs. Capacitor** (nur wenn Store-Präsenz/Push/Kamera gebraucht):
       Capacitor wrappt die bestehende Angular-App; die abgekapselte Repository-Schicht und der
       statische Build machen das ohne Server-Umbau möglich. Erst nach Stufe 1–3 entscheiden.

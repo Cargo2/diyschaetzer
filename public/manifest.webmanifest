@@ -1,9 +1,12 @@
 {
+  "id": "/",
   "name": "Fliesenprojekt – Fliesen-Kostenrechner",
   "short_name": "Fliesenprojekt",
+  "description": "Kostenrechner sowie Angebots- und Rechnungs-Tool für Fliesenleger.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "dir": "ltr",
   "lang": "de",
   "theme_color": "#11574a",
   "background_color": "#f3efe6",
