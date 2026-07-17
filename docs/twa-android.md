@@ -16,6 +16,14 @@ Das Werkzeug dafür ist **Bubblewrap** (Google), das direkt aus dem
 > Capacitor (Roadmap Stufe 4) erst dann, wenn Store-Präsenz **plus** native
 > Hardware-/Push-Zugriffe zusammen nötig werden.
 
+> **STAND 17.07.2026 – Build bereits erfolgt:** Das signierte App Bundle liegt unter
+> `B:\cursor_projekte\twa-fliesenprojekt\app-release-bundle.aab` (plus Test-APK,
+> Upload-Keystore und Passwort-Backup unter `signing\` – sicher verwahren, nie
+> committen). Toolchain (JDK 17, Android SDK) liegt unter `B:\cursor_projekte\twa-tools\`.
+> Der `init`+`build`-Weg unten musste auf Windows abgewandelt werden – siehe den
+> Abschnitt „Windows-Praxis (Build vom 17.07.2026)" am Ende. Offen sind nur noch die
+> Play-Console-Schritte (Upload, App-Signing-Fingerprint → assetlinks.json).
+
 ## Was bereits im Repo vorbereitet ist
 
 - `public/.well-known/assetlinks.json` – die **Digital Asset Links**-Datei, die
@@ -163,3 +171,32 @@ Bei Manifest-Änderungen später `npx @bubblewrap/cli update` vor dem erneuten
   `theme_color`/`start_url`), geänderter **Package-Name**, oder wenn
   Android-/TWA-Einstellungen angepasst werden. Ablauf dann: Fingerprint bleibt
   gleich → `bubblewrap update` → `bubblewrap build` → neues `.aab` hochladen.
+
+## Windows-Praxis (Build vom 17.07.2026)
+
+Der dokumentierte `bubblewrap init`/`build`-Weg stolpert auf Windows (Node 24,
+nicht-interaktive Shells) über mehrere reale Hürden. So wurde der erste Build
+tatsächlich durchgeführt (Projekt: `B:\cursor_projekte\twa-fliesenprojekt\`):
+
+1. **JDK/SDK vorab manuell**: Temurin-JDK 17 + Android-cmdline-tools nach
+   `B:\cursor_projekte\twa-tools\{jdk,android-sdk}` entpackt, Lizenzen per
+   `yes | sdkmanager --licenses`, Pfade vorab in `%USERPROFILE%\.bubblewrap\config.json`
+   eingetragen (dann fragt Bubblewrap nichts). Zusätzlich ein **leeres
+   `<sdk>\tools`-Verzeichnis** anlegen (Bubblewraps `validatePath` erwartet es).
+2. **`bubblewrap init` ist hart interaktiv** (kein `--skipPrompts`): Projekt +
+   `twa-manifest.json` + `manifest-checksum.txt` stattdessen programmatisch über
+   `@bubblewrap/core` erzeugen – Script `generate-project.mjs` im TWA-Ordner.
+   Dort außerdem `fetchUtils.setFetchEngine('node-fetch')` setzen (der
+   HTTP/2-Default lud das maskable Icon sporadisch als SPA-Fallback-HTML).
+3. **Signing nicht-interaktiv**: Keystore vorab per `keytool -genkeypair` (Alias
+   `upload`), Passwörter über die Env-Vars `BUBBLEWRAP_KEYSTORE_PASSWORD` /
+   `BUBBLEWRAP_KEY_PASSWORD` an `bubblewrap build` geben.
+4. **Drei Bubblewrap-Windows-Bugs** mussten in den lokalen `node_modules` des
+   TWA-Ordners gepatcht werden (gehen bei `npm ci` verloren!): `gradlew.bat` und
+   `jarsigner` brauchen **absolute Pfade** im Spawn, und der `execFile`-`maxBuffer`
+   (1 MB) läuft beim Gradle-Build über (auf 256 MB erhöht).
+5. **Build aus PowerShell starten**, nicht aus Git Bash (`spawn cmd.exe ENOENT`).
+
+Upload-Key-SHA256 (nur zur Identifikation; für `assetlinks.json` zählt der
+**Play-App-Signing**-Fingerprint aus der Console!):
+`CB:69:30:86:88:F1:7F:E5:66:77:C5:C2:ED:46:AE:4A:5C:F4:78:99:79:19:14:82:63:39:03:11:8F:B8:B2:3D`
