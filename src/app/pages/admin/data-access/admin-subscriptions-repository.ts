@@ -5,10 +5,14 @@ import { SupabaseAdminSubscriptionsRepository } from './supabase-admin-subscript
 /** Abo-Status eines Contractors (Admin-Sicht, Abo-Welle). */
 export interface AdminSubscriptionEntry {
   userId: string;
+  /** E-Mail aus auth.users (seit Migration 0026); null bei fehlendem Join. */
+  email: string | null;
   provider: string;
   planKey: string;
   status: SubscriptionStatus;
   currentPeriodEnd: string | null;
+  /** Anlagedatum des Abos (ISO, seit Migration 0026). */
+  createdAt: string | null;
   /** Server-Wahrheit inkl. Grace-Period (has_active_lead_subscription). */
   active: boolean;
 }

@@ -122,8 +122,8 @@ bleibt **wirkungslos** (`role`/`plan` unverändert, Transaktion zurückgerollt).
 - **Benötigte Function-Secrets** (im Supabase-Dashboard, nie im Repo): `RESEND_API_KEY`, `LEAD_FROM_EMAIL`,
   `PUBLIC_SITE_URL`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV`, `PAYPAL_PLAN_ID`, `PAYPAL_WEBHOOK_ID`.
 - **Rechnungen (M12, Migration 0021):** `contractor_invoices` owner-scoped (RLS wie `contractor_offers`),
-  `unique(owner_id, invoice_number)` erzwingt § 14-konforme einmalige Nummern DB-seitig; kein Limit-Trigger
-  (bewusst – Rechnungen auch für Free-Betriebe). Zahlungsdaten (`tax_number`/`iban`/`bic`/`bank_name`) liegen
+  `unique(owner_id, invoice_number)` erzwingt § 14-konforme einmalige Nummern DB-seitig; seit Migration 0027
+  zusätzlich Missbrauchs-Cap 100/500 (s. u.). Zahlungsdaten (`tax_number`/`iban`/`bic`/`bank_name`) liegen
   am owner-scoped `company_profiles` und werden als Snapshot in `invoice_data` eingefroren. XRechnung-XML wird
   rein clientseitig erzeugt (kein Server-Fetch, keine neue Dependency).
 
@@ -167,6 +167,31 @@ default-deny, **keine** öffentlichen Lese-/Schreibpfade. `kind`-Check-Constrain
 des eigenen Nutzers (RLS-scoped, strukturell nicht serverseitig validiert – analog Pkt. 11).
 `owner_id` wird aus der Session abgeleitet (`SupabaseContractorSnippetRepository`, nicht aus
 Eingaben → kein IDOR). `updated_at`-Trigger nutzt die Funktion aus 0001 (nicht neu definiert).
+
+## Missbrauchs-Quotas gegen Massen-Anlage (Migration 0027)
+
+Serverseitige Mengen-Obergrenzen je Konto gegen Bot-/Skript-getriebene Massen-Anlage durch
+Free-Konten. **Ausschließlich Missbrauchsschutz, keine Produkt-Limits** – die Caps sind so
+großzügig, dass normale Nutzer sie nie erreichen; das Frontend braucht keine Sonderbehandlung
+(generischer Fehlerpfad reicht). Eine generische `BEFORE INSERT`-Triggerfunktion
+`enforce_owner_quota()` (`security definer`, fixer `search_path = public`, damit der `COUNT`
+nicht an RLS scheitert) erhält Free-/Premium-Cap (und optional den Tages-Modus) über `TG_ARGV`;
+Premium (aktives Lead-Abo, `has_active_lead_subscription()` 0019) erhält den höheren Cap,
+**Admins** (`is_admin()` 0010) sind ausgenommen. Fehler: `raise 'quota_exceeded: <tabelle>'`.
+
+- **Getriggert** (client-schreibbar, owner-scoped): `projects` (30/100), `contractor_offers`
+  (100/500 – ergänzt das produktseitige 3er-Limit `enforce_offer_limit` 0020, deckelt v. a. die
+  sonst unbegrenzten Premium-Konten), `contractor_snippets` (100/300), `shared_offers` (50/300),
+  `shared_calculations` (50/50), `contractor_feedback` (10/10 **pro Tag**, Anti-Spam via
+  `created_at::date`).
+- **Bewusst NICHT getriggert** (kein direkter Client-Insert-Pfad → `revoke all` für
+  anon/authenticated, nur service_role/Edge Function): `leads` (0018, zudem ohne `owner_id`;
+  Rate-Limit 3/24 h lebt in `lead-submit`), `lead_assignments` (0018), `subscriptions`/
+  `subscription_events` (0019, PayPal-Webhook). Ebenfalls unberührt: `profiles` (1:1 je Nutzer),
+  `rooms` (transitiv durch den `projects`-Cap begrenzt, kein `owner_id`).
+- `contractor_invoices` (0021) ist ebenfalls gedeckelt (100/500 wie `contractor_offers`) –
+  Rechnungen laufen zwar auch für Free-Betriebe, aber `unique(owner_id, invoice_number)` allein
+  bremst Massen-Anlage nicht ausreichend.
 
 ---
 

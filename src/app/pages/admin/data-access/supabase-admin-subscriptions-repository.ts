@@ -7,13 +7,15 @@ import type {
   AdminSubscriptionsRepository
 } from './admin-subscriptions-repository';
 
-/** Rohform einer admin_list_subscriptions()-Zeile. */
+/** Rohform einer admin_list_subscriptions()-Zeile (erweitert in Migration 0026). */
 interface SubscriptionRow {
   user_id: string;
+  email: string | null;
   provider: string;
   plan_key: string;
   status: SubscriptionStatus;
   current_period_end: string | null;
+  created_at: string | null;
   active: boolean;
 }
 
@@ -41,10 +43,12 @@ export class SupabaseAdminSubscriptionsRepository implements AdminSubscriptionsR
     }
     return ((data ?? []) as SubscriptionRow[]).map((row) => ({
       userId: row.user_id,
+      email: row.email ?? null,
       provider: row.provider,
       planKey: row.plan_key,
       status: row.status,
       currentPeriodEnd: row.current_period_end,
+      createdAt: row.created_at ?? null,
       active: row.active
     }));
   }

@@ -10,7 +10,17 @@ export const ADMIN_ROUTES: Routes = [
     path: '',
     component: AdminShellComponent,
     children: [
-      { path: '', redirectTo: 'material', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./admin-dashboard.component').then((m) => m.AdminDashboardComponent)
+      },
+      {
+        path: 'abos',
+        loadComponent: () =>
+          import('./admin-subscriptions.component').then((m) => m.AdminSubscriptionsComponent)
+      },
       {
         path: 'material',
         loadComponent: () =>
