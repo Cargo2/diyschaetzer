@@ -387,7 +387,6 @@
                   <th class="col-num">{{ 'Einheitspreis' | t }}</th>
                   <th class="col-num">{{ 'Gesamt' | t }}</th>
                   <th class="col-active">{{ 'Aktiv' | t }}</th>
-                  <th class="col-tools"></th>
                 </tr>
               </thead>
               <tbody>
@@ -414,11 +413,6 @@
                     <td class="col-num total" data-label="Gesamt">{{ eur(lineTotal(line)) }}</td>
                     <td class="col-active" data-label="Aktiv">
                       <input type="checkbox" [(ngModel)]="line.isActive" [ngModelOptions]="{ standalone: true }" [disabled]="!editable()" />
-                    </td>
-                    <td class="col-tools" data-label="">
-                      <button type="button" (click)="moveLine(section, li, -1)" [disabled]="li === 0 || !editable()" [title]="'Nach oben' | t" [attr.aria-label]="'Position nach oben' | t">↑</button>
-                      <button type="button" (click)="moveLine(section, li, 1)" [disabled]="li === section.lines.length - 1 || !editable()" [title]="'Nach unten' | t" [attr.aria-label]="'Position nach unten' | t">↓</button>
-                      <button type="button" class="btn-danger" (click)="removeLine(section, line)" [disabled]="!editable()" [title]="'Position löschen' | t" [attr.aria-label]="'Position löschen' | t">✕</button>
                     </td>
                   </tr>
                 }
@@ -511,6 +505,17 @@
             [readonly]="!editable()"
             [placeholder]="'Zahlungsbedingungen, Dank … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug auf das unten genannte Konto.' | t"></textarea>
         </label>
+
+        <!-- Mobile: Rechnungsbetrag + Speichern immer greifbar (nur auf Handy sichtbar). -->
+        <div class="mobile-savebar">
+          <div class="mobile-savebar-total">
+            <span>{{ 'Rechnungsbetrag' | t }}</span>
+            <strong>{{ eur(grossTotal()) }}</strong>
+          </div>
+          <button type="button" class="btn-primary" [disabled]="saving() || !editable()" (click)="save()">
+            {{ saving() ? ('Speichern …' | t) : ('Speichern' | t) }}
+          </button>
+        </div>
       </section>
     }
   }

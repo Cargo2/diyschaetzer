@@ -551,20 +551,6 @@ export class ContractorInvoicesComponent implements OnInit {
     });
   }
 
-  removeLine(section: ContractorOfferSection, line: ContractorOfferLine): void {
-    if (!this.editable()) {
-      return;
-    }
-    section.lines = section.lines.filter((entry) => entry !== line);
-  }
-
-  moveLine(section: ContractorOfferSection, index: number, direction: -1 | 1): void {
-    if (!this.editable()) {
-      return;
-    }
-    this.swap(section.lines, index, index + direction);
-  }
-
   addSection(): void {
     if (!this.editable()) {
       return;
