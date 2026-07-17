@@ -27,15 +27,15 @@ export const COMMERCIAL_CONFIG = {
  * (sie steckt sichtbar im Browser-SDK); der geheime Client-Secret liegt ausschließlich
  * in den Supabase-Edge-Functions. Der Plan legt Preis und Abrechnungsintervall fest.
  *
- * SANDBOX-Werte (16.07.2026, Plan „Lead-Abo Monatlich 29,99" ohne Trial) – nach
- * erfolgreichem Sandbox-Test gegen die LIVE-Werte tauschen (Live-App + Live-Plan mit
- * Gratis-Testmonat + Live-Webhook; zugleich Supabase-Secrets PAYPAL_* umstellen,
- * inkl. PAYPAL_ENV=live). Sind clientId/planId leer, rendert die Premium-Seite
+ * LIVE-Werte (17.07.2026, Plan „1 Monat Gratis mit monatliche Kündigung":
+ * 1 Monat Trial à 0 €, danach 29,99 €/Monat, EUR; Sandbox-Test war am 16.07.
+ * erfolgreich). Die Supabase-Secrets PAYPAL_* (inkl. PAYPAL_ENV=live) müssen zum
+ * selben Modus gehören. Sind clientId/planId leer, rendert die Premium-Seite
  * keinen PayPal-Button, sondern einen „wird eingerichtet"-Hinweis (SDK lädt nie).
  */
 export const PAYPAL_CONFIG: { clientId: string; planId: string } = {
-  clientId: 'AT-gTtO0Q2JC_wxouTtoSLjzRx3GDROubobzptr4TtyjeF7CMeUJjdmw6vu1CGLBviEW8VA-_aurVHDf',
-  planId: 'P-2PN34529P22069453NJINWHI'
+  clientId: 'AZvgTpKVzCiutD-hNdgRnCFa03_q2wTFADqJWGeT54C6-jrItitlNupnliFTECh5w_Qp_J4Y6sApJ4pU',
+  planId: 'P-5C919640Y6506021ENJMO6YI'
 };
 
 export const DEFAULT_WHITE_LABEL_CONFIG: WhiteLabelConfig = {

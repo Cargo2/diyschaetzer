@@ -64,7 +64,10 @@ export class PaypalSdkLoaderService {
         'client-id': clientId,
         vault: 'true',
         intent: 'subscription',
-        currency: 'EUR'
+        currency: 'EUR',
+        // Button-Beschriftung fest deutsch ("Abonnieren" statt "Subscribe"),
+        // unabhängig von der Browser-Sprache des Besuchers.
+        locale: 'de_DE'
       });
       const script = document.createElement('script');
       script.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
