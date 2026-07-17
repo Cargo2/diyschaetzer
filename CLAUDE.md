@@ -558,7 +558,11 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
   XRechnung BT-113/BT-115 (BR-CO-16 geprüft); Buttons Anzahlung/Abschlag/Schlussrechnung im
   Angebots-Editor.
   (d) i18n-Rest erledigt (Dashboard/Materialliste/Zusammenfassungen/Annahmen/Lead-Formular, ~320
-  Key-Paare). **Offen**: Muttersprachler-Review aller Dictionaries, ggf. PL-Landingpage für Ads.
+  Key-Paare). **PL-Ads-Landingpage live**: `/dla-glazurnikow` (`pages/dla-glazurnikow/`, prerendert,
+  komplett polnisch, hreflang-Tripel de/pl/x-default auf beiden B2B-Seiten via `SeoService`-Option
+  `alternates`, Cross-Links, in Sitemap; deutsche Rechtsbegriffe wie § 19 UStG/XRechnung bleiben
+  deutsch mit polnischer Erklärung). **Offen**: Muttersprachler-Review aller Dictionaries + der
+  PL-Landingpage (Review-Export liegt als untracked `i18n-review-pl.xlsx` im Projekt-Root, 920 Keys).
   (e) Anwenderdoku `/hilfe/rechnungen` + Kündigungs-Hinweis auf `/konto/premium` + PDF-Download-
   Button auf der öffentlichen Angebotsseite ergänzt. **Offen**: automatisierte Löschung nach
   Ablauf der Kündigungsfrist (DSGVO) – aktuell nur kommunikative Zusage, keine technische Umsetzung.

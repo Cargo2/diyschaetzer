@@ -180,6 +180,15 @@ export const MARKETING_ROUTES: Routes = [
       )
   },
   {
+    // Polnischsprachige B2B-Landingpage (bewusste Ausnahme von „Marketing immer deutsch";
+    // Zielgruppe: polnischsprachige Fliesenleger-Betriebe in DE, für polnische Google-Ads).
+    path: 'dla-glazurnikow',
+    loadComponent: () =>
+      import('./pages/dla-glazurnikow/dla-glazurnikow.component').then(
+        (m) => m.DlaGlazurnikowComponent
+      )
+  },
+  {
     path: 'agb-betriebe',
     loadComponent: () =>
       import('./pages/legal/agb-betriebe.component').then((m) => m.AgbBetriebeComponent)

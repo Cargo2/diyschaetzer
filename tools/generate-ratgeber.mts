@@ -57,6 +57,7 @@ const STATIC_PATHS = [
   '/vorlage/angebot-fliesen-muster',
   '/vorlage/fliesen-verlegen-material-werkzeug',
   '/fuer-fliesenleger',
+  '/dla-glazurnikow',
   '/agb-betriebe'
 ];
 

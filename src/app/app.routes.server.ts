@@ -24,6 +24,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'vorlage/angebot-fliesen-muster', renderMode: RenderMode.Prerender },
   { path: 'vorlage/fliesen-verlegen-material-werkzeug', renderMode: RenderMode.Prerender },
   { path: 'fuer-fliesenleger', renderMode: RenderMode.Prerender },
+  { path: 'dla-glazurnikow', renderMode: RenderMode.Prerender },
   { path: 'agb-betriebe', renderMode: RenderMode.Prerender },
   { path: 'impressum', renderMode: RenderMode.Prerender },
   { path: 'datenschutz', renderMode: RenderMode.Prerender },

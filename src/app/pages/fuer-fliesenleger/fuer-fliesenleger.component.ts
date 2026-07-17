@@ -129,12 +129,18 @@ export class FuerFliesenlegerComponent implements OnInit {
       jsonLd: {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
+        inLanguage: 'de',
         mainEntity: this.faq.map((item) => ({
           '@type': 'Question',
           name: item.question,
           acceptedAnswer: { '@type': 'Answer', text: item.answer }
         }))
-      }
+      },
+      alternates: [
+        { hreflang: 'de', path: '/fuer-fliesenleger' },
+        { hreflang: 'pl', path: '/dla-glazurnikow' },
+        { hreflang: 'x-default', path: '/fuer-fliesenleger' }
+      ]
     });
   }
 }

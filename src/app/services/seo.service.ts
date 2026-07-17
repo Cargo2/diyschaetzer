@@ -6,6 +6,14 @@ import {
   SITE_NAME
 } from '../config/site.config';
 
+/** Sprachvariante einer Seite für `<link rel="alternate" hreflang>`. */
+export interface SeoAlternate {
+  /** BCP-47-Sprachcode oder 'x-default'. */
+  hreflang: string;
+  /** Interner Pfad der Variante, z. B. '/dla-glazurnikow'. */
+  path: string;
+}
+
 export interface SeoPage {
   /** Seitentitel (ohne Marken-Suffix). */
   title: string;
@@ -19,6 +27,11 @@ export interface SeoPage {
   noindex?: boolean;
   /** Optionales JSON-LD (wird als ld+json in den <head> gelegt). */
   jsonLd?: Record<string, unknown>;
+  /**
+   * Optionale Sprachvarianten → `<link rel="alternate" hreflang>` (z. B. de/pl/x-default).
+   * Werden bei jedem `setPage` neu gesetzt und bei Routenwechsel geleert.
+   */
+  alternates?: readonly SeoAlternate[];
 }
 
 /**
@@ -62,6 +75,7 @@ export class SeoService {
     this.meta.updateTag({ name: 'twitter:description', content: description });
 
     this.setJsonLd(page.jsonLd ?? null);
+    this.setAlternates(page.alternates ?? null);
   }
 
   private setCanonical(url: string): void {
@@ -73,6 +87,29 @@ export class SeoService {
       head.appendChild(link);
     }
     link.setAttribute('href', url);
+  }
+
+  /**
+   * Setzt (bzw. leert) die `<link rel="alternate" hreflang>`-Tags. Bestehende
+   * Alternate-Links werden zuvor entfernt, damit keine Variante einer vorherigen
+   * Route hängen bleibt. Läuft auch beim Prerender (nur DOCUMENT), sodass die Tags
+   * im statischen HTML landen.
+   */
+  private setAlternates(alternates: readonly SeoAlternate[] | null): void {
+    const head = this.document.head;
+    head
+      .querySelectorAll('link[rel="alternate"][hreflang]')
+      .forEach((node) => node.remove());
+    if (!alternates) {
+      return;
+    }
+    for (const alternate of alternates) {
+      const link = this.document.createElement('link');
+      link.setAttribute('rel', 'alternate');
+      link.setAttribute('hreflang', alternate.hreflang);
+      link.setAttribute('href', absoluteUrl(alternate.path));
+      head.appendChild(link);
+    }
   }
 
   private setJsonLd(data: Record<string, unknown> | null): void {
