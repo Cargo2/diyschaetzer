@@ -24,12 +24,33 @@
   RewriteEngine On
   RewriteBase /
 
-  # Bestehende Dateien und Verzeichnisse unverändert ausliefern
-  # (prerenderte Seiten, JS/CSS/Assets).
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
+  # www → Apex-Domain (301). Ohne diese Regel liefert www.fliesen-kosten.de
+  # die komplette Site als Duplikat aus (nur der Canonical zeigt auf non-www).
+  RewriteCond %{HTTP_HOST} ^www\.fliesen-kosten\.de$ [NC]
+  RewriteRule ^(.*)$ https://fliesen-kosten.de/$1 [R=301,L]
+
+  # Bestehende Dateien unverändert ausliefern (JS/CSS/Assets, prerenderte .html).
+  RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
+
+  # Startseite: prerendertes index.html direkt ausliefern (die frühere
+  # -d-Passthrough-Regel entfällt, daher hier explizit).
+  RewriteRule ^$ index.html [L]
+
+  # Prerenderte Verzeichnisrouten (mit oder ohne Trailing Slash) INTERN auf ihre
+  # index.html abbilden. Kein externer 301 auf die Slash-Variante mehr –
+  # Sitemap/Canonicals nutzen die slash-lose URL, die muss direkt 200 liefern
+  # (sonst meldet die Search Console "Seite mit Weiterleitung"/"Umleitungsfehler").
+  RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+  RewriteRule ^(.+?)/?$ $1/index.html [L]
 
   # Alles andere an den Client-Shell übergeben.
   RewriteRule ^ index.csr.html [L]
+</IfModule>
+
+# mod_dir würde Verzeichnis-URLs ohne Trailing Slash extern per 301 umleiten
+# (Canonical↔Redirect-Konflikt in der Search Console) – abschalten. Directory-
+# Listings sind trotzdem nicht möglich: jede Anfrage endet oben in einer Datei.
+<IfModule mod_dir.c>
+  DirectorySlash Off
 </IfModule>
