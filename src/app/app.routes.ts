@@ -31,6 +31,16 @@ export const MARKETING_ROUTES: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', canActivate: [appRedirectGuard], component: AuthPageComponent },
   {
+    // Ziel des Passwort-Reset-Mail-Links. BEWUSST ohne appRedirectGuard: der
+    // Link zeigt bereits auf den Origin, von dem der Reset angefordert wurde;
+    // ein Cross-Domain-Redirect würde das Recovery-Token (URL-Hash) verlieren.
+    path: 'passwort-neu',
+    loadComponent: () =>
+      import('./pages/auth/password-reset-page.component').then(
+        (m) => m.PasswordResetPageComponent
+      )
+  },
+  {
     // Profi-Konto: Firmendaten / Preise / Premium / Anfragen-Empfang als
     // getrennte Unterseiten. contractorGuard schützt alle Kind-Routen.
     path: 'konto',

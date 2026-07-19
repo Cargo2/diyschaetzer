@@ -142,6 +142,36 @@ export class AuthService {
     await this.loadProfile(session);
   }
 
+  /**
+   * Fordert die Passwort-Reset-Mail an. Der Link in der Mail führt zurück auf
+   * DIESEN Origin (`/passwort-neu`) – die URL muss in der Supabase-Redirect-
+   * Allowlist (Authentication → URL Configuration) stehen. Supabase antwortet
+   * auch für unbekannte E-Mails mit Erfolg (kein User-Enumeration-Leak);
+   * Fehler hier sind z. B. Rate-Limits. SSR-sicher: läuft nur im Browser.
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    const client = this.requireClient();
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: globalThis.location ? globalThis.location.origin + '/passwort-neu' : undefined
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Setzt das Passwort des aktuell angemeldeten Nutzers neu. Wird im
+   * Recovery-Flow genutzt: der Mail-Link erzeugt eine Recovery-Session
+   * (supabase-js `detectSessionInUrl`), danach darf das Passwort geändert werden.
+   */
+  async updatePassword(password: string): Promise<void> {
+    const client = this.requireClient();
+    const { error } = await client.auth.updateUser({ password });
+    if (error) {
+      throw error;
+    }
+  }
+
   async signOut(): Promise<void> {
     const client = this.requireClient();
     const { error } = await client.auth.signOut();

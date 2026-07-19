@@ -1,12 +1,16 @@
 <section class="auth-page">
   <div class="auth-card">
     <h1 class="auth-title">
-      {{ mode() === 'login' ? 'Anmelden' : 'Konto erstellen' }}
+      {{ mode() === 'reset'
+        ? 'Passwort zurücksetzen'
+        : (mode() === 'login' ? 'Anmelden' : 'Konto erstellen') }}
     </h1>
     <p class="auth-subtitle">
-      {{ mode() === 'login'
-        ? 'Melde dich an, um deine Projekte geräteübergreifend zu speichern.'
-        : 'Lege ein Konto an, um deine Fliesenprojekte sicher zu speichern.' }}
+      {{ mode() === 'reset'
+        ? 'Gib deine E-Mail-Adresse ein – wir schicken dir einen Link zum Zurücksetzen.'
+        : (mode() === 'login'
+          ? 'Melde dich an, um deine Projekte geräteübergreifend zu speichern.'
+          : 'Lege ein Konto an, um deine Fliesenprojekte sicher zu speichern.') }}
     </p>
 
     @if (!isConfigured) {
@@ -16,6 +20,29 @@
       </p>
     }
 
+    @if (mode() === 'reset') {
+      <form class="auth-form" (ngSubmit)="requestReset()">
+        <label class="auth-field">
+          <span>E-Mail</span>
+          <input type="email" name="email" autocomplete="email" required
+            [(ngModel)]="email" [disabled]="loading()" />
+        </label>
+
+        @if (errorMsg()) {
+          <p class="auth-notice auth-notice--error" role="alert">{{ errorMsg() }}</p>
+        }
+        @if (infoMsg()) {
+          <p class="auth-notice auth-notice--info">{{ infoMsg() }}</p>
+        }
+
+        <button type="submit" class="auth-submit" [disabled]="loading() || !isConfigured">
+          {{ loading() ? 'Bitte warten…' : 'Link anfordern' }}
+        </button>
+        <button type="button" class="auth-link" (click)="setMode('login')">
+          Zurück zur Anmeldung
+        </button>
+      </form>
+    } @else {
     <div class="auth-tabs" role="tablist">
       <button
         type="button"
@@ -102,6 +129,12 @@
           required [(ngModel)]="password" [disabled]="loading()" />
       </label>
 
+      @if (mode() === 'login') {
+        <button type="button" class="auth-link auth-link--start" (click)="setMode('reset')">
+          Passwort vergessen?
+        </button>
+      }
+
       @if (mode() === 'register') {
         <label class="auth-field">
           <span>Passwort bestätigen</span>
@@ -129,5 +162,6 @@
           : (mode() === 'login' ? 'Anmelden' : 'Konto erstellen') }}
       </button>
     </form>
+    }
   </div>
 </section>

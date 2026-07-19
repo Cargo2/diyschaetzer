@@ -16,6 +16,7 @@ interface AuthStub {
   signInWithGoogle: () => Promise<void>;
   claimContractorRole: () => Promise<boolean>;
   refreshProfile: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
 }
 
 function setup(options: {
@@ -37,6 +38,7 @@ function setup(options: {
     signInWithGoogle: async () => {},
     claimContractorRole: async () => true,
     refreshProfile: async () => {},
+    requestPasswordReset: async () => {},
     ...options.auth
   };
   const router = { navigateByUrl: async (url: string) => { navigatedTo = url; } };
@@ -184,6 +186,65 @@ describe('AuthPageComponent – Passwort-Bestätigung', () => {
     await component.submit();
 
     expect(signUpCalled).toBe(true);
+  });
+});
+
+describe('AuthPageComponent – Passwort vergessen', () => {
+  it('requests the reset mail and shows a neutral confirmation', async () => {
+    let requestedFor: string | null = null;
+    const { component } = setup({
+      auth: {
+        requestPasswordReset: async (email: string) => {
+          requestedFor = email;
+        }
+      }
+    });
+    component.ngOnInit();
+    component.setMode('reset');
+    component.email = 'a@b.de';
+
+    await component.requestReset();
+
+    expect(requestedFor).toBe('a@b.de');
+    // Neutral halten – kein Hinweis, ob das Konto existiert (User-Enumeration).
+    expect(component.infoMsg()).toContain('Falls ein Konto');
+    expect(component.errorMsg()).toBeNull();
+  });
+
+  it('requires an email address before requesting a reset', async () => {
+    let requestCalled = false;
+    const { component } = setup({
+      auth: {
+        requestPasswordReset: async () => {
+          requestCalled = true;
+        }
+      }
+    });
+    component.ngOnInit();
+    component.setMode('reset');
+    component.email = '';
+
+    await component.requestReset();
+
+    expect(requestCalled).toBe(false);
+    expect(component.errorMsg()).toContain('E-Mail');
+  });
+
+  it('humanizes the Supabase rate-limit error', async () => {
+    const { component } = setup({
+      auth: {
+        requestPasswordReset: async () => {
+          throw new Error('For security purposes, you can only request this once every 60 seconds');
+        }
+      }
+    });
+    component.ngOnInit();
+    component.setMode('reset');
+    component.email = 'a@b.de';
+
+    await component.requestReset();
+
+    expect(component.errorMsg()).toContain('warte einen Moment');
   });
 });
 

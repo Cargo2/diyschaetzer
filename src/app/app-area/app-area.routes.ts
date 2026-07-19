@@ -23,6 +23,14 @@ import { ExternalRedirectComponent } from './external-redirect.component';
 export const APP_AREA_ROUTES: Routes = [
   { path: 'login', component: AuthPageComponent },
   {
+    // Ziel des Passwort-Reset-Mail-Links – wie `login` bewusst OHNE Shell.
+    path: 'passwort-neu',
+    loadComponent: () =>
+      import('../pages/auth/password-reset-page.component').then(
+        (m) => m.PasswordResetPageComponent
+      )
+  },
+  {
     path: '',
     component: AppShellComponent,
     children: [

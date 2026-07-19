@@ -6,7 +6,7 @@ import { SignupRole } from '../../models/auth.model';
 import { AuthService } from '../../services/auth.service';
 import { AppHostService } from '../../services/app-host.service';
 
-type AuthMode = 'login' | 'register';
+type AuthMode = 'login' | 'register' | 'reset';
 
 /**
  * sessionStorage-Schlüssel für das Weiter-Ziel. Muss die E-Mail-Bestätigung
@@ -152,6 +152,31 @@ export class AuthPageComponent implements OnInit {
     } catch (error) {
       this.loading.set(false);
       this.errorMsg.set(this.humanize(error));
+    }
+  }
+
+  /**
+   * Fordert die Passwort-Reset-Mail an („Passwort vergessen?"). Die Erfolgs-
+   * meldung ist bewusst neutral (kein Hinweis, ob das Konto existiert).
+   */
+  async requestReset(): Promise<void> {
+    this.errorMsg.set(null);
+    this.infoMsg.set(null);
+    if (!this.email) {
+      this.errorMsg.set('Bitte E-Mail-Adresse angeben.');
+      return;
+    }
+    this.loading.set(true);
+    try {
+      await this.auth.requestPasswordReset(this.email);
+      this.infoMsg.set(
+        'Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link zum ' +
+          'Zurücksetzen des Passworts geschickt. Bitte prüfe auch den Spam-Ordner.'
+      );
+    } catch (error) {
+      this.errorMsg.set(this.humanize(error));
+    } finally {
+      this.loading.set(false);
     }
   }
 
@@ -355,6 +380,10 @@ export class AuthPageComponent implements OnInit {
     }
     if (normalized.includes('email not confirmed')) {
       return 'Bitte bestätige zuerst deine E-Mail-Adresse über den zugesandten Link.';
+    }
+    // Supabase-Rate-Limit beim Passwort-Reset („you can only request this once every …").
+    if (normalized.includes('you can only request this')) {
+      return 'Bitte warte einen Moment, bevor du erneut einen Link anforderst.';
     }
     // OAuth-Provider (Google) im Supabase-Dashboard nicht aktiviert.
     if (normalized.includes('provider is not enabled') || normalized.includes('is not enabled')) {

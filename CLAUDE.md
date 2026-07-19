@@ -573,7 +573,8 @@ dieselben Helfer nutzen, damit sie nicht auseinanderlaufen.
 
 ### Offen vor Affiliate-Livegang
 - Echte Affiliate-URLs statt der `PLACEHOLDER`-Links in `data/product-offers.ts`.
-- Amazon-Partner-Tag (`tag=REPLACE-21` in `config/affiliate.config.ts`) ersetzen.
+- ~~Amazon-Partner-Tag ersetzen~~ ERLEDIGT: `tag=alkoholvergle-21` ist der korrekte eigene
+  PartnerNet-Tag des Betreibers (gilt bewusst auch für dieses Projekt; bestätigt 19.07.2026).
 - Klären, welche Shops überhaupt **SKU-Deeplinks** erlauben (sonst `type: 'search'` nutzen);
   ggf. `gtin`/`ean` ans Produkt nehmen, um Links generierbar zu machen.
 - **Cookie-Consent für nicht-essentielle/Affiliate-Cookies**: Phase 11 liefert nur den Basis-Hinweis
