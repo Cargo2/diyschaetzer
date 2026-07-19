@@ -3,9 +3,8 @@ import { RouterLink } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 
 /**
- * AGB für das B2B-Lead-Abo (`/agb-betriebe`, prerendert). Enthält bewusst
- * markierte `[Platzhalter: rechtlich prüfen]`-Blöcke – der finale Wortlaut wird
- * vor Livegang anwaltlich geprüft. Indexierbar (in Sitemap), Footer-Link.
+ * AGB für das B2B-Lead-Abo (`/agb-betriebe`, prerendert). Indexierbar
+ * (in Sitemap), Footer-Link.
  */
 @Component({
   selector: 'app-agb-betriebe',

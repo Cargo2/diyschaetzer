@@ -133,12 +133,9 @@ Großformat und empfindliche Oberflächen.
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen: welches System, welches Projekt, was gut/schlecht lief. -->
+Bei meinen ersten 60-mal-60-Zentimeter-Fliesen haben mir Keile und Laschen tatsächlich geholfen, die Kanten sauber auf eine Höhe zu bekommen. Anfangs habe ich die Keile allerdings zu fest angezogen. Dabei bewegten sich einzelne Fliesen seitlich, und an einer Stelle war anschließend zu wenig Kleber unter einer Ecke. Das System zieht eine Fliese eben an die nächste, ersetzt aber weder einen geraden Untergrund noch eine gleichmäßige Kleberschicht.
 
-Beim ersten Großformat-Boden habe ich die Nivellierer zu sparsam gesetzt – genau an den
-freien Ecken hatte ich am Ende einen fühlbaren Überzahn. Seitdem gilt für mich: lieber ein
-paar Laschen mehr, und die Keile immer mit der Zange setzen, nicht mit dem Daumen. Das
-wiederverwendbare Schraubsystem hat sich ab dem zweiten Raum bezahlt gemacht.
+Am meisten Arbeit sparte mir eine simple Gewohnheit: austretenden Kleber sofort mit einer schmalen Bürste aus den Fugen und rund um die Laschen entfernen. Wo Kleber aushärtete, brachen die Laschen am nächsten Tag nicht sauber ab und ich musste Kunststoffreste mühsam auskratzen. Auf empfindlichen Oberflächen verwende ich Schutzplättchen. Für größere Flächen nehme ich weiterhin das Keilsystem, kontrolliere aber jede Reihe zusätzlich mit Richtscheit und Hand.
 
 ## Häufige Fragen
 

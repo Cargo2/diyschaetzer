@@ -70,43 +70,9 @@ stimmen:
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: Raum, verwendeter Haftgrund/Kleber, wie es
-     mit der Türhöhe gelöst wurde, ob es gehalten hat. -->
+Ich habe einen kleinen Flur überfliest, weil der alte Belag fest wirkte und ich mir Staub und Bauschutt sparen wollte. Bevor ich angefangen habe, habe ich wirklich jede Fliese abgeklopft. Dabei kamen zwei hohl klingende Stellen zum Vorschein, obwohl der Boden auf den ersten Blick tadellos aussah. Diese Fliesen habe ich entfernt und die Fehlstellen ausgeglichen. Danach wurde die gesamte Fläche gründlich entfettet, angeraut und mit einem geeigneten Haftgrund vorbereitet.
 
-Im Flur habe ich alte, kerngesunde Steinzeugfliesen überklebt, statt sie mühsam
-herauszustemmen – die Ersparnis an Dreck und Zeit war enorm. Was ich unterschätzt hatte,
-war die Türhöhe: Nach dem Überfliesen streifte das Türblatt am Boden, ich musste es unten
-kürzen. Beim nächsten Mal messe ich die Aufbauhöhe vor dem Materialkauf und plane das
-Kürzen von vornherein ein.
-
-Der zweite Lerneffekt war das Entfetten. An einer Stelle, an der ich schludrig war, löste
-sich eine Fliese wieder. Seitdem schrubbe ich die komplette Altfläche mit Grundreiniger,
-bevor überhaupt Haftgrund draufkommt.
-
-Wie fest sitzen die alten Fliesen eigentlich? Das ist bei älteren Bädern die Gretchenfrage
-– und die Antwort ist erstaunlich uneinheitlich. Manche Fliesen aus derselben Zeit kleben,
-als hätte man Sekundenkleber genommen: Die bekommt man nur mit Meißel und roher Gewalt ab.
-Andere direkt daneben lösen sich fast, wenn man sie schräg anschaut. Genau deshalb klopfe
-ich vorher die komplette Fläche ab und verlasse mich nie auf den Eindruck von zwei, drei
-Stellen. Klingt es irgendwo hohl oder gibt eine Fliese beim Draufdrücken nach, ist das die
-Stelle, an der später der ganze neue Belag Ärger macht.
-
-Selbst rausreißen ist günstiger, als viele denken – aber nicht umsonst. Wenn ihr selbst
-Hand anlegt, ist das Entfernen der alten Fliesen kein großer Kostenfaktor, sondern vor
-allem mehr Arbeit plus etwas Entsorgung des Bauschutts. Dafür kann man dann alles
-ordentlich neu aufbauen – bis hin zu Leitungen und Elektrik. Unterschätzt aber den
-Mehraufwand nicht: Leitungen und Elektrik zu erneuern heißt in der Regel Estrich raus und
-Kanäle stemmen – das ist eine ganz andere Baustelle als „einmal drüberfliesen". Meine
-ehrliche Abwägung: Überfliesen spart echt Arbeit, aber wenn ohnehin Rohre oder Kabel
-getauscht gehören, führt am Abriss kaum ein Weg vorbei.
-
-Ein Punkt, den man leicht übersieht, sind die Steckdosen und Schalter. Durch die
-zusätzliche Aufbauhöhe sitzen die Schalterdosen in der Wand plötzlich zu tief, und der
-Rahmen von Steckdose oder Schalter liegt nicht mehr sauber auf. Die einfache Lösung sind
-Putzausgleichringe – kleine Distanzringe, die man auf die vorhandene Unterputzdose
-schraubt. Sie holen Schalter und Steckdose um genau die fehlenden Millimeter nach vorne,
-sodass die Abdeckungen wieder bündig auf der neuen Fliesenebene abschließen. Kostet ein
-paar Cent das Stück – ohne sie wackelt am Ende aber jede Abdeckung.
+Gehalten hat der neue Belag gut. Unterschätzt hatte ich allerdings die zusätzliche Höhe. Das Türblatt musste gekürzt werden, am Übergang zum Nachbarraum brauchte ich ein neues Profil und auch der WC-Anschluss wäre beinahe zu niedrig gewesen. Deshalb rechne ich heute Fliese, Kleber und eventuelle Ausgleichsschicht vorher millimetergenau zusammen. Wenn der Altbelag Risse hat, Fliesen locker sind oder ohnehin Leitungen erneuert werden sollen, würde ich nicht mehr darüberlegen. Dann spart man sich mit dem Überfliesen nur den ersten Teil der Arbeit und baut das eigentliche Problem ein.
 
 ## Fazit
 

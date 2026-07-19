@@ -98,12 +98,9 @@ frostfeste Variante auch für draußen geeignet.
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen: welche beige Fliese, welcher Raum, welches Licht. -->
+Eine beige Fliese, die im Ausstellungsraum ruhig und fast grau aussah, bekam in meinem Bad abends plötzlich einen deutlichen Gelbstich. Neben dem kühlen Weiß des Waschtischs fiel das noch stärker auf. Ein kleines Handmuster für ein paar Minuten anzuhalten, hatte mir diesen Eindruck vorher nicht vermittelt.
 
-Ich habe im Bad zunächst zu einem sehr hellen Creme gegriffen und im Kunstlicht wirkte es
-plötzlich gelblich. Zweiter Anlauf: ein neutrales Greige – das bleibt bei jedem Licht
-ruhig. Zwei Dinge, die ich seitdem immer mache: Muster über Nacht im Raum liegen lassen
-und die Farbnummer fotografieren, damit der Nachkauf zur ersten Charge passt.
+Bei der endgültigen Auswahl habe ich deshalb mehrere Muster über zwei Tage im Raum liegen lassen und sie morgens, bei bedecktem Himmel und nur mit Badbeleuchtung angesehen. Ein etwas neutraleres Greige hat schließlich besser zu den vorhandenen Oberflächen gepasst. Seitdem achte ich weniger auf Namen wie Sand oder Creme und mehr auf den Unterton. Auch die Lichtfarbe der Leuchtmittel teste ich mit, denn sie verändert Beige erstaunlich stark.
 
 ## Häufige Fragen
 

@@ -65,19 +65,9 @@ auf. Ein halbes Paket aus der Originalcharge im Keller ist die billigste Versich
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: konkretes Projekt, Format, wie viel Verschnitt
-     tatsächlich angefallen ist, ob die Reserve später gebraucht wurde. -->
+Bei einem kleinen Bad dachte ich zuerst, fünf Prozent Reserve müssten reichen. Die reine Fläche war schließlich schnell ausgerechnet. Was ich nicht ausreichend berücksichtigt hatte, waren die vielen Ausschnitte an Vorwand, Tür, Rohrleitungen und Duschbereich. Dazu kamen zwei Fliesen mit beschädigten Kanten. Am Ende fehlte mir genau ein Paket.
 
-Bei meinem ersten Bad habe ich brav 5 % Verschnitt gerechnet – und mitten in der
-Verlegung gemerkt, dass die vielen Schnitte um Dusche, WC-Vorwand und die schräge Ecke
-den Bedarf sprengen. Nachkauf: andere Charge, minimal heller. Man sieht es, wenn man
-weiß, wo man hinschauen muss. Seitdem rechne ich lieber ein Paket zu viel als eines zu
-wenig, gerade bei Großformat und in kleinen Räumen.
-
-Zweite Lehre: Beim Diagonalverlegen im Flur war der Verschnitt deutlich höher als
-gedacht – die vier Randreihen bestehen fast nur aus Dreiecken, und jeder Schnitt kostet
-eine ganze Fliese. Hätte ich vorher mit 12–15 % gerechnet, hätte ich mir den Nachkauf
-gespart.
+Der Nachkauf war zwar noch möglich, aber die neue Charge hatte einen leicht anderen Ton. Seitdem bestelle ich bei einer geraden Verlegung meistens etwa zehn Prozent zusätzlich, bei diagonalen oder aufwendigeren Mustern eher 15 Prozent oder mehr. Vor der Bestellung lege ich das Raster grob auf Papier an. So sehe ich früh, ob an den Rändern ungünstige schmale Streifen entstehen. Ein paar ganze Fliesen hebe ich nach dem Projekt auf. Für eine spätere Reparatur sind sie mehr wert als das Geld, das ich durch eine knappere Bestellung gespart hätte.
 
 ## Fazit
 

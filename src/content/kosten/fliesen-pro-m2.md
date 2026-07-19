@@ -90,11 +90,9 @@ Der Quadratmeterpreis schwankt stark nach Ort und Situation:
 
 ## Erfahrung aus der Praxis: Fliesen kaufen
 
-Fliesen bekommst du heute fast überall: im Baumarkt bei Obi, Toom oder Hornbach, im Fliesenfachhandel und online, etwa bei Amazon. Schau dir die Bewertungen an, wenn es welche gibt, gerade bei Online-Händlern. Denk immer daran: Mit fehlerhafter Ware muss am Ende der Fliesenleger zurechtkommen, und wenn du selbst legst, ist das meistens ein Laie. Das Ergebnis spürst du danach jeden Tag.
+Bei einem günstigen Posten Bodenfliesen habe ich erst während des Verlegens gemerkt, dass nicht alle Stücke exakt gleich groß waren. Ein Unterschied von wenigen Millimetern klingt harmlos, macht eine schmale Fuge aber schnell unruhig. Einige längliche Fliesen waren außerdem leicht gebogen. Mit mehr Zeit, einer breiteren Fuge und konsequentem Sortieren ließ sich das ausgleichen, die Ersparnis war danach allerdings deutlich kleiner als gedacht.
 
-Gerade bei billiger Ware sind die Maßtoleranzen oft groß. Achte deshalb darauf, nicht einfach das Billigste aus dem Fachhandel zu nehmen, sonst landest du qualitativ schnell bei der günstigen Baumarktware, zahlst aber Fachhandelspreis.
-
-Mein Tipp: In der Regel stellt der Fliesenleger das Material. Wenn du darfst, sprich mit dem Fliesenhändler, denn der Handwerker bekommt dort meist Rabatte. So bist du beim Preis und bei der Qualität auf der sicheren Seite. Willst du selbst legen, schau auf die Bewertungen anderer Heimwerker und bestell nicht das billigste Material, das du findest.
+Seitdem öffne ich vor dem Verlegen mehrere Kartons, mische die Fliesen untereinander und prüfe stichprobenartig Kanten, Maße und Ebenheit. Kaliber, Farbton und Charge kontrolliere ich direkt bei der Lieferung. Bei einer Onlinebestellung achte ich zusätzlich darauf, wie Bruch und Reklamationen geregelt sind. Wenn ein Fliesenleger das Material beschafft, kläre ich vorher schriftlich, wer bei Maßabweichungen oder beschädigter Ware zuständig ist. Der niedrigste Quadratmeterpreis ist für mich nicht mehr automatisch das günstigste Angebot.
 
 ## Eigenleistung oder Fliesenleger?
 

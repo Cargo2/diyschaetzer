@@ -83,19 +83,9 @@ samt Zubehör einer der größten Posten.
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: verwendetes Abdichtungssystem, bodengleiche
-     Dusche ja/nein, was bei Ecken/Ablauf tricky war, wie die Dichtheitsprüfung lief. -->
+Bei der Abdichtung meiner Dusche war die große Fläche schnell erledigt. Aufgehalten haben mich die Übergänge: Innenecken, Rohrdurchführungen und vor allem der Anschluss an den Ablauf. Dort musste ich Dichtband und Manschette mehrmals trocken anhalten, bevor alles ohne Falten saß. Im Nachhinein war genau diese Geduld wichtiger als ein besonders schneller Auftrag auf der Wand.
 
-Beim ersten Bad habe ich die Fläche ordentlich abgedichtet – und trotzdem an der Innenecke
-hinter der Duschrinne geschludert, weil es dort eng und unbequem war. Genau da hätte es
-später Probleme geben können. Meine Lehre: Die Ecken und der Ablauf sind die eigentliche
-Arbeit, die Fläche ist der leichte Teil. Ich nehme mir heute für die paar Dichtbänder und
-Manschetten mehr Zeit als für den kompletten Rest.
-
-Zweite Lehre: zwei Anstriche, wirklich kreuzweise. Beim ersten Versuch habe ich in eine
-Richtung gerollt und mich gewundert, dass durch die matte Fläche noch heller
-durchschimmerte, wo es dünn war. Der zweite, quer aufgetragene Anstrich hat genau diese
-Stellen geschlossen.
+Ich habe außerdem gemerkt, wie leicht man bei einer Flüssigabdichtung dünne Stellen übersieht. Beim zweiten Auftrag, quer zum ersten, waren plötzlich noch kleine helle Bereiche zu erkennen. Seitdem arbeite ich abschnittsweise, kontrolliere jede Lage bei gutem Seitenlicht und halte die vorgeschriebenen Trocknungszeiten ein. Die Dichtheitsprüfung habe ich ebenfalls nicht ausgelassen. Ein kleiner Fehler lässt sich vor dem Fliesen noch korrigieren; danach wird daraus schnell ein kompletter Rückbau.
 
 ## Fazit
 

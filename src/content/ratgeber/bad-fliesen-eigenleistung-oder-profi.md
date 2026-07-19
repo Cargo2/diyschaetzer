@@ -118,14 +118,9 @@ und ebenerdige Dusche – vom Profi ausführen lassen.
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: konkretes Bad, was du selbst gemacht hast,
-     was der Profi übernommen hat, Kosten und was du heute anders machen würdest. -->
+Bei meinem Bad habe ich den Rückbau, das Entsorgen und einige gerade Wandflächen selbst übernommen. Das hat Geld gespart, aber deutlich mehr Zeit gekostet, als ich vorher eingeplant hatte. Gerade das Ausrichten der ersten Reihen und die Ausschnitte um Leitungen waren nichts, was sich nach zwei Videos nebenbei erledigen ließ.
 
-Für mein eigenes Bad habe ich genau diese Aufteilung gewählt: Rückbau und einfache
-Wandflächen selbst, die **Abdichtung und die bodengleiche Dusche aber bewusst an den
-Profi** gegeben. Der Ausschlag war ein einziger Satz aus einem Forum, der mir im Kopf
-blieb: *„Die Abdichtung siehst du nicht – deshalb merkst du den Fehler erst, wenn es zu
-spät ist."* Diese eine Stelle wollte ich nicht als Lehrgeld bezahlen.
+Die bodengleiche Dusche mit Gefälle, Ablauf und Abdichtung habe ich an einen Fachbetrieb vergeben. Für mich war das die richtige Grenze: Kleine optische Fehler hätte ich im eigenen Bad akzeptieren können, einen unbemerkten Wasserschaden nicht. Heute würde ich die Arbeit wieder teilen, aber die Übergabe genauer festhalten. Der Profi sollte vorher sagen, wie eben und maßhaltig der Untergrund sein muss, damit es später keine Diskussion darüber gibt, wer eine schiefe Wand ausgleichen soll.
 
 ## Häufige Fragen
 

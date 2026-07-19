@@ -144,17 +144,9 @@ also rund **3–4 Säcke à 15–20 kg** plus Puffer.
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: konkrete Projekte, Marken, was gut/schlecht lief. -->
+Bei meinen ersten großen Bodenfliesen habe ich mich zu sehr auf die Angabe zur Zahnung verlassen. Der Verbrauch sah auf dem Papier vernünftig aus, tatsächlich brauchte ich aber deutlich mehr Kleber. Erst als ich eine frisch gesetzte Fliese noch einmal anhob, sah ich, dass die Stege an einigen Stellen kaum zusammengedrückt waren. Von oben hatte alles ordentlich ausgesehen, darunter waren trotzdem Lücken.
 
-Beim ersten eigenen Bad habe ich den Fehler gemacht, aus „geht schon"-Mentalität
-eine **zu grobe Zahnung** zu nehmen – am Ende war ein Sack früher leer als geplant,
-und unter zwei Platten hatte ich trotzdem Hohllagen. Zwei Lehren, die sich seitdem
-bewährt haben:
-
-- Bei Großformat konsequent **Buttering-Floating** – die paar Minuten mehr sparen
-  später das Ärgernis klingender Fliesen.
-- Lieber **einen Sack mehr** kaufen und den Kassenzettel aufheben (Rückgabe), als
-  mitten in der Fläche ohne Kleber dazustehen, während die erste Charge anzieht.
+Seitdem ziehe ich den Kleber in geraden Bahnen auf, streiche die Rückseite großer Fliesen dünn ab und kontrolliere am Anfang immer wieder eine Platte. Das kostet etwas Zeit und macht die Arbeit schmutziger, gibt mir aber wesentlich mehr Sicherheit als jede Verbrauchstabelle. Einen zusätzlichen Sack kaufe ich ebenfalls mit. Ungeöffnet lässt er sich meist zurückgeben; während des Verlegens wegen fehlendem Kleber losfahren zu müssen, ist dagegen richtig lästig.
 
 ## Häufige Fragen
 

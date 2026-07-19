@@ -79,20 +79,9 @@ ersten Blick so weit auseinanderliegen. Konkrete Preise hängen zusätzlich von 
 
 ## Meine Erfahrung
 
-Bei uns kam die Küche im Zuge eines kompletten Austauschs neu rein – alte Küche raus, alte Fliesen raus.
-Knifflig war vor allem die **Reihenfolge der Gewerke**: Weil wir die Arbeitsfläche der neuen Küche etwas
-höher haben wollten, mussten zuerst die **Steckdosen nach oben versetzt** werden. Der Ablauf war
-entsprechend getaktet: Das Küchenstudio baute die alte Küche aus, dann kam der **Elektriker** (Steckdosen
-versetzen), danach der **Fliesenleger**, anschließend der **Maler** – und erst zum Schluss montierte das
-Küchenstudio die neue Küche.
+Bei unserer Küche war das Fliesen selbst nicht der schwierigste Teil, sondern die Abstimmung davor. Erst nach der endgültigen Küchenplanung stand fest, wo Arbeitsplatte, Steckdosen und Anschlüsse tatsächlich sitzen würden. Der Elektriker musste deshalb vor dem Fliesenleger kommen; die Rückwand konnte wiederum erst nach der Montage und dem genauen Ausrichten der Arbeitsplatte fertiggestellt werden. Eine kleine Verzögerung zog sofort den nächsten Termin mit.
 
-Diese Kette muss sitzen, sonst warten die Gewerke aufeinander. Für uns hieß das rund **zwei Wochen ohne
-richtige Küche**: Wir haben uns in der Garage mit Kochplatten und Provisorien beholfen. Das sollte man
-einplanen – die Küche ist im Alltag das Herzstück.
-
-Und ein praktischer Punkt zum Großformat: Wir haben beim **Anheben der Platten mitgeholfen** – die sind
-wirklich schwer und unhandlich. Das hat mir noch einmal gezeigt, warum großformatige Fliesen in der
-Verlegung aufwendiger (und damit teurer) sind als Standardformate.
+Wir waren länger ohne Spüle und Kochfeld als geplant. Gerettet hat uns eine provisorische Ecke mit Kühlschrank, Mikrowelle, Induktionsplatte und Wasserkocher. Rückblickend würde ich dieses Provisorium einrichten, bevor die alte Küche ausgebaut wird, und zusätzlich Zeitpuffer zwischen den Gewerken lassen. Bei großen Bodenfliesen kam noch hinzu, dass Zuschnitt und Transport viel langsamer gingen als bei Standardformaten. Spätestens da war für mich nachvollziehbar, warum sich das im Arbeitslohn bemerkbar macht.
 
 ## Eigenleistung oder Fliesenleger?
 

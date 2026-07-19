@@ -85,15 +85,9 @@ sind pauschale Quadratmeterpreise mit Vorsicht zu genießen: Sie meinen oft nich
 
 ## Meine Erfahrung
 
-Ich hatte für das Vorhaben **mehrere Angebote** eingeholt – dieses war mit Abstand das
-**detailreichste und übersichtlichste**. Genau das hat den Ausschlag gegeben: Meine Erfahrung ist,
-dass ein Betrieb, der seine Positionen sauber und nachvollziehbar aufschlüsselt, in der Regel auch
-sonst sorgfältig arbeitet. Diese Transparenz schafft Vertrauen – und war einer der Gründe, warum ich
-mich am Ende für das **etwas teurere** Angebot entschieden habe.
+Für mein Bad lagen die Angebote preislich weiter auseinander, als ich erwartet hatte. Zuerst sah das günstigste attraktiv aus. Beim direkten Vergleich fehlten dort aber mehrere Arbeiten, unter anderem Untergrundvorbereitung, Abdichtungsdetails und Entsorgung. Das etwas teurere Angebot führte diese Punkte einzeln auf und beschrieb auch, welches Material eingesetzt werden sollte.
 
-Für größere Bauvorhaben würde ich es wieder so machen und **mehrere Angebote** einholen. Erst im
-direkten Vergleich sieht man, was „inklusive" jeweils wirklich bedeutet und wo Leistungen fehlen oder
-sich unterscheiden.
+Ich habe mich deshalb nicht für die niedrigste Summe, sondern für den nachvollziehbarsten Leistungsumfang entschieden. Hilfreich war eine eigene Liste, auf der ich jedes Angebot Zeile für Zeile verglichen habe. Vor der Zusage habe ich außerdem festhalten lassen, wie mit zusätzlichen Arbeiten umgegangen wird. Seitdem frage ich bei pauschalen Formulierungen immer nach. Ein Angebot ist für mich erst vergleichbar, wenn klar ist, was vorbereitet, geliefert, eingebaut und entsorgt wird.
 
 ## Eigenleistung oder Fliesenleger?
 

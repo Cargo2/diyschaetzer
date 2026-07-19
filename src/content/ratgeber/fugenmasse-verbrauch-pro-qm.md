@@ -81,18 +81,9 @@ Die Fugenfarbe verändert die Optik massiv:
 
 ## Meine Erfahrung
 
-<!-- Eigene Erfahrung hier ergänzen/anpassen: verwendete Marke/Farbe, wie viel wirklich
-     draufging, was beim Abwaschen/Verschleiern schieflief. -->
+Meine erste dunkle Fuge ist wesentlich heller getrocknet als das Farbmuster auf dem Sack. Ich hatte eine zu große Fläche auf einmal verfugt und beim Abwaschen immer wieder nachgewischt, weil noch Schlieren auf den Fliesen zu sehen waren. Damit habe ich vermutlich mehr Wasser in die Fugen gebracht und einen Teil der Farbe regelrecht ausgewaschen. Gleichmäßig war das Ergebnis am Ende auch nicht.
 
-Ich habe beim ersten Mal den Fehler gemacht, eine sehr dunkle Fuge auf helle Fliesen zu
-wählen – sieht auf dem Musterbrett top aus, verzeiht aber keinen Millimeter schiefe Fuge.
-Beim zweiten Bad bin ich auf einen mittleren Grauton gegangen: pflegeleicht, unempfindlich
-und trotzdem mit genug Zeichnung, dass das Fliesenbild Struktur behält.
-
-Beim Verbrauch habe ich gelernt, lieber einen kleinen Sack mehr dazuzunehmen. Beim
-Einschlämmen geht mehr weg als die Tabelle vermuten lässt, und mitten in der Fläche neu
-anrühren zu müssen – womöglich mit minimal anderem Farbton aus einer anderen Charge – ist
-genau das, was man vermeiden will.
+Beim nächsten Raum habe ich kleinere Abschnitte gemacht, das Mischwasser genau abgemessen und den Schwamm nach jedem kurzen Zug ausgewaschen und gut ausgewrungen. Das war langsamer, aber die Farbe wurde viel ruhiger und der Schleier ließ sich besser kontrollieren. Seitdem rechne ich beim Material nicht auf den letzten Rest. Eine angebrochene Reserve ist mir lieber als eine neue Mischung mitten in der Fläche, die später womöglich anders aussieht.
 
 ## Fazit
 
