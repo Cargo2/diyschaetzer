@@ -1,0 +1,23 @@
+<div class="login-dialog-overlay" (click)="closed.emit()">
+  <div
+    class="login-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="login-required-dialog-title"
+    (click)="$event.stopPropagation()"
+  >
+    <h2 id="login-required-dialog-title">{{ 'Bitte anmelden' | t }}</h2>
+    <p class="login-dialog-text">
+      {{ 'Dieser Bereich ist für registrierte Fliesenleger. Melde dich an oder registriere dich kostenlos.' | t }}
+    </p>
+
+    <div class="login-dialog-actions">
+      <button type="button" class="login-dialog-btn ghost" (click)="closed.emit()">
+        {{ 'Abbrechen' | t }}
+      </button>
+      <a routerLink="/login" class="login-dialog-btn solid" (click)="closed.emit()">
+        {{ 'Anmelden' | t }}
+      </a>
+    </div>
+  </div>
+</div>

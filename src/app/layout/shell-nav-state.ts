@@ -82,6 +82,23 @@ export function injectShellNavState() {
   /** Offen/zu-Zustand der mobilen Navigation (Hamburger/Drawer). Auf Desktop ohne Wirkung. */
   const menuOpen = signal(false);
 
+  /**
+   * Login-Hinweis-Dialog (ausgegraute Profi-Menüpunkte ohne Login): Klick auf einen
+   * gesperrten Punkt öffnet den Dialog statt zu navigieren; die Route-Guards bleiben
+   * als zweite Verteidigungslinie unangetastet.
+   */
+  const loginDialogOpen = signal(false);
+
+  function openLoginDialog(): void {
+    // Mobilen Drawer schließen, damit der Dialog frei über dem Inhalt steht.
+    closeMenu();
+    loginDialogOpen.set(true);
+  }
+
+  function closeLoginDialog(): void {
+    loginDialogOpen.set(false);
+  }
+
   function toggleMenu(): void {
     menuOpen.update((open) => !open);
   }
@@ -148,6 +165,9 @@ export function injectShellNavState() {
     menuOpen,
     toggleMenu,
     closeMenu,
+    loginDialogOpen,
+    openLoginDialog,
+    closeLoginDialog,
     openCookieSettings,
     goToPremium,
     openResultsPage,

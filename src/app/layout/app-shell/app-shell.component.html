@@ -78,17 +78,44 @@
         }
       </div>
 
-      @if (nav.isAuthenticated() && nav.isContractor()) {
+      <!-- Profi-Gruppen: für angemeldete Profis aktiv, anonym als „Schaufenster"
+           (ausgegraut + Login-Dialog; nur „Angebote" führt in den Vorschau-Modus).
+           Eingeloggte Hobby-Nutzer sehen die Gruppen wie bisher gar nicht. -->
+      @if (!nav.isAuthenticated() || nav.isContractor()) {
         <div class="nav-group">
           <p class="nav-eyebrow">{{ 'Angebote' | t }}</p>
 
           <a routerLink="/angebote" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
             {{ 'Angebote' | t }}
           </a>
-          <a routerLink="/rechnungen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            {{ 'Rechnungen' | t }}
-          </a>
-          @if (nav.hasAssignedLeads()) {
+
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/rechnungen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              {{ 'Rechnungen' | t }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Rechnungen' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
+
+          @if (!nav.isAuthenticated()) {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Anfragen' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          } @else if (nav.hasAssignedLeads()) {
             <a routerLink="/anfragen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
               {{ 'Anfragen' | t }}
               @if (nav.leadsCount(); as count) {
@@ -101,24 +128,86 @@
         <div class="nav-group">
           <p class="nav-eyebrow">{{ 'Konto' | t }}</p>
 
-          <a routerLink="/konto/firmenprofil" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            {{ 'Firmenprofil' | t }}
-          </a>
-          <a routerLink="/konto/preise" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            {{ 'Eigene Preise' | t }}
-          </a>
-          <a routerLink="/konto/vorlagen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            {{ 'Vorlagen' | t }}
-          </a>
-          <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            @if (nav.hasActiveSubscription()) {
-              {{ 'Premium' | t }}
-              <span class="abo-dot" [attr.title]="'Premium-Abo aktiv' | t" [attr.aria-label]="'Aktiv' | t"></span>
-            } @else {
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/konto/firmenprofil" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              {{ 'Firmenprofil' | t }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Firmenprofil' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
+
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/konto/preise" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              {{ 'Eigene Preise' | t }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Eigene Preise' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
+
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/konto/vorlagen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              {{ 'Vorlagen' | t }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Vorlagen' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
+
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/konto/premium" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              @if (nav.hasActiveSubscription()) {
+                {{ 'Premium' | t }}
+                <span class="abo-dot" [attr.title]="'Premium-Abo aktiv' | t" [attr.aria-label]="'Aktiv' | t"></span>
+              } @else {
+                {{ 'Premium freischalten' | t }}
+              }
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
               {{ 'Premium freischalten' | t }}
-            }
-          </a>
-          @if (nav.hasActiveSubscription()) {
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
+
+          @if (!nav.isAuthenticated()) {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Anfragen empfangen' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          } @else if (nav.hasActiveSubscription()) {
             <a
               routerLink="/konto/anfragen-empfang"
               routerLinkActive="active"
@@ -137,9 +226,22 @@
               {{ 'Anfragen empfangen' | t }}
             </button>
           }
-          <a routerLink="/feedback" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
-            {{ 'Feedback' | t }}
-          </a>
+
+          @if (nav.isAuthenticated()) {
+            <a routerLink="/feedback" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+              {{ 'Feedback' | t }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="nav-link disabled"
+              [attr.title]="'Bitte einloggen, um diesen Bereich zu nutzen.' | t"
+              (click)="nav.openLoginDialog()"
+            >
+              {{ 'Feedback' | t }}
+              <span class="nav-lock" aria-hidden="true">🔒</span>
+            </button>
+          }
         </div>
       }
 
@@ -213,4 +315,8 @@
   <main class="content-stage">
     <router-outlet />
   </main>
+
+  @if (nav.loginDialogOpen()) {
+    <app-login-required-dialog (closed)="nav.closeLoginDialog()" />
+  }
 </div>

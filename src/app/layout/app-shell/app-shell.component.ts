@@ -5,6 +5,7 @@ import { absoluteUrl } from '../../config/site.config';
 import { I18nService, UiLang } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { InstallPromptService } from '../../services/install-prompt.service';
+import { LoginRequiredDialogComponent } from '../../components/login-required-dialog/login-required-dialog.component';
 
 /**
  * App-Shell (Phase 18, WP2): echte Profi-Sidebar-Navigation (Ubersuggest-Stil) für
@@ -17,7 +18,7 @@ import { InstallPromptService } from '../../services/install-prompt.service';
  */
 @Component({
   selector: 'app-app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LoginRequiredDialogComponent],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.css'
 })

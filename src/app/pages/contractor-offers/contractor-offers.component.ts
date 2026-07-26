@@ -44,6 +44,7 @@ import { ContractorBrandingService } from '../../services/contractor-branding.se
 import { ExportDocumentData } from '../../models/export-document.model';
 import { PremiumExportButtonComponent } from '../../components/premium-export-button/premium-export-button.component';
 import { SubscriptionStatusService } from '../../services/subscription-status.service';
+import { AuthService } from '../../services/auth.service';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
@@ -89,6 +90,19 @@ export class ContractorOffersComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
   private readonly snippetService = inject(ContractorSnippetService);
+  private readonly auth = inject(AuthService);
+
+  /**
+   * Vorschau-Modus (Konzept „Angebot ohne Login"): anonyme Nutzer erreichen die
+   * Seite über den `offerPreviewGuard` und können ein Angebot in-memory erstellen
+   * und als Vorschau-PDF (mit Wasserzeichen) herunterladen. Alle persistenz-
+   * gebundenen Aktionen (Speichern/Teilen/Rechnungen/Versionen/Vorlagen) sind
+   * ausgeblendet. Defensiv werden beide Bedingungen geprüft – praktisch erreichen
+   * eingeloggte Nicht-Profis die Seite nicht (Guard leitet auf `/`).
+   */
+  readonly previewMode = computed(
+    () => !this.auth.isAuthenticated() || !this.auth.isContractor()
+  );
 
   /** Für die Vorlage sichtbarer Grenzwert-Hinweis. */
   readonly offerLimitMessage = OFFER_LIMIT_MESSAGE;
@@ -98,8 +112,8 @@ export class ContractorOffersComponent implements OnInit {
   readonly isSubscribed = this.subscriptionStatus.isActive;
   /** Gesamtzahl gespeicherter Angebote/Versionen (projektübergreifend, aus der DB). */
   readonly offerCount = signal(0);
-  /** Free-Badge „X von 3" nur ohne aktives Abo. */
-  readonly showLimitBadge = computed(() => !this.isSubscribed());
+  /** Free-Badge „X von 3" nur ohne aktives Abo (und nie im Vorschau-Modus). */
+  readonly showLimitBadge = computed(() => !this.previewMode() && !this.isSubscribed());
   /** Grenze erreicht (nur ohne Abo). Blockt das ANLEGEN neuer Angebote/Versionen. */
   readonly limitReached = computed(
     () => !this.isSubscribed() && this.offerCount() >= FREE_OFFER_LIMIT
@@ -847,6 +861,11 @@ export class ContractorOffersComponent implements OnInit {
     const data = this.exportMapper.buildContractorOfferExportData(
       sanitizeContractorOffer(this.offer!)
     );
+    // Vorschau-Modus: Wasserzeichen in der UI-Sprache (DE VORSCHAU / PL PODGLĄD / EN PREVIEW).
+    // Der Angebotstext selbst bleibt deutsch (Projektregel: Dokumente immer deutsch).
+    if (this.previewMode()) {
+      data.previewWatermark = this.i18n.t('VORSCHAU');
+    }
     return this.branding.applyTo(data);
   }
 

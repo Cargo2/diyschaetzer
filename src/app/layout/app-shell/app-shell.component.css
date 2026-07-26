@@ -99,6 +99,17 @@
   color: #b3ab93;
 }
 
+/* Schloss-Indikator an ausgegrauten Profi-Punkten (anonym): dezentes Glyph
+   rechtsbündig, rein dekorativ (aria-hidden; Tooltip erklärt den Grund). */
+.nav-lock {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  line-height: 1;
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
 .nav-badge {
   margin-left: auto;
   min-width: 1.3rem;

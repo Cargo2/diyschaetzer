@@ -160,5 +160,13 @@ export const EN_OFFERS: Record<string, string> = {
   // --- Schlusstext / Mobile ---
   'Schlusstext (optional)': 'Closing text (optional)',
   'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.':
-    'Payment terms, execution period, warranty … e.g.: Payable within 14 days without deduction. Work carried out by arrangement.'
+    'Payment terms, execution period, warranty … e.g.: Payable within 14 days without deduction. Work carried out by arrangement.',
+
+  // --- Vorschau-Modus (anonym, Banner + PDF-Wasserzeichen) ---
+  'Vorschau-Modus: Erstelle ein Angebot und lade es als Vorschau-PDF mit Wasserzeichen herunter.':
+    'Preview mode: create an offer and download it as a preview PDF with a watermark.',
+  'Registriere dich kostenlos als Fliesenleger, um ohne Wasserzeichen zu exportieren, zu speichern und zu teilen.':
+    'Register for free as a tiler to export without a watermark, save and share your offers.',
+  'Kostenlos registrieren oder anmelden': 'Register for free or sign in',
+  VORSCHAU: 'PREVIEW'
 };

@@ -82,6 +82,20 @@ describe('PdfDocumentBuilderService', () => {
     expect(text).toContain('Unverbindliche Schätzung.');
   });
 
+  it('renders a diagonal watermark when previewWatermark is set', () => {
+    const definition = builder.build({ ...materialDocument(), previewWatermark: 'VORSCHAU' });
+
+    expect(definition.watermark).toEqual(
+      expect.objectContaining({ text: 'VORSCHAU', angle: -55 })
+    );
+  });
+
+  it('renders no watermark without previewWatermark', () => {
+    const definition = builder.build(materialDocument());
+
+    expect(definition.watermark).toBeUndefined();
+  });
+
   it('omits inactive material rows from the shopping list', () => {
     const definition = builder.build(materialDocument());
     const content = definition.content as Content[];

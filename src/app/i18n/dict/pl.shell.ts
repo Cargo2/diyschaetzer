@@ -29,6 +29,12 @@ export const PL_SHELL: Record<string, string> = {
   'Premium-Abo aktiv': 'Abonament Premium aktywny',
   Aktiv: 'Aktywny',
   'Erfordert aktives Premium-Abo': 'Wymaga aktywnego abonamentu Premium',
+  // --- Login-Hinweis (ausgegraute Profi-Menüpunkte ohne Login) ---
+  'Bitte einloggen, um diesen Bereich zu nutzen.':
+    'Zaloguj się, aby korzystać z tej sekcji.',
+  'Bitte anmelden': 'Wymagane logowanie',
+  'Dieser Bereich ist für registrierte Fliesenleger. Melde dich an oder registriere dich kostenlos.':
+    'Ta sekcja jest przeznaczona dla zarejestrowanych glazurników. Zaloguj się lub zarejestruj bezpłatnie.',
   Rechtliches: 'Informacje prawne',
   Impressum: 'Nota prawna',
   Datenschutz: 'Ochrona danych',

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { wizardCompletedGuard } from './guards/wizard-completed.guard';
 import { contractorGuard } from './guards/contractor.guard';
+import { offerPreviewGuard } from './guards/offer-preview.guard';
 import { leadSubscriptionGuard } from './guards/lead-subscription.guard';
 import { adminGuard } from './guards/admin.guard';
 import { appHostMatchGuard } from './guards/app-host-match.guard';
@@ -93,7 +94,8 @@ export const MARKETING_ROUTES: Routes = [
   },
   {
     path: 'angebote',
-    canActivate: [appRedirectGuard, contractorGuard],
+    // Bewusst offerPreviewGuard statt contractorGuard: anonym = Vorschau-Modus.
+    canActivate: [appRedirectGuard, offerPreviewGuard],
     loadComponent: () =>
       import('./pages/contractor-offers/contractor-offers.component').then(
         (m) => m.ContractorOffersComponent

@@ -140,6 +140,10 @@ export class PdfDocumentBuilderService {
         title: data.title,
         subject: data.subtitle ?? undefined
       },
+      // Vorschau-Modus (anonym): großes diagonales Wasserzeichen auf jeder Seite.
+      ...(data.previewWatermark
+        ? { watermark: { text: data.previewWatermark, opacity: 0.22, angle: -55, bold: true } }
+        : {}),
       pageSize: 'A4',
       pageMargins: [40, 56, 40, 48],
       defaultStyle: { font: 'Roboto', fontSize: 9, color: '#1f2937' },

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { wizardCompletedGuard } from '../guards/wizard-completed.guard';
 import { contractorGuard } from '../guards/contractor.guard';
+import { offerPreviewGuard } from '../guards/offer-preview.guard';
 import { leadSubscriptionGuard } from '../guards/lead-subscription.guard';
 import { adminGuard } from '../guards/admin.guard';
 import { AuthPageComponent } from '../pages/auth/auth-page.component';
@@ -57,7 +58,8 @@ export const APP_AREA_ROUTES: Routes = [
       { path: 'projekt-dashboard', component: ProjectSummaryComponent },
       {
         path: 'angebote',
-        canActivate: [contractorGuard],
+        // Bewusst offerPreviewGuard statt contractorGuard: anonym = Vorschau-Modus.
+        canActivate: [offerPreviewGuard],
         loadComponent: () =>
           import('../pages/contractor-offers/contractor-offers.component').then(
             (m) => m.ContractorOffersComponent

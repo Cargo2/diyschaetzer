@@ -161,5 +161,13 @@ export const PL_OFFERS: Record<string, string> = {
   // --- Schlusstext / Mobile ---
   'Schlusstext (optional)': 'Tekst końcowy (opcjonalnie)',
   'Zahlungsbedingungen, Ausführungszeitraum, Gewährleistung … z. B.: Zahlbar innerhalb von 14 Tagen ohne Abzug. Ausführung nach Absprache.':
-    'Warunki płatności, termin realizacji, gwarancja … np.: Płatne w ciągu 14 dni bez potrąceń. Realizacja po uzgodnieniu terminu.'
+    'Warunki płatności, termin realizacji, gwarancja … np.: Płatne w ciągu 14 dni bez potrąceń. Realizacja po uzgodnieniu terminu.',
+
+  // --- Vorschau-Modus (anonym, Banner + PDF-Wasserzeichen) ---
+  'Vorschau-Modus: Erstelle ein Angebot und lade es als Vorschau-PDF mit Wasserzeichen herunter.':
+    'Tryb podglądu: utwórz ofertę i pobierz ją jako podglądowy plik PDF ze znakiem wodnym.',
+  'Registriere dich kostenlos als Fliesenleger, um ohne Wasserzeichen zu exportieren, zu speichern und zu teilen.':
+    'Zarejestruj się bezpłatnie jako glazurnik, aby eksportować bez znaku wodnego, zapisywać i udostępniać oferty.',
+  'Kostenlos registrieren oder anmelden': 'Zarejestruj się bezpłatnie lub zaloguj',
+  VORSCHAU: 'PODGLĄD'
 };

@@ -161,6 +161,12 @@ export interface ExportDocumentData {
   outroText?: string | null;
   /** Steuerhinweis (z. B. § 19 UStG bei 0 % MwSt.), unter den Summen. */
   taxNote?: string | null;
+  /**
+   * Gesetzt = Vorschau-PDF (anonymer Vorschau-Modus): der Text wird als großes
+   * diagonales Wasserzeichen auf jeder Seite gerendert. Der Text liegt bereits
+   * in der Ziel-Sprache vor (DE „VORSCHAU" / PL „PODGLĄD" / EN „PREVIEW").
+   */
+  previewWatermark?: string;
 }
 
 export const ESTIMATE_EXPORT_LEGAL_NOTICE =

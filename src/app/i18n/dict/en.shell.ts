@@ -29,6 +29,11 @@ export const EN_SHELL: Record<string, string> = {
   'Premium-Abo aktiv': 'Premium subscription active',
   Aktiv: 'Active',
   'Erfordert aktives Premium-Abo': 'Requires an active Premium subscription',
+  // --- Login-Hinweis (ausgegraute Profi-Menüpunkte ohne Login) ---
+  'Bitte einloggen, um diesen Bereich zu nutzen.': 'Please sign in to use this section.',
+  'Bitte anmelden': 'Please sign in',
+  'Dieser Bereich ist für registrierte Fliesenleger. Melde dich an oder registriere dich kostenlos.':
+    'This area is for registered tilers. Sign in or register for free.',
   Rechtliches: 'Legal',
   Impressum: 'Legal notice',
   Datenschutz: 'Privacy',
