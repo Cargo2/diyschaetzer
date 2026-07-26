@@ -409,8 +409,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 
       .summary-page {
         margin: 0 auto;
-        max-width: 80vw;
-        width: 80vw;
+        max-width: 72rem;
+        width: 100%;
       }
 
       .summary-top-actions {
@@ -976,14 +976,6 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         color: #92400e;
       }
 
-      /* Ab Tablet die volle Breite nutzen (kein großer Seitenrand). */
-      @media (max-width: 1024px) {
-        .summary-page {
-          max-width: 100%;
-          width: 100%;
-        }
-      }
-
       /* Portrait-Tablet/kleiner: Kacheln untereinander, jeweils volle
          Panelbreite (größere Kacheln, nur kleiner Rand links/rechts). */
       @media (max-width: 900px) {
@@ -995,11 +987,6 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
       }
 
       @media (max-width: 650px) {
-        .summary-page {
-          max-width: 100%;
-          width: 100%;
-        }
-
         .cost-trigger {
           align-items: stretch;
           flex-direction: column;

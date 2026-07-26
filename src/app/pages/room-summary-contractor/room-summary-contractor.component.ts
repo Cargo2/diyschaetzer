@@ -208,8 +208,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 
       .summary-page {
         margin: 0 auto;
-        max-width: 80vw;
-        width: 80vw;
+        max-width: 72rem;
+        width: 100%;
       }
 
       .summary-top-actions {
@@ -488,19 +488,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         color: #92400e;
       }
 
-      @media (max-width: 1024px) {
-        .summary-page {
-          max-width: 100%;
-          width: 100%;
-        }
-      }
-
       @media (max-width: 650px) {
-        .summary-page {
-          max-width: 100%;
-          width: 100%;
-        }
-
         .offer-section {
           padding: 0.85rem;
         }
