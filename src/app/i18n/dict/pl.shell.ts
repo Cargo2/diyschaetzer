@@ -2,7 +2,7 @@
 // Förmliches Polnisch. Deutsch-als-Schlüssel (linker Wert = deutscher Quelltext).
 export const PL_SHELL: Record<string, string> = {
   // Markenname bleibt unübersetzt.
-  Fliesenprojekt: 'Fliesenprojekt',
+  FliesenPilot: 'FliesenPilot',
   Projekt: 'Projekt',
   'Projekt-Dashboard': 'Panel projektu',
   'Raum anlegen': 'Dodaj pomieszczenie',

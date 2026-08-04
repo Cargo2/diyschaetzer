@@ -2,7 +2,7 @@
 // Deutsch-als-Schlüssel (linker Wert = deutscher Quelltext).
 export const EN_SHELL: Record<string, string> = {
   // Markenname bleibt unübersetzt.
-  Fliesenprojekt: 'Fliesenprojekt',
+  FliesenPilot: 'FliesenPilot',
   Projekt: 'Project',
   'Projekt-Dashboard': 'Project dashboard',
   'Raum anlegen': 'Add room',

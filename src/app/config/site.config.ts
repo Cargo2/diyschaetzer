@@ -9,7 +9,7 @@
 export const SITE_URL = 'https://fliesen-kosten.de';
 
 /** Marken-/Seitenname für <title>-Suffix und og:site_name. */
-export const SITE_NAME = 'Fliesenprojekt';
+export const SITE_NAME = 'FliesenPilot';
 
 /** Standard-Beschreibung der Startseite/Fallback. */
 export const SITE_DEFAULT_DESCRIPTION =

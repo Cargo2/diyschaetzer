@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Fliesenprojekt – Fliesen-Kostenrechner",
-  "short_name": "Fliesenprojekt",
+  "name": "FliesenPilot – Fliesen-Kostenrechner",
+  "short_name": "FliesenPilot",
   "description": "Kostenrechner sowie Angebots- und Rechnungs-Tool für Fliesenleger.",
   "start_url": "/",
   "scope": "/",
