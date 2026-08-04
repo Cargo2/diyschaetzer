@@ -50,10 +50,12 @@ Details: [`docs/deploy-app-subdomain.md`](./deploy-app-subdomain.md).
 - [ ] PayPal-Abo (Contractor Premium) live schalten – vollständige Anleitung
       in [`docs/paypal-aktivierung.md`](./paypal-aktivierung.md) (Sandbox
       zuerst, dann Live-App/Plan/Webhook/Secrets/Frontend-Config).
-- [ ] Resend-Secrets für Lead-Mail setzen: `RESEND_API_KEY`, `LEAD_FROM_EMAIL`,
+- [x] Resend-Secrets für Lead-Mail setzen: `RESEND_API_KEY`, `LEAD_FROM_EMAIL`,
       `PUBLIC_SITE_URL` (Supabase Secrets) + Edge Function `lead-submit`
-      deployen. Ohne diese Secrets bleibt der Lead-Mailversand bewusst
-      fail-closed (siehe Memory „Lead-Modul-Deploy-Status").
+      deployen – erledigt, Lead-Mailversand E2E-verifiziert (19.07.2026).
+      Seit 04.08.2026 laufen zusätzlich die Supabase-Auth-Mails
+      (Registrierungs-Bestätigung, Passwort-Reset) per Custom SMTP über
+      Resend (smtp.resend.com, Absender `noreply@fliesen-kosten.de`).
 - [ ] PWA (Phase 18, Stufe 3): `ng add @angular/pwa`, Manifest/Icons/Service
       Worker, `.htaccess`-Ausnahme für `ngsw.json`/`ngsw-worker.js` – siehe
       Roadmap in `CLAUDE.md`, Phase 18.

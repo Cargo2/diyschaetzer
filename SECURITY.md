@@ -206,6 +206,10 @@ Premium (aktives Lead-Abo, `has_active_lead_subscription()` 0019) erhält den h�
    `https://app.fliesen-kosten.de/passwort-neu`, Dev-localhost-Einträge; keine Wildcards, Alt-
    Einträge entfernen) + „Reset Password"-Mail-Template eindeutschen. E-Mail-Bestätigung ist
    verifiziert aktiv (`mailer_autoconfirm: false`, 2026-07-19); Google-OAuth läuft (Migration 0022 remote).
+   Die Auth-Mails (Registrierungs-Bestätigung, Passwort-Reset) laufen seit 2026-08-04 per
+   **Custom SMTP über Resend** (smtp.resend.com, Absender `noreply@fliesen-kosten.de`, Domain
+   verifiziert) – im Dashboard konfiguriert; Resend ist in der Datenschutzerklärung als
+   Auftragsverarbeiter benannt.
 4. ~~Hosting: Security-Header setzen (Pkt. 28)~~ – ✅ erledigt (2026-07-19); offen bleibt:
    Prod-Supabase-Werte sicher injizieren dokumentieren (Pkt. 2).
 5. Repo-Sichtbarkeit prüfen (Pkt. 8).
