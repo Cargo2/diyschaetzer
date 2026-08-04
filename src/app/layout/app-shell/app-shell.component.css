@@ -326,14 +326,19 @@
   display: none;
 }
 
-/* ── Content-Stage: spiegelt die Breitenregeln der MarketingShell,
-   damit Seiten (bringen eigene Innenbreiten mit) nicht plötzlich anders
-   laufen. Admin-Ausnahme analog `.content-stage:has(app-admin-shell)`. ── */
+/* ── Content-Stage: 86rem-Band wie in der MarketingShell, aber asymmetrisch:
+   `100%` ist hier die Content-Spalte (Viewport − 240px-Sidebar), symmetrisches
+   Padding zentriert Seiten mit eigener max-width deshalb ~120px rechts der
+   Fenstermitte. Der ∓120px-Versatz (halbe Sidebar-Breite) rückt die Blockmitte
+   auf die optische Fenstermitte; wird der Platz knapp, greift beidseitig das
+   4%-Minimum (kein Versatz). Admin-Ausnahme s. `.content-stage:has(...)`. ── */
 .content-stage {
   grid-column: 2;
   min-width: 0;
   width: 100%;
-  padding: 2rem max(4%, calc((100% - 86rem) / 2));
+  padding-block: 2rem;
+  padding-left: max(4%, calc((100% - 86rem) / 2 - 120px));
+  padding-right: max(4%, calc((100% - 86rem) / 2 + 120px));
 }
 
 .content-stage:has(app-admin-shell) {
@@ -341,7 +346,7 @@
 }
 
 /* Angebote/Rechnungen nutzen fast die volle Breite: 5 % Abstand je Seite statt
-   der 86rem-Kappung (Seiten selbst begrenzen ihren Inhalt zusätzlich intern,
+   des 86rem-Bands (Seiten selbst begrenzen ihren Inhalt zusätzlich intern,
    s. `.offers-page`/`.invoices-page` max-width in den jeweiligen Komponenten). */
 .content-stage:has(app-contractor-offers),
 .content-stage:has(app-contractor-invoices) {

@@ -670,11 +670,9 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      /* Desktop/Tablet: Eigenleistung links, Fliesenleger rechtsbündig
-         (Kacheln nebeneinander, an die Panelränder geschoben). */
+      /* Desktop/Tablet: Eigenleistung und Fliesenleger nebeneinander. */
       .comparison-cards {
-        grid-template-columns: repeat(2, minmax(0, 40rem));
-        justify-content: space-between;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .comparison-card,
