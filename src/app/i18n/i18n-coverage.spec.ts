@@ -62,6 +62,8 @@ const SCANNED_FILES = [
   'src/app/pages/material-list/*.ts',
   'src/app/pages/project-summary/*.html',
   'src/app/pages/project-summary/*.ts',
+  // Projekt-Zusammenfassung (Heimwerker, alle Räume).
+  'src/app/pages/project-overview/*.ts',
   'src/app/pages/summary-page/*.ts',
   'src/app/pages/room-summary-contractor/*.ts',
   'src/app/components/summary-assumptions/*.html',

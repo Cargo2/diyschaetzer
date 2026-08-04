@@ -7,7 +7,187 @@
       <p>Dieser Link ist ungültig oder wurde entfernt.</p>
       <a routerLink="/" class="shared-cta">Zur Startseite</a>
     </div>
-  } @else if (calculation(); as calc) {
+  } @else if (projectCalculation(); as calc) {
+    <header class="shared-header">
+      <p class="shared-eyebrow">Geteilte Projekt-Kostenschätzung · schreibgeschützt</p>
+      <h1>{{ calc.projectName }}</h1>
+      <p class="shared-meta">
+        {{ calc.roomCount }} {{ calc.roomCount === 1 ? 'Raum' : 'Räume' }}
+        @if (formatDate(calc.createdAt)) {
+          · erstellt am {{ formatDate(calc.createdAt) }}
+        }
+      </p>
+    </header>
+
+    <section class="shared-metrics">
+      <article><span>Anzahl Räume</span><strong>{{ calc.roomCount }}</strong></article>
+      <article><span>Gesamtfläche</span><strong>{{ formatNumber(calc.totalTileAreaM2) }} m²</strong></article>
+      <article><span>Inkl. Verschnitt</span><strong>{{ formatNumber(calc.totalTileAreaWithWasteM2) }} m²</strong></article>
+    </section>
+
+    <div class="shared-cards">
+      <article class="shared-card diy">
+        <p class="card-label">Eigenleistung (DIY)</p>
+        <h2>{{ formatCurrency(calc.diy.totalCost) }}</h2>
+        <dl>
+          <div><dt>Material &amp; Zubehör</dt><dd>{{ formatCurrency(calc.diy.materialCost) }}</dd></div>
+          <div><dt>Puffer ({{ formatNumber(calc.diy.bufferPercent, 0) }} %)</dt>
+            <dd>{{ formatCurrency(calc.diy.totalCost - calc.diy.materialCost) }}</dd></div>
+        </dl>
+      </article>
+
+      <article class="shared-card pro">
+        <p class="card-label">Fliesenleger</p>
+        <h2>{{ formatCurrency(calc.professional.totalCost) }}</h2>
+        <dl>
+          <div><dt>Anzahl Räume</dt><dd>{{ calc.roomCount }}</dd></div>
+          <div class="grand"><dt>Gesamtschätzung Fliesenleger</dt>
+            <dd>{{ formatCurrency(calc.professional.totalCost) }}</dd></div>
+        </dl>
+      </article>
+    </div>
+
+    @if (calc.savings.amount > 0) {
+      <section class="shared-savings">
+        <span>{{ calc.savings.label }}</span>
+        <strong>{{ formatCurrency(calc.savings.amount) }}</strong>
+        @if (calc.savings.percent > 0) {
+          <small>ca. {{ formatNumber(calc.savings.percent, 1) }} % der geschätzten Profi-Kosten</small>
+        }
+      </section>
+    }
+
+    @if (calc.rooms.length > 0) {
+      <section class="shared-positions">
+        <h2>Räume im Projekt</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Raum</th>
+                <th>Fläche</th>
+                <th>DIY-Kosten</th>
+                <th>Fliesenleger</th>
+                <th>Ersparnis</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (room of calc.rooms; track $index) {
+                <tr>
+                  <td><strong>{{ room.name }}</strong></td>
+                  <td>{{ formatNumber(room.tileAreaM2) }} m²</td>
+                  <td>{{ formatCurrency(room.diyCost) }}</td>
+                  <td>{{ formatCurrency(room.professionalCost) }}</td>
+                  <td>{{ formatCurrency(room.savings) }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Gesamt</td>
+                <td>{{ formatNumber(calc.totalTileAreaM2) }} m²</td>
+                <td>{{ formatCurrency(calc.diy.totalCost) }}</td>
+                <td>{{ formatCurrency(calc.professional.totalCost) }}</td>
+                <td>{{ formatCurrency(calc.savings.amount) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        @if (calc.deduplicationSavings) {
+          <p class="shared-dedup">
+            In der DIY-Projektsumme sind {{ formatCurrency(calc.deduplicationSavings) }} gespart,
+            weil Werkzeuge projektweit nur einmal gerechnet werden.
+          </p>
+        }
+      </section>
+    }
+
+    @if (projectProfessionalTotals(); as proTotals) {
+      <section class="shared-positions">
+        <h2>Profi-Leistungspositionen</h2>
+        @for (room of calc.rooms; track $index) {
+          @if (room.professional; as pro) {
+            <article class="shared-room-positions">
+              <h3>{{ room.name }}</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Position</th>
+                      <th>Menge</th>
+                      <th>Einheit</th>
+                      <th>Einheitspreis</th>
+                      <th>Gesamt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of pro.lineItems; track $index) {
+                      <tr>
+                        <td>
+                          <strong>{{ item.label }}</strong>
+                          @if (item.isOptional) { <small class="optional">optional</small> }
+                          @if (item.description) { <small>{{ item.description }}</small> }
+                        </td>
+                        <td>{{ formatNumber(item.quantity, item.unit === 'piece' ? 0 : 2) }}</td>
+                        <td>{{ unitLabel(item.unit) }}</td>
+                        <td>{{ formatCurrency(item.unitPrice) }}</td>
+                        <td>{{ formatCurrency(item.totalPrice) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr class="sub">
+                      <td colspan="4">Nettobetrag</td>
+                      <td>{{ formatCurrency(pro.netTotal) }}</td>
+                    </tr>
+                    <tr class="sub">
+                      <td colspan="4">Material laut Auswahl</td>
+                      <td>{{ formatCurrency(pro.materialCost) }}</td>
+                    </tr>
+                    <tr class="sub">
+                      <td colspan="4">zzgl. {{ pro.vatPercent }} % MwSt. (Leistung + Material)</td>
+                      <td>{{ formatCurrency(pro.vatAmount) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4">Gesamtschätzung Fliesenleger</td>
+                      <td>{{ formatCurrency(pro.totalCost) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </article>
+          }
+        }
+        <div class="table-wrap shared-project-totals">
+          <table>
+            <tfoot>
+              <tr class="sub">
+                <td>Netto gesamt (Leistung + Material)</td>
+                <td>{{ formatCurrency(proTotals.net) }}</td>
+              </tr>
+              <tr class="sub">
+                <td>MwSt. gesamt</td>
+                <td>{{ formatCurrency(proTotals.vat) }}</td>
+              </tr>
+              <tr>
+                <td>Gesamtschätzung Fliesenleger</td>
+                <td>{{ formatCurrency(proTotals.gross) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+    }
+
+    <p class="shared-legal">
+      Diese Auswertung ist eine unverbindliche Kostenschätzung und ersetzt kein geprüftes
+      Angebot eines Fachbetriebs.
+    </p>
+
+    <div class="shared-footer-cta">
+      <a routerLink="/raum-anlegen" class="shared-cta">Eigene Kalkulation erstellen</a>
+    </div>
+  } @else if (roomCalculation(); as calc) {
     <header class="shared-header">
       <p class="shared-eyebrow">Geteilte Kostenschätzung · schreibgeschützt</p>
       <h1>{{ calc.roomName }}</h1>

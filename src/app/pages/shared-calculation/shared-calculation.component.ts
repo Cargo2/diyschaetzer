@@ -1,11 +1,17 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { SharedCalculation } from '../../models/shared-calculation.model';
+import {
+  AnySharedCalculation,
+  isSharedProjectCalculation,
+  SharedCalculation
+} from '../../models/shared-calculation.model';
 import { ShareService } from '../../services/share.service';
 
 /**
  * Öffentliche, schreibgeschützte Ansicht einer geteilten Kalkulation (Phase 14).
  * Lädt die eingefrorene Momentaufnahme per Token (ohne Login) und zeigt sie an.
+ * Rendert je nach Snapshot-Art die Raum- (version 1) oder Projekt-Ansicht
+ * (version 2, `kind: 'project'`); Alt-Snapshots ohne `kind` bleiben Raum.
  */
 @Component({
   selector: 'app-shared-calculation',
@@ -20,7 +26,42 @@ export class SharedCalculationComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly notFound = signal(false);
-  readonly calculation = signal<SharedCalculation | null>(null);
+  readonly calculation = signal<AnySharedCalculation | null>(null);
+
+  /** Projekt-Snapshot (version 2) oder `null`. */
+  readonly projectCalculation = computed(() => {
+    const value = this.calculation();
+    return value && isSharedProjectCalculation(value) ? value : null;
+  });
+
+  /** Raum-Snapshot (version 1, inkl. Alt-Stände ohne `kind`) oder `null`. */
+  readonly roomCalculation = computed<SharedCalculation | null>(() => {
+    const value = this.calculation();
+    return value && !isSharedProjectCalculation(value) ? value : null;
+  });
+
+  /**
+   * Projekt-Summen der Profi-Leistungspositionen oder `null`, wenn der
+   * Snapshot (ältere v2-Stände) keine Positionen je Raum enthält. Defensiv:
+   * nur wenn ALLE Räume den `professional`-Block haben, sonst wären die
+   * Summen unvollständig.
+   */
+  readonly projectProfessionalTotals = computed(() => {
+    const calc = this.projectCalculation();
+    if (!calc || calc.rooms.length === 0) {
+      return null;
+    }
+    let net = 0;
+    let vat = 0;
+    for (const room of calc.rooms) {
+      if (!room.professional) {
+        return null;
+      }
+      net += room.professional.netTotal + room.professional.materialCost;
+      vat += room.professional.vatAmount;
+    }
+    return { net, vat, gross: calc.professional.totalCost };
+  });
 
   async ngOnInit(): Promise<void> {
     const token = this.route.snapshot.paramMap.get('token');

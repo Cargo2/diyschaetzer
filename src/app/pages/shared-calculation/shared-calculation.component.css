@@ -188,6 +188,37 @@
   margin-left: 0.3rem;
 }
 
+.shared-positions tfoot td {
+  background: #f9fafb;
+  border-bottom: 0;
+  font-weight: 800;
+}
+
+/* Zwischenzeilen (Netto/Material/MwSt.) im Summenfuß dezenter als die Bruttozeile. */
+.shared-positions tfoot tr.sub td {
+  background: #fff;
+  font-weight: 600;
+}
+
+.shared-room-positions h3 {
+  font-size: 1rem;
+  margin: 0.9rem 0 0.45rem;
+}
+
+.shared-project-totals {
+  margin-top: 1rem;
+}
+
+.shared-project-totals td:last-child {
+  white-space: nowrap;
+}
+
+.shared-dedup {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
 .shared-legal {
   font-size: 0.8rem;
   font-style: italic;

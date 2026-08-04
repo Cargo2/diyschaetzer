@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { SharedCalculation } from '../models/shared-calculation.model';
+import { AnySharedCalculation } from '../models/shared-calculation.model';
 import type { SharedCalculationRepository } from './shared-calculation-repository';
 import { SUPABASE_CLIENT } from './supabase-client';
 
@@ -21,7 +21,7 @@ export class SupabaseSharedCalculationRepository implements SharedCalculationRep
     return this.client;
   }
 
-  async create(data: SharedCalculation): Promise<string> {
+  async create(data: AnySharedCalculation): Promise<string> {
     const client = this.requireClient();
     const { data: user } = await client.auth.getUser();
     const userId = user.user?.id;
@@ -39,7 +39,7 @@ export class SupabaseSharedCalculationRepository implements SharedCalculationRep
     return (row as { id: string }).id;
   }
 
-  async load(token: string): Promise<SharedCalculation | null> {
+  async load(token: string): Promise<AnySharedCalculation | null> {
     const client = this.requireClient();
     const { data, error } = await client.rpc('get_shared_calculation', {
       p_token: token
@@ -47,6 +47,6 @@ export class SupabaseSharedCalculationRepository implements SharedCalculationRep
     if (error) {
       throw error;
     }
-    return (data as SharedCalculation | null) ?? null;
+    return (data as AnySharedCalculation | null) ?? null;
   }
 }

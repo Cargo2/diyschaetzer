@@ -1,16 +1,18 @@
 import { inject, InjectionToken } from '@angular/core';
-import { SharedCalculation } from '../models/shared-calculation.model';
+import { AnySharedCalculation } from '../models/shared-calculation.model';
 import { SupabaseSharedCalculationRepository } from './supabase-shared-calculation-repository';
 
 /**
- * Persistenz-Grenze für geteilte Kalkulationen (Phase 14). Das Erstellen setzt
- * eine angemeldete Session voraus; das Laden per Token ist öffentlich (anonym).
+ * Persistenz-Grenze für geteilte Kalkulationen (Phase 14; seit der
+ * Projekt-Zusammenfassung auch projektweite Snapshots, gleiche Tabelle).
+ * Das Erstellen setzt eine angemeldete Session voraus; das Laden per Token
+ * ist öffentlich (anonym).
  */
 export interface SharedCalculationRepository {
   /** Speichert eine Momentaufnahme und gibt den öffentlichen Token (UUID) zurück. */
-  create(data: SharedCalculation): Promise<string>;
+  create(data: AnySharedCalculation): Promise<string>;
   /** Lädt die Momentaufnahme zum Token oder `null`, wenn es keine gibt. */
-  load(token: string): Promise<SharedCalculation | null>;
+  load(token: string): Promise<AnySharedCalculation | null>;
 }
 
 export const SHARED_CALCULATION_REPOSITORY =

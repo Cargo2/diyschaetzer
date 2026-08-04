@@ -7,6 +7,7 @@ import { PL_MATERIAL } from './pl.material';
 import { PL_SUMMARY } from './pl.summary';
 import { PL_ASSUMPTIONS } from './pl.assumptions';
 import { PL_LEADS } from './pl.leads';
+import { PL_PROJECT } from './pl.project';
 
 /** Zusammengeführtes polnisches Dictionary (lazy geladen in `I18nService`). */
 export const PL_DICT: Record<string, string> = {
@@ -18,5 +19,6 @@ export const PL_DICT: Record<string, string> = {
   ...PL_MATERIAL,
   ...PL_SUMMARY,
   ...PL_ASSUMPTIONS,
-  ...PL_LEADS
+  ...PL_LEADS,
+  ...PL_PROJECT
 };

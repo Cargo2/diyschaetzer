@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { wizardCompletedGuard } from '../guards/wizard-completed.guard';
 import { contractorGuard } from '../guards/contractor.guard';
+import { customerGuard } from '../guards/customer.guard';
 import { offerPreviewGuard } from '../guards/offer-preview.guard';
 import { leadSubscriptionGuard } from '../guards/lead-subscription.guard';
 import { adminGuard } from '../guards/admin.guard';
@@ -56,6 +57,15 @@ export const APP_AREA_ROUTES: Routes = [
           )
       },
       { path: 'projekt-dashboard', component: ProjectSummaryComponent },
+      {
+        // Heimwerker-only Projekt-Zusammenfassung (alle Räume); Profis → Dashboard.
+        path: 'projekt-zusammenfassung',
+        canActivate: [customerGuard],
+        loadComponent: () =>
+          import('../pages/project-overview/project-overview.component').then(
+            (m) => m.ProjectOverviewComponent
+          )
+      },
       {
         path: 'angebote',
         // Bewusst offerPreviewGuard statt contractorGuard: anonym = Vorschau-Modus.

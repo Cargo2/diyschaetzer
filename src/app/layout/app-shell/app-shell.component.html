@@ -1,7 +1,7 @@
 <div class="app-shell" [class.drawer-open]="nav.menuOpen()">
   <!-- Nur < 768px sichtbar: schmale Topbar mit Marke + Hamburger. -->
   <header class="app-topbar">
-    <a routerLink="/projekt-dashboard" class="app-topbar-brand" (click)="nav.closeMenu()">{{ 'Fliesenprojekt' | t }}</a>
+    <a routerLink="/projekt-dashboard" class="app-topbar-brand" (click)="nav.closeMenu()">{{ 'FliesenPilot' | t }}</a>
 
     <button
       type="button"
@@ -22,7 +22,7 @@
 
   <aside class="app-sidebar" [class.open]="nav.menuOpen()">
     <a routerLink="/projekt-dashboard" class="app-sidebar-brand" (click)="nav.closeMenu()">
-      {{ 'Fliesenprojekt' | t }}
+      {{ 'FliesenPilot' | t }}
     </a>
 
     <nav class="app-sidebar-nav" [attr.aria-label]="'Hauptnavigation' | t">
@@ -32,6 +32,11 @@
         <a routerLink="/projekt-dashboard" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
           {{ 'Projekt-Dashboard' | t }}
         </a>
+        @if (!nav.isContractor()) {
+          <a routerLink="/projekt-zusammenfassung" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
+            {{ 'Projekt-Zusammenfassung' | t }}
+          </a>
+        }
         <a routerLink="/raum-anlegen" routerLinkActive="active" class="nav-link" (click)="nav.closeMenu()">
           {{ 'Raum anlegen' | t }}
         </a>

@@ -8,7 +8,28 @@ import {
 } from '../models/project-material-list.model';
 import { CostComparisonService } from './cost-comparison.service';
 import { MaterialListService } from './material-list.service';
+import { ProfessionalLineItem } from './professional-offer.service';
 import { ProjectMaterialListService } from './project-material-list.service';
+
+/**
+ * Profi-Angebotspositionen + Summen eines Raums (Anzeige in der
+ * Projekt-Zusammenfassung, analog zur Einzelraum-Zusammenfassung).
+ * Reine Durchreichung aus dem ohnehin berechneten `CostComparisonViewModel`
+ * – keine Doppelberechnung.
+ */
+export interface RoomProfessionalBreakdown {
+  /** Leistungspositionen netto (ohne Material). */
+  netTotal: number;
+  /** Material laut Auswahl (netto). */
+  materialCost: number;
+  vatPercent: number;
+  /** MwSt. auf Leistung + Material zusammen. */
+  vatAmount: number;
+  /** Brutto = `professionalCost` des Raums. */
+  totalCost: number;
+  /** Nur aktive Positionen. */
+  lineItems: ProfessionalLineItem[];
+}
 
 export interface RoomCalculationSummary {
   roomId: string;
@@ -21,6 +42,7 @@ export interface RoomCalculationSummary {
   professionalCost: number;
   savings: number;
   warnings: string[];
+  professional: RoomProfessionalBreakdown;
 }
 
 export interface ProjectAggregationResult {
@@ -77,6 +99,7 @@ export class ProjectAggregationService {
           message
         }))
       );
+      const offer = comparison.professional.offer;
       roomSummaries.push({
         roomId: room.id,
         roomName: room.roomName,
@@ -87,7 +110,21 @@ export class ProjectAggregationService {
         diyCost: comparison.diy.totalCost,
         professionalCost: comparison.professional.totalCost,
         savings: comparison.savings.amount,
-        warnings: roomWarnings
+        warnings: roomWarnings,
+        professional: {
+          netTotal: offer.netTotal,
+          materialCost: comparison.professional.materialCost,
+          vatPercent: offer.vatPercent,
+          // MwSt. als Restgröße (Brutto − Leistung − Material), wie in der
+          // Einzelraum-Zusammenfassung und im v1-Teilen-Snapshot.
+          vatAmount: this.round(
+            comparison.professional.totalCost -
+              offer.netTotal -
+              comparison.professional.materialCost
+          ),
+          totalCost: comparison.professional.totalCost,
+          lineItems: offer.lineItems.filter((item) => item.isActive)
+        }
       });
     }
 

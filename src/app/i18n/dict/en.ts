@@ -7,6 +7,7 @@ import { EN_MATERIAL } from './en.material';
 import { EN_SUMMARY } from './en.summary';
 import { EN_ASSUMPTIONS } from './en.assumptions';
 import { EN_LEADS } from './en.leads';
+import { EN_PROJECT } from './en.project';
 
 /** Zusammengeführtes englisches Dictionary (lazy geladen in `I18nService`). */
 export const EN_DICT: Record<string, string> = {
@@ -18,5 +19,6 @@ export const EN_DICT: Record<string, string> = {
   ...EN_MATERIAL,
   ...EN_SUMMARY,
   ...EN_ASSUMPTIONS,
-  ...EN_LEADS
+  ...EN_LEADS,
+  ...EN_PROJECT
 };
