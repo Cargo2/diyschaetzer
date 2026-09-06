@@ -16,6 +16,7 @@ import { ProjectSummaryComponent } from './pages/project-summary/project-summary
 import { ImpressumComponent } from './pages/legal/impressum.component';
 import { DatenschutzComponent } from './pages/legal/datenschutz.component';
 import { KontaktComponent } from './pages/legal/kontakt.component';
+import { KontoLoeschenComponent } from './pages/legal/konto-loeschen.component';
 import { AuthPageComponent } from './pages/auth/auth-page.component';
 import { MarketingShellComponent } from './layout/marketing-shell/marketing-shell.component';
 
@@ -218,6 +219,7 @@ export const MARKETING_ROUTES: Routes = [
   { path: 'impressum', component: ImpressumComponent },
   { path: 'datenschutz', component: DatenschutzComponent },
   { path: 'kontakt', component: KontaktComponent },
+  { path: 'konto-loeschen', component: KontoLoeschenComponent },
   { path: '**', redirectTo: '' }
 ];
 

@@ -39,6 +39,7 @@ export const PL_SHELL: Record<string, string> = {
   Impressum: 'Nota prawna',
   Datenschutz: 'Ochrona danych',
   Kontakt: 'Kontakt',
+  'Konto löschen': 'Usuń konto',
   'Cookie-Einstellungen': 'Ustawienia plików cookie',
   'Sprache wählen': 'Wybierz język',
   'Als App installieren': 'Zainstaluj jako aplikację',

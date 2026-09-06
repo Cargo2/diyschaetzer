@@ -60,7 +60,9 @@ export class AppShellComponent {
   readonly legalUrls = {
     impressum: absoluteUrl('/impressum'),
     datenschutz: absoluteUrl('/datenschutz'),
-    kontakt: absoluteUrl('/kontakt')
+    kontakt: absoluteUrl('/kontakt'),
+    /** Google Play: sichtbarer In-App-Weg zur Kontolöschung (für alle eingeloggten Nutzer). */
+    kontoLoeschen: absoluteUrl('/konto-loeschen')
   };
 
   /** Escape schließt den mobilen Drawer (Desktop ohne Wirkung, da menuOpen dort ungenutzt bleibt). */

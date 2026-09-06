@@ -38,6 +38,7 @@ export const EN_SHELL: Record<string, string> = {
   Impressum: 'Legal notice',
   Datenschutz: 'Privacy',
   Kontakt: 'Contact',
+  'Konto löschen': 'Delete account',
   'Cookie-Einstellungen': 'Cookie settings',
   'Sprache wählen': 'Choose language',
   'Als App installieren': 'Install as app',

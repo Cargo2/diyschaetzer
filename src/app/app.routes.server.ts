@@ -29,6 +29,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'impressum', renderMode: RenderMode.Prerender },
   { path: 'datenschutz', renderMode: RenderMode.Prerender },
   { path: 'kontakt', renderMode: RenderMode.Prerender },
+  { path: 'konto-loeschen', renderMode: RenderMode.Prerender },
   // Alles Übrige clientseitig rendern (Rechner, Admin, Login, /geteilt/:token,
   // /anfragen und /lead-bestaetigen/:token, Redirects). Die Lead-Bestätigung darf
   // bewusst NIE prerendert werden (RPC-Call, kein Supabase-Client im Build).

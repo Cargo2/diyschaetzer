@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { SubscriptionStatusService } from '../../services/subscription-status.service';
 import { LeadSubscriptionComponent } from './lead-subscription/lead-subscription.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { absoluteUrl } from '../../config/site.config';
 
 /**
  * Konto → „Premium freischalten" (contractorGuard). Hostet die Lead-Abo-Sektion
@@ -14,7 +15,9 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
  * sofort aktualisiert.
  *
  * Darunter ein dezenter Hinweis zu Kündigung/Löschung, der auf die Anwenderdoku
- * (`/hilfe/rechnungen`) verlinkt.
+ * (`/hilfe/rechnungen`) verlinkt. Zusätzlich ein Block „Konto löschen" mit Link auf
+ * die öffentliche Seite `/konto-loeschen` (Marketing-Domain) – Google Play verlangt
+ * einen in der App sichtbaren Weg zur Kontolöschung.
  */
 @Component({
   selector: 'app-konto-premium',
@@ -31,6 +34,13 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
           {{ 'Exportiere deine Rechnungen vorher über den Datenexport.' | t }}
         </p>
         <a routerLink="/hilfe/rechnungen">{{ 'Mehr zu Rechnungen & Kündigung erfahren' | t }}</a>
+      </div>
+
+      <div class="cancellation-note">
+        <p>
+          {{ 'Du möchtest dein Konto samt aller Daten löschen? Kündige zuerst ein laufendes Abo und exportiere deine Rechnungen.' | t }}
+        </p>
+        <a [href]="accountDeletionUrl">{{ 'So löschst du dein Konto' | t }}</a>
       </div>
     </section>
   `,
@@ -72,6 +82,9 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 })
 export class KontoPremiumComponent {
   private readonly status = inject(SubscriptionStatusService);
+
+  /** Öffentliche Kontolöschungs-Seite liegt auf der Marketing-Domain → absoluter Link. */
+  readonly accountDeletionUrl = absoluteUrl('/konto-loeschen');
 
   onActivated(): void {
     void this.status.refresh();

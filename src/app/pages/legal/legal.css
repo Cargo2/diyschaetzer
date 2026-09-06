@@ -81,7 +81,8 @@
   margin: 0 0 0.8rem;
 }
 
-.legal-card ul {
+.legal-card ul,
+.legal-card ol {
   margin: 0 0 0.8rem;
   padding-left: 1.3rem;
 }
@@ -149,4 +150,9 @@
   background: transparent;
   border: 1.5px solid var(--verde);
   color: var(--verde-deep);
+}
+
+/* Nummerierte Schrittfolgen (z. B. Konto löschen): Tailwind-Preflight setzt list-style zurück. */
+.legal-card ol {
+  list-style: decimal;
 }

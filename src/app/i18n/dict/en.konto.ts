@@ -147,5 +147,8 @@ export const EN_KONTO: Record<string, string> = {
     'Permanent deletion only happens once the periods stated in the privacy policy have passed.',
   'Exportiere deine Rechnungen vorher über den Datenexport.':
     'Export your invoices beforehand via the data export.',
-  'Mehr zu Rechnungen & Kündigung erfahren': 'Learn more about invoices & cancellation'
+  'Mehr zu Rechnungen & Kündigung erfahren': 'Learn more about invoices & cancellation',
+  'Du möchtest dein Konto samt aller Daten löschen? Kündige zuerst ein laufendes Abo und exportiere deine Rechnungen.':
+    'Want to delete your account and all its data? Cancel any active subscription first and export your invoices.',
+  'So löschst du dein Konto': 'How to delete your account'
 };

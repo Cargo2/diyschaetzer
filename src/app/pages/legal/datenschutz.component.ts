@@ -1,9 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-datenschutz',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './datenschutz.component.html',
   styleUrl: './legal.css'
 })

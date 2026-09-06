@@ -147,5 +147,8 @@ export const PL_KONTO: Record<string, string> = {
     'Ostateczne usunięcie następuje dopiero po upływie terminów podanych w polityce prywatności.',
   'Exportiere deine Rechnungen vorher über den Datenexport.':
     'Wcześniej wyeksportuj swoje faktury za pomocą eksportu danych.',
-  'Mehr zu Rechnungen & Kündigung erfahren': 'Więcej o fakturach i rezygnacji'
+  'Mehr zu Rechnungen & Kündigung erfahren': 'Więcej o fakturach i rezygnacji',
+  'Du möchtest dein Konto samt aller Daten löschen? Kündige zuerst ein laufendes Abo und exportiere deine Rechnungen.':
+    'Chcesz usunąć swoje konto wraz ze wszystkimi danymi? Najpierw anuluj aktywną subskrypcję i wyeksportuj swoje faktury.',
+  'So löschst du dein Konto': 'Jak usunąć konto'
 };
