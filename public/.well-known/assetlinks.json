@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "de.fliesenkosten.app",
       "sha256_cert_fingerprints": [
-        "REPLACE-WITH-PLAY-APP-SIGNING-SHA256"
+        "54:A6:30:DA:41:3D:7C:2C:70:37:82:B3:48:00:42:B0:62:62:20:A1:72:5F:75:11:E0:9F:83:F0:13:E1:22:49",
+        "CB:69:30:86:88:F1:7F:E5:66:77:C5:C2:ED:46:AE:4A:5C:F4:78:99:79:19:14:82:63:39:03:11:8F:B8:B2:3D"
       ]
     }
   }
