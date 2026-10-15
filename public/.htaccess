@@ -59,6 +59,18 @@
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
+  # Trailing Slash entfernen (301): /ratgeber/foo/ → /ratgeber/foo. Canonicals,
+  # Sitemap und interne Links nutzen die slash-lose URL; ohne diese Regel liefern
+  # beide Varianten 200 mit identischem Inhalt und die Search Console listet die
+  # Slash-Variante als "Alternative Seite mit richtigem kanonischen Tag" (Duplikat).
+  # Steht NACH dem Datei-Passthrough (echte Dateien bleiben unberührt) und VOR der
+  # internen index.html-Abbildung. Die Startseite "/" ist hier ausgenommen, weil
+  # (.+?) mindestens ein Zeichen verlangt. Query-String bleibt automatisch erhalten,
+  # mehrere Slashes am Ende werden zusammen entfernt.
+  # Ziel explizit https + Request-Host: Plesk schaltet nginx davor, HSTS ist aktiv (nur HTTPS).
+  RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+  RewriteRule ^(.+?)/+$ https://%{HTTP_HOST}/$1 [R=301,L]
+
   # Startseite: prerendertes index.html direkt ausliefern (die frühere
   # -d-Passthrough-Regel entfällt, daher hier explizit).
   RewriteRule ^$ index.html [L]
